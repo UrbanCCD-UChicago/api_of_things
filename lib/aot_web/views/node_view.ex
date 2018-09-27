@@ -12,7 +12,6 @@ defmodule AotWeb.NodeView do
 
   def render("node.json", %{node: node}) do
     %{id: node.id,
-      id: node.id,
       vsn: node.vsn,
       location: node.location,
       human_address: node.human_address,
