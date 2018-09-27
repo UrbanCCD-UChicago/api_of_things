@@ -26,13 +26,15 @@ defmodule AotWeb.ConnCase do
     end
   end
 
-
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Aot.Repo)
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Aot.MetaRepo)
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Aot.DataRepo)
+
     unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(Aot.Repo, {:shared, self()})
+      Ecto.Adapters.SQL.Sandbox.mode(Aot.MetaRepo, {:shared, self()})
+      Ecto.Adapters.SQL.Sandbox.mode(Aot.DataRepo, {:shared, self()})
     end
+
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
-
 end

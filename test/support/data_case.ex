@@ -16,8 +16,8 @@ defmodule Aot.DataCase do
 
   using do
     quote do
-      alias Aot.Repo
-
+      alias Aot.MetaRepo
+      alias Aot.DataRepo
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
@@ -26,10 +26,12 @@ defmodule Aot.DataCase do
   end
 
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Aot.Repo)
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Aot.MetaRepo)
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Aot.DataRepo)
 
     unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(Aot.Repo, {:shared, self()})
+      Ecto.Adapters.SQL.Sandbox.mode(Aot.MetaRepo, {:shared, self()})
+      Ecto.Adapters.SQL.Sandbox.mode(Aot.DataRepo, {:shared, self()})
     end
 
     :ok

@@ -9,11 +9,6 @@ config :aot, AotWeb.Endpoint,
 # Print only warnings and errors during test
 config :logger, level: :warn
 
-# Configure your database
-config :aot, Aot.Repo,
-  adapter: Ecto.Adapters.Postgres,
-  username: "postgres",
-  password: "postgres",
-  database: "aot_test",
-  hostname: "localhost",
-  pool: Ecto.Adapters.SQL.Sandbox
+# Configure your databases
+config :aot, Aot.MetaRepo, pool: Ecto.Adapters.SQL.Sandbox
+config :aot, Aot.DataRepo, pool: Ecto.Adapters.SQL.Sandbox

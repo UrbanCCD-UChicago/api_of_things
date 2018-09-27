@@ -1,4 +1,4 @@
 ExUnit.start()
 
-Ecto.Adapters.SQL.Sandbox.mode(Aot.Repo, :manual)
-
+Ecto.Adapters.SQL.Sandbox.mode(Aot.MetaRepo, :manual)
+Ecto.Adapters.SQL.Sandbox.mode(Aot.DataRepo, :manual)
