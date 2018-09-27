@@ -1,4 +1,4 @@
-defmodule Aot.MetaRepo.Migrations.CreateNetworksSensors do
+defmodule Aot.Repo.Migrations.CreateNetworksSensors do
   use Ecto.Migration
 
   def change do

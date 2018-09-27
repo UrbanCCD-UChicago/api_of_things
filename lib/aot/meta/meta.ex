@@ -4,7 +4,7 @@ defmodule Aot.Meta do
   """
 
   import Ecto.Query, warn: false
-  alias Aot.MetaRepo, as: Repo
+  alias Aot.Repo
 
   alias Aot.Meta.Network
 

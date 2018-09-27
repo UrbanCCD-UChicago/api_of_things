@@ -1,25 +1,17 @@
 use Mix.Config
 
 # Configures the Ecto Repos
-config :aot, Aot.MetaRepo,
+config :aot, Aot.Repo,
   adapter: Ecto.Adapters.Postgres,
   username: "postgres",
   password: "password",
-  database: "aot_meta_#{Mix.env()}",
+  database: "aot_#{Mix.env()}",
   hostname: "localhost",
   pool_size: 10,
   types: Aot.PostgresTypes
 
-config :aot, Aot.DataRepo,
-  adapter: Ecto.Adapters.Postgres,
-  username: "postgres",
-  password: "password",
-  database: "aot_data_#{Mix.env()}",
-  hostname: "localhost",
-  pool_size: 10
-
 config :aot,
-  ecto_repos: [Aot.MetaRepo, Aot.DataRepo]
+  ecto_repos: [Aot.Repo]
 
 # Configures the endpoint
 config :aot, AotWeb.Endpoint,

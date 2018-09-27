@@ -1,4 +1,4 @@
-defmodule Aot.MetaRepo.Migrations.EnablePostGIS do
+defmodule Aot.Repo.Migrations.EnablePostGIS do
   use Ecto.Migration
 
   def up do

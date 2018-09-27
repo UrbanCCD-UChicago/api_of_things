@@ -6,8 +6,7 @@ defmodule Aot.Application do
 
     children = [
       # Start the Ecto repository
-      supervisor(Aot.MetaRepo, []),
-      supervisor(Aot.DataRepo, []),
+      supervisor(Aot.Repo, []),
       # Start the endpoint when the application starts
       supervisor(AotWeb.Endpoint, [])
     ]
