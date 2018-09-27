@@ -24,5 +24,11 @@
     remove: :*,
     modify: :*,
     execute: :*
+    # Phoenix
+    ## routes
+    resources: :*
+    ## controllers
+    plug: :*
+    action_fallback: :*
   ]
 ]
