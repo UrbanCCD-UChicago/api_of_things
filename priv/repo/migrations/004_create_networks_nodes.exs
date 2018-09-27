@@ -2,7 +2,7 @@ defmodule Aot.Repo.Migrations.CreateNetworksNodes do
   use Ecto.Migration
 
   def change do
-    create table(:networks_nodes) do
+    create table(:networks_nodes, primary_key: false) do
       add :network_id, references(:networks, on_delete: :restrict)
       add :node_id, references(:nodes, type: :text, on_delete: :restrict)
     end

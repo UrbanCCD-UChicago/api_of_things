@@ -52,7 +52,7 @@ defmodule Aot.Data do
   def create_observation(attrs \\ %{}) do
     %Observation{}
     |> Observation.changeset(attrs)
-    |> Repo.insert()
+    |> Repo.insert(on_conflict: :nothing)
   end
 
   @doc """
@@ -148,7 +148,7 @@ defmodule Aot.Data do
   def create_raw_observation(attrs \\ %{}) do
     %RawObservation{}
     |> RawObservation.changeset(attrs)
-    |> Repo.insert()
+    |> Repo.insert(on_conflict: :nothing)
   end
 
   @doc """

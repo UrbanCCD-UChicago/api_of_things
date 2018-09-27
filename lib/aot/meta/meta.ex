@@ -28,14 +28,14 @@ defmodule Aot.Meta do
 
   ## Examples
 
-      iex> get_network!(123)
+      iex> get_network!("some-slug")
       %Network{}
 
-      iex> get_network!(456)
+      iex> get_network!("unknown-slug")
       ** (Ecto.NoResultsError)
 
   """
-  def get_network!(id), do: Repo.get!(Network, id)
+  def get_network!(slug), do: Repo.get_by!(Network, slug: slug)
 
   @doc """
   Creates a network.
@@ -131,7 +131,13 @@ defmodule Aot.Meta do
       ** (Ecto.NoResultsError)
 
   """
-  def get_node!(id), do: Repo.get!(Node, id)
+  # def get_node!(id), do: Repo.get!(Node, id)
+  def get_node!(id) do
+    case String.length(id) do
+      3 -> Repo.get_by!(Node, vsn: id)
+      _ -> Repo.get_by!(Node, id: id)
+    end
+  end
 
   @doc """
   Creates a node.

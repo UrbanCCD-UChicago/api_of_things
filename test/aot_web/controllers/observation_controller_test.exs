@@ -24,59 +24,59 @@ defmodule AotWeb.ObservationControllerTest do
     end
   end
 
-  describe "create observation" do
-    test "renders observation when data is valid", %{conn: conn} do
-      conn = post conn, observation_path(conn, :create), observation: @create_attrs
-      assert %{"id" => id} = json_response(conn, 201)["data"]
+  # describe "create observation" do
+  #   test "renders observation when data is valid", %{conn: conn} do
+  #     conn = post conn, observation_path(conn, :create), observation: @create_attrs
+  #     assert %{"id" => id} = json_response(conn, 201)["data"]
 
-      conn = get conn, observation_path(conn, :show, id)
-      assert json_response(conn, 200)["data"] == %{
-        "id" => id,
-        "node" => "some node",
-        "sensor" => "some sensor",
-        "timestamp" => ~N[2010-04-17 14:00:00.000000],
-        "value" => 120.5}
-    end
+  #     conn = get conn, observation_path(conn, :show, id)
+  #     assert json_response(conn, 200)["data"] == %{
+  #       "id" => id,
+  #       "node" => "some node",
+  #       "sensor" => "some sensor",
+  #       "timestamp" => ~N[2010-04-17 14:00:00.000000],
+  #       "value" => 120.5}
+  #   end
 
-    test "renders errors when data is invalid", %{conn: conn} do
-      conn = post conn, observation_path(conn, :create), observation: @invalid_attrs
-      assert json_response(conn, 422)["errors"] != %{}
-    end
-  end
+  #   test "renders errors when data is invalid", %{conn: conn} do
+  #     conn = post conn, observation_path(conn, :create), observation: @invalid_attrs
+  #     assert json_response(conn, 422)["errors"] != %{}
+  #   end
+  # end
 
-  describe "update observation" do
-    setup [:create_observation]
+  # describe "update observation" do
+  #   setup [:create_observation]
 
-    test "renders observation when data is valid", %{conn: conn, observation: %Observation{id: id} = observation} do
-      conn = put conn, observation_path(conn, :update, observation), observation: @update_attrs
-      assert %{"id" => ^id} = json_response(conn, 200)["data"]
+  #   test "renders observation when data is valid", %{conn: conn, observation: %Observation{id: id} = observation} do
+  #     conn = put conn, observation_path(conn, :update, observation), observation: @update_attrs
+  #     assert %{"id" => ^id} = json_response(conn, 200)["data"]
 
-      conn = get conn, observation_path(conn, :show, id)
-      assert json_response(conn, 200)["data"] == %{
-        "id" => id,
-        "node" => "some updated node",
-        "sensor" => "some updated sensor",
-        "timestamp" => ~N[2011-05-18 15:01:01.000000],
-        "value" => 456.7}
-    end
+  #     conn = get conn, observation_path(conn, :show, id)
+  #     assert json_response(conn, 200)["data"] == %{
+  #       "id" => id,
+  #       "node" => "some updated node",
+  #       "sensor" => "some updated sensor",
+  #       "timestamp" => ~N[2011-05-18 15:01:01.000000],
+  #       "value" => 456.7}
+  #   end
 
-    test "renders errors when data is invalid", %{conn: conn, observation: observation} do
-      conn = put conn, observation_path(conn, :update, observation), observation: @invalid_attrs
-      assert json_response(conn, 422)["errors"] != %{}
-    end
-  end
+  #   test "renders errors when data is invalid", %{conn: conn, observation: observation} do
+  #     conn = put conn, observation_path(conn, :update, observation), observation: @invalid_attrs
+  #     assert json_response(conn, 422)["errors"] != %{}
+  #   end
+  # end
 
-  describe "delete observation" do
-    setup [:create_observation]
+  # describe "delete observation" do
+  #   setup [:create_observation]
 
-    test "deletes chosen observation", %{conn: conn, observation: observation} do
-      conn = delete conn, observation_path(conn, :delete, observation)
-      assert response(conn, 204)
-      assert_error_sent 404, fn ->
-        get conn, observation_path(conn, :show, observation)
-      end
-    end
-  end
+  #   test "deletes chosen observation", %{conn: conn, observation: observation} do
+  #     conn = delete conn, observation_path(conn, :delete, observation)
+  #     assert response(conn, 204)
+  #     assert_error_sent 404, fn ->
+  #       get conn, observation_path(conn, :show, observation)
+  #     end
+  #   end
+  # end
 
   defp create_observation(_) do
     observation = fixture(:observation)

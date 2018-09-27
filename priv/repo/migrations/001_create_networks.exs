@@ -3,12 +3,12 @@ defmodule Aot.Repo.Migrations.CreateNetworks do
 
   def change do
     create table(:networks) do
-      add :name, :text
-      add :slug, :text
-      add :bbox, :geometry
-      add :hull, :geometry
-      add :num_observations, :integer
-      add :num_raw_observations, :integer
+      add :name, :text, null: false
+      add :slug, :text, null: false
+      add :bbox, :geometry, default: nil
+      add :hull, :geometry, default: nil
+      add :num_observations, :integer, default: 0
+      add :num_raw_observations, :integer, default: 0
     end
 
     create unique_index(:networks, :name)

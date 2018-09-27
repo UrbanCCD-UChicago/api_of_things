@@ -10,5 +10,4 @@ config :aot, AotWeb.Endpoint,
 config :logger, level: :warn
 
 # Configure your databases
-config :aot, Aot.MetaRepo, pool: Ecto.Adapters.SQL.Sandbox
-config :aot, Aot.DataRepo, pool: Ecto.Adapters.SQL.Sandbox
+config :aot, Aot.Repo, pool: Ecto.Adapters.SQL.Sandbox

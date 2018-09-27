@@ -7,10 +7,10 @@ defmodule AotWeb.Router do
 
   scope "/api", AotWeb do
     pipe_through(:api)
-    resources "/networks", NetworkController, except: [:new, :edit, :delete]
-    resources "/nodes", NodeController, except: [:new, :edit, :delete]
-    resources "/sensors", SensorController, except: [:new, :edit, :delete]
-    resources "/observations", ObservationController, except: [:new, :edit, :delete]
-    resources "/raw-observations", RawObservationController, except: [:new, :edit, :delete]
+    resources "/networks", NetworkController, only: [:index, :show]
+    resources "/nodes", NodeController, only: [:index, :show]
+    resources "/sensors", SensorController, only: [:index, :show]
+    resources "/observations", ObservationController, only: [:index, :show]
+    resources "/raw-observations", RawObservationController, only: [:index, :show]
   end
 end
