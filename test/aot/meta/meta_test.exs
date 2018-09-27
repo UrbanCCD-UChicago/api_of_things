@@ -72,4 +72,76 @@ defmodule Aot.MetaTest do
       assert %Ecto.Changeset{} = Meta.change_network(network)
     end
   end
+
+  describe "nodes" do
+    alias Aot.Meta.Node
+
+    @valid_attrs %{commissioned_on: ~N[2010-04-17 14:00:00.000000], decommissioned_on: ~N[2010-04-17 14:00:00.000000], description: "some description", human_address: "some human_address", id: "some id", location: "some location", vsn: "some vsn"}
+    @update_attrs %{commissioned_on: ~N[2011-05-18 15:01:01.000000], decommissioned_on: ~N[2011-05-18 15:01:01.000000], description: "some updated description", human_address: "some updated human_address", id: "some updated id", location: "some updated location", vsn: "some updated vsn"}
+    @invalid_attrs %{commissioned_on: nil, decommissioned_on: nil, description: nil, human_address: nil, id: nil, location: nil, vsn: nil}
+
+    def node_fixture(attrs \\ %{}) do
+      {:ok, node} =
+        attrs
+        |> Enum.into(@valid_attrs)
+        |> Meta.create_node()
+
+      node
+    end
+
+    test "list_nodes/0 returns all nodes" do
+      node = node_fixture()
+      assert Meta.list_nodes() == [node]
+    end
+
+    test "get_node!/1 returns the node with given id" do
+      node = node_fixture()
+      assert Meta.get_node!(node.id) == node
+    end
+
+    test "create_node/1 with valid data creates a node" do
+      assert {:ok, %Node{} = node} = Meta.create_node(@valid_attrs)
+      assert node.commissioned_on == ~N[2010-04-17 14:00:00.000000]
+      assert node.decommissioned_on == ~N[2010-04-17 14:00:00.000000]
+      assert node.description == "some description"
+      assert node.human_address == "some human_address"
+      assert node.id == "some id"
+      assert node.location == "some location"
+      assert node.vsn == "some vsn"
+    end
+
+    test "create_node/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Meta.create_node(@invalid_attrs)
+    end
+
+    test "update_node/2 with valid data updates the node" do
+      node = node_fixture()
+      assert {:ok, node} = Meta.update_node(node, @update_attrs)
+      assert %Node{} = node
+      assert node.commissioned_on == ~N[2011-05-18 15:01:01.000000]
+      assert node.decommissioned_on == ~N[2011-05-18 15:01:01.000000]
+      assert node.description == "some updated description"
+      assert node.human_address == "some updated human_address"
+      assert node.id == "some updated id"
+      assert node.location == "some updated location"
+      assert node.vsn == "some updated vsn"
+    end
+
+    test "update_node/2 with invalid data returns error changeset" do
+      node = node_fixture()
+      assert {:error, %Ecto.Changeset{}} = Meta.update_node(node, @invalid_attrs)
+      assert node == Meta.get_node!(node.id)
+    end
+
+    test "delete_node/1 deletes the node" do
+      node = node_fixture()
+      assert {:ok, %Node{}} = Meta.delete_node(node)
+      assert_raise Ecto.NoResultsError, fn -> Meta.get_node!(node.id) end
+    end
+
+    test "change_node/1 returns a node changeset" do
+      node = node_fixture()
+      assert %Ecto.Changeset{} = Meta.change_node(node)
+    end
+  end
 end
