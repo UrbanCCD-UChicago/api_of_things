@@ -9,6 +9,9 @@ defmodule Aot.Meta.Network do
     field :num_observations, :integer
     field :num_raw_observations, :integer
     field :slug, :string
+
+    many_to_many :nodes, Aot.Meta.Node, join_through: "networks_nodes"
+    many_to_many :sensors, Aot.Meta.Sensor, join_through: "networks_sensors"
   end
 
   @doc false

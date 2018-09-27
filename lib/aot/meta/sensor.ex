@@ -11,6 +11,9 @@ defmodule Aot.Meta.Sensor do
     field :sensor, :string
     field :subsystem, :string
     field :unit, :string
+
+    many_to_many :networks, Aot.Meta.Network, join_through: "networks_sensors"
+    many_to_many :nodes, Aot.Meta.Sensor, join_through: "nodes_sensors"
   end
 
   @doc false

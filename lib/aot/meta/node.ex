@@ -10,6 +10,9 @@ defmodule Aot.Meta.Node do
     field :human_address, :string
     field :location, Geo.PostGIS.Geometry
     field :vsn, :string
+
+    many_to_many :networks, Aot.Meta.Network, join_through: "networks_nodes"
+    many_to_many :sensors, Aot.Meta.Sensor, join_through: "nodes_sensors"
   end
 
   @doc false

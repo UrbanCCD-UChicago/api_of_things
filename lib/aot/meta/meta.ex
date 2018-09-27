@@ -293,4 +293,28 @@ defmodule Aot.Meta do
   def change_sensor(%Sensor{} = sensor) do
     Sensor.changeset(sensor, %{})
   end
+
+  alias Aot.Meta.NetworksNodes
+
+  def upsert_network_node(attrs \\ %{}) do
+    %NetworksNodes{}
+    |> NetworksNodes.changeset(attrs)
+    |> Repo.insert(on_conflict: :nothing)
+  end
+
+  alias Aot.Meta.NetworksSensors
+
+  def upsert_network_sensor(attrs \\ %{}) do
+    %NetworksSensors{}
+    |> NetworksSensors.changeset(attrs)
+    |> Repo.insert(on_conflict: :nothing)
+  end
+
+  alias Aot.Meta.NodesSensors
+
+  def upsert_node_sensor(attrs \\ %{}) do
+    %NodesSensors{}
+    |> NodesSensors.changeset(attrs)
+    |> Repo.insert(on_conflict: :nothing)
+  end
 end
