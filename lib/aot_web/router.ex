@@ -9,5 +9,6 @@ defmodule AotWeb.Router do
     pipe_through(:api)
     resources "/networks", NetworkController, except: [:new, :edit, :delete]
     resources "/nodes", NodeController, except: [:new, :edit, :delete]
+    resources "/sensors", SensorController, except: [:new, :edit, :delete]
   end
 end

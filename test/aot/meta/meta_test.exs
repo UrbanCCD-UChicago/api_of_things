@@ -144,4 +144,76 @@ defmodule Aot.MetaTest do
       assert %Ecto.Changeset{} = Meta.change_node(node)
     end
   end
+
+  describe "sensors" do
+    alias Aot.Meta.Sensor
+
+    @valid_attrs %{max_val: 120.5, min_val: 120.5, ontology: "some ontology", parameter: "some parameter", sensor: "some sensor", subsystem: "some subsystem", unit: "some unit"}
+    @update_attrs %{max_val: 456.7, min_val: 456.7, ontology: "some updated ontology", parameter: "some updated parameter", sensor: "some updated sensor", subsystem: "some updated subsystem", unit: "some updated unit"}
+    @invalid_attrs %{max_val: nil, min_val: nil, ontology: nil, parameter: nil, sensor: nil, subsystem: nil, unit: nil}
+
+    def sensor_fixture(attrs \\ %{}) do
+      {:ok, sensor} =
+        attrs
+        |> Enum.into(@valid_attrs)
+        |> Meta.create_sensor()
+
+      sensor
+    end
+
+    test "list_sensors/0 returns all sensors" do
+      sensor = sensor_fixture()
+      assert Meta.list_sensors() == [sensor]
+    end
+
+    test "get_sensor!/1 returns the sensor with given id" do
+      sensor = sensor_fixture()
+      assert Meta.get_sensor!(sensor.id) == sensor
+    end
+
+    test "create_sensor/1 with valid data creates a sensor" do
+      assert {:ok, %Sensor{} = sensor} = Meta.create_sensor(@valid_attrs)
+      assert sensor.max_val == 120.5
+      assert sensor.min_val == 120.5
+      assert sensor.ontology == "some ontology"
+      assert sensor.parameter == "some parameter"
+      assert sensor.sensor == "some sensor"
+      assert sensor.subsystem == "some subsystem"
+      assert sensor.unit == "some unit"
+    end
+
+    test "create_sensor/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Meta.create_sensor(@invalid_attrs)
+    end
+
+    test "update_sensor/2 with valid data updates the sensor" do
+      sensor = sensor_fixture()
+      assert {:ok, sensor} = Meta.update_sensor(sensor, @update_attrs)
+      assert %Sensor{} = sensor
+      assert sensor.max_val == 456.7
+      assert sensor.min_val == 456.7
+      assert sensor.ontology == "some updated ontology"
+      assert sensor.parameter == "some updated parameter"
+      assert sensor.sensor == "some updated sensor"
+      assert sensor.subsystem == "some updated subsystem"
+      assert sensor.unit == "some updated unit"
+    end
+
+    test "update_sensor/2 with invalid data returns error changeset" do
+      sensor = sensor_fixture()
+      assert {:error, %Ecto.Changeset{}} = Meta.update_sensor(sensor, @invalid_attrs)
+      assert sensor == Meta.get_sensor!(sensor.id)
+    end
+
+    test "delete_sensor/1 deletes the sensor" do
+      sensor = sensor_fixture()
+      assert {:ok, %Sensor{}} = Meta.delete_sensor(sensor)
+      assert_raise Ecto.NoResultsError, fn -> Meta.get_sensor!(sensor.id) end
+    end
+
+    test "change_sensor/1 returns a sensor changeset" do
+      sensor = sensor_fixture()
+      assert %Ecto.Changeset{} = Meta.change_sensor(sensor)
+    end
+  end
 end
