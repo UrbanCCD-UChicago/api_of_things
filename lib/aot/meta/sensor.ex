@@ -14,6 +14,8 @@ defmodule Aot.Meta.Sensor do
 
     many_to_many :networks, Aot.Meta.Network, join_through: "networks_sensors"
     many_to_many :nodes, Aot.Meta.Sensor, join_through: "nodes_sensors"
+    has_many :observations, Aot.Data.Observation
+    has_many :raw_observations, Aot.Data.RawObservation
   end
 
   @doc false
