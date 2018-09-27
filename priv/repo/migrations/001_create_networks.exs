@@ -1,4 +1,4 @@
-defmodule Aot.Repo.Migrations.CreateNetworks do
+defmodule Aot.MetaRepo.Migrations.CreateNetworks do
   use Ecto.Migration
 
   def change do
