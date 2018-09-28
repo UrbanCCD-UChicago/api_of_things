@@ -124,6 +124,147 @@ defmodule Aot.ObservationQueries do
     |> where([n], st_dwithin_in_meters(n.location, ^geom, ^meters))
   end
 
+  @spec histogram(Ecto.Queryable.t(), {float(), float(), integer(), atom()}) :: Ecto.Queryable.t()
+  def histogram(query, {min, max, num_buckets, groupby}) do
+    query
+    |> select([o], %{o | histogram: fragment("histogram(value, ?, ?, ?) as histogram", ^min, ^max, ^num_buckets)})
+    |> group_by([o], field(o, ^groupby))
+  end
+
+  @spec value_agg(Ecto.Queryable.t(), {:avg | :count | :first | :last | :max | :min | :stddev | :sum | :variance, atom()} | {:percentile, {float(), atom()}}) :: Ecto.Queryable.t()
+  def value_agg(query, {:first, _groupby}), do: select(query, [o], %{o | first: fragment("first(value, timestamp) as first")})
+
+  def value_agg(query, {:last, _groupby}), do: select(query, [o], %{o | last: fragment("last(value, timestamp) as last")})
+
+  def value_agg(query, {:count, groupby}) do
+    query
+    |> select([o], %{o | count: fragment("count(value) as count")})
+    |> group_by([o], field(o, ^groupby))
+  end
+
+  def value_agg(query, {:min, groupby}) do
+    query
+    |> select([o], %{o | min: fragment("min(value) as min")})
+    |> group_by([o], field(o, ^groupby))
+  end
+
+  def value_agg(query, {:max, groupby}) do
+    query
+    |> select([o], %{o | max: fragment("max(value) as max")})
+    |> group_by([o], field(o, ^groupby))
+  end
+
+  def value_agg(query, {:avg, groupby}) do
+    query
+    |> select([o], %{o | avg: fragment("avg(value) as avg")})
+    |> group_by([o], field(o, ^groupby))
+  end
+
+  def value_agg(query, {:sum, groupby}) do
+    query
+    |> select([o], %{o | sum: fragment("sum(value) as sum")})
+    |> group_by([o], field(o, ^groupby))
+  end
+
+  def value_agg(query, {:stddev, groupby}) do
+    query
+    |> select([o], %{o | stddev: fragment("stddev_samp(value) as stddev")})
+    |> group_by([o], field(o, ^groupby))
+  end
+
+  def value_agg(query, {:variance, groupby}) do
+    query
+    |> select([o], %{o | variance: fragment("var_samp(value) as variance")})
+    |> group_by([o], field(o, ^groupby))
+  end
+
+  def value_agg(query, {:percentile, {perc, groupby}}) do
+    query
+    |> select([o], %{o | percentile: fragment("percentile_cont(?) within group (order by value) as percentile", ^perc)})
+    |> group_by([o], field(o, ^groupby))
+  end
+
+  @spec time_bucket(Ecto.Queryable.t(), {String.t(), :avg | :count | :max | :min | :stddev | :sum | :variance | {:percentile, float()}}) :: Ecto.Query.t()
+  def time_bucket(query, {interval, :count}) do
+    query
+    |> select(%{
+      bucket: fragment("time_bucket(?, timestamp) as bucket", ^interval),
+      count: fragment("count(value) as count")
+    })
+    |> group_by(fragment("bucket"))
+    |> order_by(fragment("bucket DESC"))
+  end
+
+  def time_bucket(query, {interval, :min}) do
+    query
+    |> select(%{
+      bucket: fragment("time_bucket(?, timestamp) as bucket", ^interval),
+      min: fragment("min(value) as min")
+    })
+    |> group_by(fragment("bucket"))
+    |> order_by(fragment("bucket DESC"))
+  end
+
+  def time_bucket(query, {interval, :max}) do
+    query
+    |> select(%{
+      bucket: fragment("time_bucket(?, timestamp) as bucket", ^interval),
+      max: fragment("max(value) as max")
+    })
+    |> group_by(fragment("bucket"))
+    |> order_by(fragment("bucket DESC"))
+  end
+
+  def time_bucket(query, {interval, :avg}) do
+    query
+    |> select(%{
+      bucket: fragment("time_bucket(?, timestamp) as bucket", ^interval),
+      avg: fragment("avg(value) as avg")
+    })
+    |> group_by(fragment("bucket"))
+    |> order_by(fragment("bucket DESC"))
+  end
+
+  def time_bucket(query, {interval, :sum}) do
+    query
+    |> select(%{
+      bucket: fragment("time_bucket(?, timestamp) as bucket", ^interval),
+      sum: fragment("sum(value) as sum")
+    })
+    |> group_by(fragment("bucket"))
+    |> order_by(fragment("bucket DESC"))
+  end
+
+  def time_bucket(query, {interval, :stddev}) do
+    query
+    |> select(%{
+      bucket: fragment("time_bucket(?, timestamp) as bucket", ^interval),
+      stddev: fragment("stddev_samp(value) as stddev")
+    })
+    |> group_by(fragment("bucket"))
+    |> order_by(fragment("bucket DESC"))
+  end
+
+  def time_bucket(query, {interval, :variance}) do
+    query
+    |> select(%{
+      bucket: fragment("time_bucket(?, timestamp) as bucket", ^interval),
+      variance: fragment("var_samp(value) as variance")
+    })
+    |> group_by(fragment("bucket"))
+    |> order_by(fragment("bucket DESC"))
+  end
+
+  def time_bucket(query, {interval, {:percentile, perc}}) do
+    query
+    |> select(%{
+      bucket: fragment("time_bucket(?, timestamp) as bucket", ^interval),
+      percentile: fragment("percentile_cont(?) within group (order by value) as percentile", ^perc)
+    })
+    |> group_by(fragment("bucket"))
+    |> order_by(fragment("bucket DESC"))
+  end
+
   @spec handle_opts(Ecto.Queryable.t(), keyword()) :: Ecto.Queryable.t()
   def handle_opts(query, opts) do
     [
@@ -141,7 +282,10 @@ defmodule Aot.ObservationQueries do
       timestamp_op: :empty,
       value_op: :empty,
       located_within: :empty,
-      within_distance: :empty
+      within_distance: :empty,
+      histogram: :empty,
+      value_agg: :empty,
+      time_bucket: :empty
     ]
     |> Keyword.merge(opts)
     |> apply_opts(query, ObservationQueries)
