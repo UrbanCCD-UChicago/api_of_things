@@ -1,200 +1,82 @@
 defmodule Aot.Data do
-  @moduledoc """
-  The Data context.
-  """
-
   import Ecto.Query, warn: false
+
   alias Aot.Repo
 
-  alias Aot.Data.Observation
+  alias Aot.Data.{
+      Observation,
+      RawObservation
+  }
 
-  @doc """
-  Returns the list of observations.
+  alias Aot.Meta.{
+      Node,
+      Sensor,
+      Network,
+      NetworksNodes
+  }
 
-  ## Examples
+  # OBSERVATION QUERY HELPERS
 
-      iex> list_observations()
-      [%Observation{}, ...]
+  def for_node(query, %Node{id: id}), do: for_node(query, id)
+  def for_node(query, id), do: where(query, [o], o.node_id == ^id)
 
-  """
-  def list_observations do
-    Repo.all(Observation)
+  def for_nodes(query, nodes) do
+    node_ids =
+      nodes
+      |> Enum.map(fn node ->
+        case node do
+            %Node{id: id} -> id
+            id -> id
+        end
+      end)
+
+    where(query, [o], o.node_id in ^node_ids)
   end
 
-  @doc """
-  Gets a single observation.
+  def for_sensor(query, %Sensor{id: id}), do: for_sensor(query, id)
+  def for_sensor(query, id), do: where(query, [o], o.sensor_id == ^id)
 
-  Raises `Ecto.NoResultsError` if the Observation does not exist.
+  def for_sensors(query, sensors) do
+    sensor_ids =
+      sensors
+      |> Enum.map(fn sensor ->
+        case sensor do
+            %Sensor{id: id} -> id
+            id -> id
+        end
+      end)
 
-  ## Examples
+    where(query, [o], o.sensor_id in ^sensor_ids)
+  end
 
-      iex> get_observation!(123)
-      %Observation{}
+  def in_network(query, %Network{id: id}), do: in_network(query, id)
+  def in_network(query, id) do
+    query
+    |> join(:left, [o], n in Node, o.node_id == n.id)
+    |> join(:left, [n], nn in NetworksNodes, n.id == nn.node_id)
+    |> join(:left, [nn], e in Network, nn.network_id == e.id)
+    |> where([e], e.id == ^id)
+  end
 
-      iex> get_observation!(456)
-      ** (Ecto.NoResultsError)
+  # OBSERVATION ACTIONS
 
-  """
-  def get_observation!(id), do: Repo.get!(Observation, id)
+  def list_observations
 
-  @doc """
-  Creates a observation.
-
-  ## Examples
-
-      iex> create_observation(%{field: value})
-      {:ok, %Observation{}}
-
-      iex> create_observation(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
   def create_observation(attrs \\ %{}) do
     %Observation{}
     |> Observation.changeset(attrs)
     |> Repo.insert(on_conflict: :nothing)
   end
 
-  @doc """
-  Updates a observation.
+  # RAW OBSERVATION QUERY HELPERS
 
-  ## Examples
+  # RAW OBSERVATION ACTIONS
 
-      iex> update_observation(observation, %{field: new_value})
-      {:ok, %Observation{}}
+  def list_raw_observations
 
-      iex> update_observation(observation, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_observation(%Observation{} = observation, attrs) do
-    observation
-    |> Observation.changeset(attrs)
-    |> Repo.update()
-  end
-
-  @doc """
-  Deletes a Observation.
-
-  ## Examples
-
-      iex> delete_observation(observation)
-      {:ok, %Observation{}}
-
-      iex> delete_observation(observation)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_observation(%Observation{} = observation) do
-    Repo.delete(observation)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking observation changes.
-
-  ## Examples
-
-      iex> change_observation(observation)
-      %Ecto.Changeset{source: %Observation{}}
-
-  """
-  def change_observation(%Observation{} = observation) do
-    Observation.changeset(observation, %{})
-  end
-
-  alias Aot.Data.RawObservation
-
-  @doc """
-  Returns the list of raw_observations.
-
-  ## Examples
-
-      iex> list_raw_observations()
-      [%RawObservation{}, ...]
-
-  """
-  def list_raw_observations do
-    Repo.all(RawObservation)
-  end
-
-  @doc """
-  Gets a single raw_observation.
-
-  Raises `Ecto.NoResultsError` if the Raw observation does not exist.
-
-  ## Examples
-
-      iex> get_raw_observation!(123)
-      %RawObservation{}
-
-      iex> get_raw_observation!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-  def get_raw_observation!(id), do: Repo.get!(RawObservation, id)
-
-  @doc """
-  Creates a raw_observation.
-
-  ## Examples
-
-      iex> create_raw_observation(%{field: value})
-      {:ok, %RawObservation{}}
-
-      iex> create_raw_observation(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
   def create_raw_observation(attrs \\ %{}) do
     %RawObservation{}
     |> RawObservation.changeset(attrs)
     |> Repo.insert(on_conflict: :nothing)
-  end
-
-  @doc """
-  Updates a raw_observation.
-
-  ## Examples
-
-      iex> update_raw_observation(raw_observation, %{field: new_value})
-      {:ok, %RawObservation{}}
-
-      iex> update_raw_observation(raw_observation, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_raw_observation(%RawObservation{} = raw_observation, attrs) do
-    raw_observation
-    |> RawObservation.changeset(attrs)
-    |> Repo.update()
-  end
-
-  @doc """
-  Deletes a RawObservation.
-
-  ## Examples
-
-      iex> delete_raw_observation(raw_observation)
-      {:ok, %RawObservation{}}
-
-      iex> delete_raw_observation(raw_observation)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_raw_observation(%RawObservation{} = raw_observation) do
-    Repo.delete(raw_observation)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking raw_observation changes.
-
-  ## Examples
-
-      iex> change_raw_observation(raw_observation)
-      %Ecto.Changeset{source: %RawObservation{}}
-
-  """
-  def change_raw_observation(%RawObservation{} = raw_observation) do
-    RawObservation.changeset(raw_observation, %{})
   end
 end
