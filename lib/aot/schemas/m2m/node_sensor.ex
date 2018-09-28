@@ -1,11 +1,11 @@
-defmodule Aot.Meta.NodesSensors do
+defmodule Aot.NodeSensor do
   use Ecto.Schema
   import Ecto.Changeset
 
   @primary_key false
   schema "nodes_sensors" do
-    belongs_to :node, Aot.Meta.Node
-    belongs_to :sensor, Aot.Meta.Sensor
+    belongs_to :node, Aot.Node
+    belongs_to :sensor, Aot.Sensor
   end
 
   @doc false

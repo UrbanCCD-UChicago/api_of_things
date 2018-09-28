@@ -1,13 +1,23 @@
-defmodule Aot.Data.Observation do
+defmodule Aot.Observation do
+  @moduledoc """
+  """
+
   use Ecto.Schema
+
   import Ecto.Changeset
+
+  alias Aot.{
+    Node,
+    Sensor
+  }
 
   @primary_key false
   schema "observations" do
-    belongs_to :node, Aot.Meta.Node
-    belongs_to :sensor, Aot.Meta.Sensor
+    belongs_to :node, Node
+    belongs_to :sensor, Sensor
     field :timestamp, :naive_datetime
     field :value, :float
+    field :raw?, :boolean, default: false
   end
 
   @attrs ~W( node_id sensor_id timestamp value ) |> Enum.map(&String.to_atom/1)

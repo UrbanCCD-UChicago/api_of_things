@@ -1,6 +1,18 @@
-defmodule Aot.Meta.Node do
+defmodule Aot.Node do
+  @moduledoc """
+  """
+
   use Ecto.Schema
+
   import Ecto.Changeset
+
+  alias Aot.{
+    Network,
+    Observation,
+    Sensor
+  }
+
+  alias Geo.PostGIS.Geometry
 
   @primary_key {:id, :string, autogenerate: false}
   schema "nodes" do
@@ -8,26 +20,25 @@ defmodule Aot.Meta.Node do
     field :vsn, :string
 
     # location metadata
-    field :location, Geo.PostGIS.Geometry
+    field :location, Geometry
     field :latitude, :float, virtual: true
     field :longitude, :float, virtual: true
 
     # human metadata
     field :description, :string, default: nil
-    field :human_address, :string, default: nil
+    field :address, :string, default: nil
 
     # up/down timestamps
     field :commissioned_on, :naive_datetime
     field :decommissioned_on, :naive_datetime, default: nil
 
     # reverse relationships
-    many_to_many :networks, Aot.Meta.Network, join_through: "networks_nodes"
-    many_to_many :sensors, Aot.Meta.Sensor, join_through: "nodes_sensors"
-    has_many :observations, Aot.Data.Observation
-    has_many :raw_observations, Aot.Data.RawObservation
+    has_many :observations, Observation
+    many_to_many :networks, Network, join_through: "networks_nodes"
+    many_to_many :sensors, Sensor, join_through: "nodes_sensors"
   end
 
-  @attrs ~W( id vsn latitude longitude description human_address commissioned_on decommissioned_on ) |> Enum.map(&String.to_atom/1)
+  @attrs ~W( id vsn latitude longitude description address commissioned_on decommissioned_on ) |> Enum.map(&String.to_atom/1)
   @reqd ~W( id vsn latitude longitude commissioned_on )
 
   @doc false

@@ -7,8 +7,10 @@ defmodule Aot.Repo.Migrations.CreateNetworks do
       add :slug, :text, null: false
       add :bbox, :geometry, default: nil
       add :hull, :geometry, default: nil
-      add :num_observations, :integer, default: 0
-      add :num_raw_observations, :integer, default: 0
+      add :archive_url, :text, null: false
+      add :recent_url, :text, null: false
+      add :first_observation, :naive_datetime, null: false
+      add :latest_observation, :naive_datetime, null: false
     end
 
     create unique_index(:networks, :name)
