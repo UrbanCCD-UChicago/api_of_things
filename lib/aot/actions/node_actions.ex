@@ -11,17 +11,28 @@ defmodule Aot.NodeActions do
     Repo
   }
 
+  @type ok_node :: {:ok, Aot.Node.t()} | {:error, Ecto.Changeset.t()}
+
   @doc """
-  Creates or updates a Node.
+  Creates a new Node.
   """
-  @spec upsert(map() | keyword()) :: {:ok, Node.t()} | {:error, Ecto.Changeset.t()}
-  def upsert(params) do
-    params =
-      params
-      |> atomize()
+  @spec create(keyword() | map()) :: ok_node
+  def create(params) do
+    params = atomize(params)
 
     Node.changeset(%Node{}, params)
-    |> Repo.insert(on_conflict: :replace_all)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates an existing Node.
+  """
+  @spec update(Node.t(), keyword() | map()) :: ok_node
+  def update(node, params) do
+    params = atomize(params)
+
+    Node.changeset(node, params)
+    |> Repo.update()
   end
 
   @doc """

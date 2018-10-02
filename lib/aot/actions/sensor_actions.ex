@@ -11,17 +11,28 @@ defmodule Aot.SensorActions do
     Repo
   }
 
+  @type ok_sensor :: {:ok, Aot.Sensor.t()} | {:error, Ecto.Changeset.t()}
+
   @doc """
-  Creates or updates a Sensor.
+  Creates a new Sensor.
   """
-  @spec upsert(map() | keyword()) :: {:ok, Sensor.t()} | {:error, Ecto.Changeset.t()}
-  def upsert(params) do
-    params =
-      params
-      |> atomize()
+  @spec create(keyword() | map()) :: ok_sensor
+  def create(params) do
+    params = atomize(params)
 
     Sensor.changeset(%Sensor{}, params)
-    |> Repo.insert(on_conflict: :replace_all)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates an existing Sensor.
+  """
+  @spec update(Sensor.t(), keyword() | map()) :: ok_sensor
+  def update(sensor, params) do
+    params = atomize(params)
+
+    Sensor.changeset(sensor, params)
+    |> Repo.update()
   end
 
   @doc """

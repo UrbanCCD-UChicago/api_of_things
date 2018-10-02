@@ -13,11 +13,11 @@ defmodule Aot.Repo.Migrations.CreateSensors do
       add :max_val, :float, default: nil
     end
 
-    create unique_index(:sensors, [:subsystem, :sensor, :parameter])
-    create unique_index(:sensors, :path)
+    create unique_index(:sensors, [:subsystem, :sensor, :parameter], name: :sensors_ssp)
     create index(:sensors, :ontology)
     create index(:sensors, :subsystem)
     create index(:sensors, :sensor)
     create index(:sensors, :parameter)
+    create index(:sensors, :path)
   end
 end

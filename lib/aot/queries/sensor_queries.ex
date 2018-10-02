@@ -18,10 +18,16 @@ defmodule Aot.SensorQueries do
   }
 
   @spec list() :: Ecto.Queryable.t()
-  def list, do: order_by(Sensor, [s], asc: s.path)
+  def list, do: Sensor
 
   @spec get(integer() | String.t()) :: Ecto.Queryable.t()
-  def get(id), do: where(Sensor, [s], s.id == ^id or s.path == ^id)
+  def get(id) when is_integer(id), do: where(Sensor, [s], s.id == ^id)
+  def get(id) when is_bitstring(id) do
+    case Regex.match?(~r/^\d+$/, id) do
+      true -> where(Sensor, [s], s.id == ^id)
+      false -> where(Sensor, [s], s.path == ^id)
+    end
+  end
 
   @spec with_networks(Ecto.Queryable.t()) :: Ecto.Queryable.t()
   def with_networks(query), do: preload(query, networks: :sensors)
@@ -74,6 +80,9 @@ defmodule Aot.SensorQueries do
     |> where([n], n.id in ^node_ids or n.vsn in ^node_ids)
   end
 
+  defdelegate order(query, args), to: Aot.QueryUtils
+  defdelegate paginate(query, args), to: Aot.QueryUtils
+
   @spec handle_opts(Ecto.Queryable.t(), keyword()) :: Ecto.Queryable.t()
   def handle_opts(query, opts \\ []) do
     [
@@ -83,7 +92,9 @@ defmodule Aot.SensorQueries do
       observes_network: :empty,
       observes_networks: :empty,
       onboard_node: :empty,
-      onboard_nodes: :empty
+      onboard_nodes: :empty,
+      order: :empty,
+      paginate: :empty
     ]
     |> Keyword.merge(opts)
     |> apply_opts(query, SensorQueries)

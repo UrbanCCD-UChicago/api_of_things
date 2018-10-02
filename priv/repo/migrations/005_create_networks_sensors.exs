@@ -7,7 +7,7 @@ defmodule Aot.Repo.Migrations.CreateNetworksSensors do
       add :sensor_id, references(:sensors, on_delete: :restrict)
     end
 
-    create unique_index(:networks_sensors, [:network_id, :sensor_id])
+    create unique_index(:networks_sensors, [:network_id, :sensor_id], name: :networks_sensors_uniq)
     create index(:networks_sensors, :network_id)
     create index(:networks_sensors, :sensor_id)
   end

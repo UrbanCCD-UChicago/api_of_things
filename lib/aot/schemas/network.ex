@@ -24,8 +24,8 @@ defmodule Aot.Network do
     field :recent_url, :string
 
     # provenance metadata
-    field :first_observation, :naive_datetime
-    field :latest_observation, :naive_datetime
+    field :first_observation, :naive_datetime, default: nil
+    field :latest_observation, :naive_datetime, default: nil
 
     # node metadata
     field :bbox, Geometry, default: nil
@@ -37,13 +37,19 @@ defmodule Aot.Network do
   end
 
   @attrs ~W( name bbox hull archive_url recent_url first_observation latest_observation ) |> Enum.map(&String.to_atom/1)
-  @reqd ~W( name archive_url recent_url first_observation latest_observation ) |> Enum.map(&String.to_atom/1)
+  @reqd ~W( name archive_url recent_url ) |> Enum.map(&String.to_atom/1)
+  @https ~r/https/
 
   @doc false
   def changeset(network, attrs) do
     network
     |> cast(attrs, @attrs)
     |> validate_required(@reqd)
+    |> unique_constraint(:name)
+    |> unique_constraint(:archive_url)
+    |> unique_constraint(:recent_url)
+    |> validate_format(:archive_url, @https)
+    |> validate_format(:recent_url, @https)
     |> put_slug()
   end
 

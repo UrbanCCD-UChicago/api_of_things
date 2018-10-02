@@ -11,17 +11,28 @@ defmodule Aot.NetworkActions do
     Repo
   }
 
+  @type ok_network :: {:ok, Aot.Network.t()} | {:error, Ecto.Changeset.t()}
+
   @doc """
-  Creates or updates a Network.
+  Creates a new Network.
   """
-  @spec upsert(map() | keyword()) :: {:ok, Network.t()} | {:error, Ecto.Changeset.t()}
-  def upsert(params) do
-    params =
-      params
-      |> atomize()
+  @spec create(keyword() | map()) :: ok_network
+  def create(params) do
+    params = atomize(params)
 
     Network.changeset(%Network{}, params)
-    |> Repo.insert(on_conflict: :replace_all)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates an existing Network.
+  """
+  @spec update(Network.t(), keyword() | map()) :: ok_network
+  def update(network, params) do
+    params = atomize(params)
+
+    Network.changeset(network, params)
+    |> Repo.update()
   end
 
   @doc """

@@ -6,6 +6,25 @@ defmodule Aot.QueryUtils do
   import Ecto.Query
 
   @doc """
+  Genreically applies ordering. This should be delegated to from the query modules.
+  """
+  @spec order(Ecto.Queryable.t(), {:asc | :desc, atom()}) :: Ecto.Queryable.t()
+  def order(query, {:asc, fname}), do: order_by(query, [q], asc: ^fname)
+  def order(query, {:desc, fname}), do: order_by(query, [q], desc: ^fname)
+
+  @doc """
+  Generically applies pagination. This should be delegated to from the query modules.
+  """
+  @spec paginate(Ecto.Queryable.t(), {non_neg_integer(), non_neg_integer()}) :: Ecto.Queryable.t()
+  def paginate(query, {page, size}) do
+    starting_at = (page * size) + 1
+
+    query
+    |> offset(^starting_at)
+    |> limit(^size)
+  end
+
+  @doc """
   Applies an arithmetic function to a given field.
   """
   @spec field_op(Ecto.Queryable.t(), atom(), atom(), any()) :: Ecto.Queryable.t()

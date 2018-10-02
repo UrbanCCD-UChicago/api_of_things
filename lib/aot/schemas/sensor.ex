@@ -35,11 +35,35 @@ defmodule Aot.Sensor do
 
   @attrs ~W( ontology subsystem sensor parameter  unit ) |> Enum.map(&String.to_atom/1)
   @reqd ~W( ontology subsystem sensor parameter ) |> Enum.map(&String.to_atom/1)
+  @uniq "the set of {subsystem, sensor, parameter} has already been taken"
 
   @doc false
   def changeset(sensor, attrs) do
     sensor
     |> cast(attrs, @attrs)
     |> validate_required(@reqd)
+    |> unique_constraint(:subsystem, name: :sensors_ssp, message: @uniq)
+    |> put_path()
   end
+
+  defp put_path(%Ecto.Changeset{valid?: true} = cs) do
+    sub_change = get_change(cs, :subsystem)
+    sen_change = get_change(cs, :sensor)
+    param_change = get_change(cs, :parameter)
+
+    case !is_nil(sub_change) or !is_nil(sen_change) or !is_nil(param_change) do
+      false ->
+        cs
+
+      true ->
+        subsystem = get_field(cs, :subsystem)
+        sensor = get_field(cs, :sensor)
+        parameter = get_field(cs, :parameter)
+
+        path = "#{subsystem}.#{sensor}.#{parameter}"
+        put_change(cs, :path, path)
+    end
+  end
+
+  defp put_path(cs), do: cs
 end

@@ -1,4 +1,4 @@
-defmodule Aot.DataCase do
+defmodule Aot.Testing.DataCase do
   @moduledoc """
   This module defines the setup for tests requiring
   access to the application's data layer.
@@ -14,13 +14,19 @@ defmodule Aot.DataCase do
 
   use ExUnit.CaseTemplate
 
+  alias Aot.{
+    NetworkActions,
+    NodeActions,
+    SensorActions
+  }
+
   using do
     quote do
       alias Aot.Repo
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
-      import Aot.DataCase
+      import Aot.Testing.DataCase
     end
   end
 
@@ -31,7 +37,37 @@ defmodule Aot.DataCase do
       Ecto.Adapters.SQL.Sandbox.mode(Aot.Repo, {:shared, self()})
     end
 
-    :ok
+    # build out context
+    context = []
+    build = tags[:build] || []
+    build =
+      case is_list(build) do
+        true -> build
+        false -> [build]
+      end
+
+    build_network? = :network in build
+    context =
+      case build_network? do
+        false -> context
+        true -> Keyword.merge(context, network: create_network())
+      end
+
+    build_node? = :node in build
+    context =
+      case build_node? do
+        false -> context
+        true -> Keyword.merge(context, node: create_node())
+      end
+
+    build_sensor? = :sensor in build
+    context =
+      case build_sensor? do
+        false -> context
+        true -> Keyword.merge(context, sensor: create_sensor())
+      end
+
+    {:ok, context}
   end
 
   @doc """
@@ -48,5 +84,43 @@ defmodule Aot.DataCase do
         String.replace(acc, "%{#{key}}", to_string(value))
       end)
     end)
+  end
+
+  def create_network do
+    {:ok, network} =
+      NetworkActions.create(
+        name: "Chicago Complete",
+        archive_url: "https://example.com/archive",
+        recent_url: "https://example.com/recent",
+        first_observation: ~N[2018-01-01 00:00:00],
+        latest_observation: NaiveDateTime.utc_now()
+      )
+
+    network
+  end
+
+  def create_node do
+    {:ok, node} =
+      NodeActions.create(
+        id: "000123abc",
+        vsn: "01A",
+        longitude: -87.1234,
+        latitude: 41.4321,
+        commissioned_on: ~N[2018-04-21 15:00:00]
+      )
+
+    node
+  end
+
+  def create_sensor do
+    {:ok, sensor} =
+      SensorActions.create(
+        ontology: "/sensing/meteorology/temperature",
+        subsystem: "metsense",
+        sensor: "tsys01",
+        parameter: "temperature"
+      )
+
+    sensor
   end
 end

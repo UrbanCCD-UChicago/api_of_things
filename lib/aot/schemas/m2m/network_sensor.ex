@@ -15,5 +15,6 @@ defmodule Aot.NetworkSensor do
     |> validate_required([:network_id, :sensor_id])
     |> foreign_key_constraint(:network_id)
     |> foreign_key_constraint(:sensor_id)
+    |> unique_constraint(:network_id, name: :networks_sensors_uniq)
   end
 end

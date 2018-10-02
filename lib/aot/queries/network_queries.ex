@@ -24,7 +24,7 @@ defmodule Aot.NetworkQueries do
   }
 
   @spec list() :: Ecto.Queryable.t()
-  def list, do: order_by(Network, [n], asc: n.name)
+  def list, do: Network
 
   @spec get(binary() | integer()) :: Ecto.Queryable.t()
   def get(id) when is_integer(id), do: where(Network, [n], n.id == ^id)
@@ -95,6 +95,9 @@ defmodule Aot.NetworkQueries do
   @spec hull_intersects(Ecto.Queryable.t(), Geo.PostGIS.Geometry.t()) :: Ecto.Query.t()
   def hull_intersects(query, geom), do: where(query, [n], st_intersects(n.hull, ^geom))
 
+  defdelegate order(query, args), to: Aot.QueryUtils
+  defdelegate paginate(query, args), to: Aot.QueryUtils
+
   @spec handle_opts(Ecto.Queryable.t(), keyword()) :: Ecto.Queryable.t()
   def handle_opts(query, opts \\ []) do
     [
@@ -107,7 +110,9 @@ defmodule Aot.NetworkQueries do
       bbox_contains: :empty,
       bbox_intersects: :empty,
       hull_contains: :empty,
-      hull_intersects: :empty
+      hull_intersects: :empty,
+      order: :empty,
+      paginate: :empty
     ]
     |> Keyword.merge(opts)
     |> apply_opts(query, NetworkQueries)

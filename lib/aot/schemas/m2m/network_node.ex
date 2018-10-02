@@ -5,7 +5,7 @@ defmodule Aot.NetworkNode do
   @primary_key false
   schema "networks_nodes" do
     belongs_to :network, Aot.Network
-    belongs_to :node, Aot.Node
+    belongs_to :node, Aot.Node, type: :string
   end
 
   @doc false
@@ -15,5 +15,6 @@ defmodule Aot.NetworkNode do
     |> validate_required([:network_id, :node_id])
     |> foreign_key_constraint(:network_id)
     |> foreign_key_constraint(:node_id)
+    |> unique_constraint(:network_id, name: :networks_nodes_uniq)
   end
 end

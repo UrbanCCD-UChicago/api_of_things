@@ -4,7 +4,7 @@ defmodule Aot.NodeSensor do
 
   @primary_key false
   schema "nodes_sensors" do
-    belongs_to :node, Aot.Node
+    belongs_to :node, Aot.Node, type: :string
     belongs_to :sensor, Aot.Sensor
   end
 
@@ -15,5 +15,6 @@ defmodule Aot.NodeSensor do
     |> validate_required([:node_id, :sensor_id])
     |> foreign_key_constraint(:node_id)
     |> foreign_key_constraint(:sensor_id)
+    |> unique_constraint(:node_id, name: :nodes_sensors_uniq)
   end
 end

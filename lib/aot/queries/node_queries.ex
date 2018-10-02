@@ -25,7 +25,7 @@ defmodule Aot.NodeQueries do
   }
 
   @spec list() :: Ecto.Queryable.t()
-  def list, do: order_by(Node, [n], asc: n.id)
+  def list, do: Node
 
   @spec get(String.t()) :: Ecto.Queryable.t()
   def get(id), do: where(Node, [n], n.id == ^id or n.vsn == ^id)
@@ -96,6 +96,9 @@ defmodule Aot.NodeQueries do
   @spec decommissioned_on_op(Ecto.Queryable.t(), {:between | :eq | :ge | :gt | :in | :le | :lt, NaiveDateTime.t()}) :: Ecto.Queryable.t()
   def decommissioned_on_op(query, {op, value}), do: typed_field_op(query, :decommissioned_on, op, value, :naive_datetime)
 
+  defdelegate order(query, args), to: Aot.QueryUtils
+  defdelegate paginate(query, args), to: Aot.QueryUtils
+
   @spec handle_opts(Ecto.Queryable.t(), keyword()) :: Ecto.Queryable.t()
   def handle_opts(query, opts \\ []) do
     [
@@ -110,7 +113,9 @@ defmodule Aot.NodeQueries do
       located_within: :empty,
       within_distance: :empty,
       commissioned_on_op: :empty,
-      decommissioned_on_op: :empty
+      decommissioned_on_op: :empty,
+      order: :empty,
+      paginate: :empty
     ]
     |> Keyword.merge(opts)
     |> apply_opts(query, NodeQueries)

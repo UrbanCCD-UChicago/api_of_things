@@ -7,7 +7,7 @@ defmodule Aot.Repo.Migrations.CreateNetworksNodes do
       add :node_id, references(:nodes, type: :text, on_delete: :restrict)
     end
 
-    create unique_index(:networks_nodes, [:network_id, :node_id])
+    create unique_index(:networks_nodes, [:network_id, :node_id], name: :networks_nodes_uniq)
     create index(:networks_nodes, :network_id)
     create index(:networks_nodes, :node_id)
   end

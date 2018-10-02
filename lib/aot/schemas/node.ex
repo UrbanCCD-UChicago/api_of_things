@@ -39,13 +39,15 @@ defmodule Aot.Node do
   end
 
   @attrs ~W( id vsn latitude longitude description address commissioned_on decommissioned_on ) |> Enum.map(&String.to_atom/1)
-  @reqd ~W( id vsn latitude longitude commissioned_on )
+  @reqd ~W( id vsn latitude longitude commissioned_on ) |> Enum.map(&String.to_atom/1)
 
   @doc false
   def changeset(node, attrs) do
     node
     |> cast(attrs, @attrs)
     |> validate_required(@reqd)
+    |> unique_constraint(:id, name: :nodes_pkey)
+    |> unique_constraint(:vsn)
     |> put_location()
   end
 
@@ -53,10 +55,13 @@ defmodule Aot.Node do
     lon_change = get_change(cs, :longitude, nil)
     lat_change = get_change(cs, :latitude, nil)
     case !is_nil(lon_change) or !is_nil(lat_change) do
+      false ->
+        cs
+
       true ->
         loc = get_field(cs, :location, %Geo.Point{coordinates: {0, 0}})
-        lon = lon_change || Enum.at(loc.coordinates, 0)
-        lat = lat_change || Enum.at(loc.coordinates, 1)
+        lon = lon_change || Enum.at(Tuple.to_list(loc.coordinates), 0)
+        lat = lat_change || Enum.at(Tuple.to_list(loc.coordinates), 1)
         point = %Geo.Point{srid: 4326, coordinates: {lon, lat}}
         put_change(cs, :location, point)
     end

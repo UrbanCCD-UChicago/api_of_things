@@ -26,7 +26,7 @@ defmodule Aot.ObservationQueries do
   }
 
   @spec list() :: Ecto.Queryable.t()
-  def list, do: order_by(Observation, [o], desc: o.timestamp)
+  def list, do: Observation
 
   @spec with_node(Ecto.Queryable.t()) :: Ecto.Queryable.t()
   def with_node(query), do: preload(query, :node)
@@ -265,6 +265,9 @@ defmodule Aot.ObservationQueries do
     |> order_by(fragment("bucket DESC"))
   end
 
+  defdelegate order(query, args), to: Aot.QueryUtils
+  defdelegate paginate(query, args), to: Aot.QueryUtils
+
   @spec handle_opts(Ecto.Queryable.t(), keyword()) :: Ecto.Queryable.t()
   def handle_opts(query, opts) do
     [
@@ -285,7 +288,9 @@ defmodule Aot.ObservationQueries do
       within_distance: :empty,
       histogram: :empty,
       value_agg: :empty,
-      time_bucket: :empty
+      time_bucket: :empty,
+      order: :empty,
+      paginate: :empty
     ]
     |> Keyword.merge(opts)
     |> apply_opts(query, ObservationQueries)

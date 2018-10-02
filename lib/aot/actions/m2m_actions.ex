@@ -15,6 +15,7 @@ defmodule Aot.M2MActions do
   @doc """
   Creates a new M2M record for the relationship between Networks and Nodes.
   """
+  @spec create_network_node(keyword() | map()) :: {:ok, NetworkNode.t()}
   def create_network_node(params) do
     params =
       params
@@ -29,6 +30,7 @@ defmodule Aot.M2MActions do
   @doc """
   Creates a new M2M record for the relationship between Networks and Sensors.
   """
+  @spec create_network_sensor(keyword() | map()) :: {:ok, NetworkSensor.t()}
   def create_network_sensor(params) do
     params =
       params
@@ -43,6 +45,7 @@ defmodule Aot.M2MActions do
   @doc """
   Creates a new M2M record for the relationship between Nodes and Sensors.
   """
+  @spec create_node_sensor(keyword() | map()) :: {:ok, NodeSensor.t()}
   def create_node_sensor(params) do
     params =
       params
