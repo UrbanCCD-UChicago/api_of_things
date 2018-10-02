@@ -33,7 +33,9 @@ defmodule Aot.Mixfile do
       {:gettext, "~> 0.11"},
       {:cowboy, "~> 1.0"},
       {:geo_postgis, "~> 2.1"},
-      {:slugify, "~> 1.1"}
+      {:slugify, "~> 1.1"},
+      {:csv, "~> 2.1"},
+      {:timex, "~> 3.4"}
     ]
   end
 

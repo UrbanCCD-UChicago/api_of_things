@@ -7,6 +7,7 @@ defmodule Aot.Repo.Migrations.CreateObservations do
       add :sensor_id, references(:sensors, on_delete: :restrict)
       add :timestamp, :naive_datetime, null: false
       add :value, :float, null: false
+      add :raw?, :boolean, default: false
     end
 
     execute """
