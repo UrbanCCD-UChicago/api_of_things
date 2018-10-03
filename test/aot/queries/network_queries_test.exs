@@ -3,18 +3,20 @@ defmodule Aot.Testing.NetworkQueriesTest do
 
   alias Aot.NetworkActions
 
-  test "with_nodes/1", %{net1: net1, node1: node1, node2: node2} do
-    network = NetworkActions.get!(net1.id, with_nodes: true)
-    node_ids = Enum.map(network.nodes, & &1.id)
+  test "with_nodes/1" do
+    NetworkActions.list()
+    |> Enum.each(& refute Ecto.assoc_loaded?(&1.nodes))
 
-    assert node_ids == [node1.id, node2.id]
+    NetworkActions.list(with_nodes: true)
+    |> Enum.each(& assert Ecto.assoc_loaded?(&1.nodes))
   end
 
-  test "with_sensors/1", %{net1: net1, sensor1: sensor1, sensor2: sensor2, sensor3: sensor3} do
-    network = NetworkActions.get!(net1.id, with_sensors: true)
-    sensor_ids = Enum.map(network.sensors, & &1.id)
+  test "with_sensors/1" do
+    NetworkActions.list()
+    |> Enum.each(& refute Ecto.assoc_loaded?(&1.sensors))
 
-    assert sensor_ids == [sensor1.id, sensor2.id, sensor3.id]
+    NetworkActions.list(with_sensors: true)
+    |> Enum.each(& assert Ecto.assoc_loaded?(&1.sensors))
   end
 
   test "has_node/2", %{node1: node1, net1: net1, net2: net2} do
@@ -22,7 +24,10 @@ defmodule Aot.Testing.NetworkQueriesTest do
       NetworkActions.list(has_node: node1)
       |> Enum.map(& &1.id)
 
-    assert network_ids == [net1.id, net2.id]
+    assert length(network_ids) == 2
+
+    [net1.id, net2.id]
+    |> Enum.each(& assert Enum.member?(network_ids, &1))
   end
 
   test "has_nodes/2", %{node1: node1, node2: node2, net1: net1, net2: net2} do
@@ -30,7 +35,10 @@ defmodule Aot.Testing.NetworkQueriesTest do
       NetworkActions.list(has_nodes: [node1, node2])
       |> Enum.map(& &1.id)
 
-    assert network_ids == [net1.id, net2.id]
+    assert length(network_ids) == 2
+
+    [net1.id, net2.id]
+    |> Enum.each(& assert Enum.member?(network_ids, &1))
   end
 
   test "has_sensor/2", %{sensor3: sensor3, net1: net1, net2: net2} do
@@ -38,7 +46,10 @@ defmodule Aot.Testing.NetworkQueriesTest do
       NetworkActions.list(has_sensor: sensor3)
       |> Enum.map(& &1.id)
 
-    assert network_ids == [net1.id, net2.id]
+    assert length(network_ids) == 2
+
+    [net1.id, net2.id]
+    |> Enum.each(& assert Enum.member?(network_ids, &1))
   end
 
   test "has_sensors/2", %{sensor1: sensor1, sensor3: sensor3, net1: net1, net2: net2, net3: net3} do
@@ -46,7 +57,10 @@ defmodule Aot.Testing.NetworkQueriesTest do
       NetworkActions.list(has_sensors: [sensor1, sensor3])
       |> Enum.map(& &1.id)
 
-    assert network_ids == [net1.id, net2.id, net3.id]
+    assert length(network_ids) == 3
+
+    [net1.id, net2.id, net3.id]
+    |> Enum.each(& assert Enum.member?(network_ids, &1))
   end
 
   test "bbox_contains/2", %{net3: net3} do
@@ -56,7 +70,11 @@ defmodule Aot.Testing.NetworkQueriesTest do
     network_ids =
       NetworkActions.list(bbox_contains: %Geo.Point{srid: 4326, coordinates: {-98.1234, 35.4321}})
       |> Enum.map(& &1.id)
-    assert network_ids == [net3.id]
+
+    assert length(network_ids) == 1
+
+    [net3.id]
+    |> Enum.each(& assert Enum.member?(network_ids, &1))
   end
 
   test "bbox_intersects/2", %{net1: net1, net2: net2} do
@@ -86,7 +104,11 @@ defmodule Aot.Testing.NetworkQueriesTest do
     network_ids =
       NetworkActions.list(bbox_intersects: chi_poly)
       |> Enum.map(& &1.id)
-    assert network_ids == [net1.id, net2.id]
+
+    assert length(network_ids) == 2
+
+    [net1.id, net2.id]
+    |> Enum.each(& assert Enum.member?(network_ids, &1))
   end
 
   test "hull_contains/2", %{net3: net3} do
@@ -96,7 +118,11 @@ defmodule Aot.Testing.NetworkQueriesTest do
     network_ids =
       NetworkActions.list(hull_contains: %Geo.Point{srid: 4326, coordinates: {-98.1234, 35.4321}})
       |> Enum.map(& &1.id)
-    assert network_ids == [net3.id]
+
+    assert length(network_ids) == 1
+
+    [net3.id]
+    |> Enum.each(& assert Enum.member?(network_ids, &1))
   end
 
   test "hull_intersects/2", %{net1: net1, net2: net2} do
@@ -126,7 +152,11 @@ defmodule Aot.Testing.NetworkQueriesTest do
     network_ids =
       NetworkActions.list(hull_intersects: chi_poly)
       |> Enum.map(& &1.id)
-    assert network_ids == [net1.id, net2.id]
+
+    assert length(network_ids) == 2
+
+    [net1.id, net2.id]
+    |> Enum.each(& assert Enum.member?(network_ids, &1))
   end
 
   test "handle_opts/2", %{sensor1: sensor1, sensor2: sensor2, net1: net1, net2: net2} do
@@ -150,7 +180,11 @@ defmodule Aot.Testing.NetworkQueriesTest do
       )
 
     network_ids = Enum.map(networks, & &1.id)
-    assert network_ids == [net1.id, net2.id]
+
+    assert length(network_ids) == 2
+
+    [net1.id, net2.id]
+    |> Enum.each(& assert Enum.member?(network_ids, &1))
 
     networks
     |> Enum.each(fn net ->
