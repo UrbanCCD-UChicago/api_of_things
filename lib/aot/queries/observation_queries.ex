@@ -190,7 +190,7 @@ defmodule Aot.ObservationQueries do
     |> group_by([o], field(o, ^groupby))
   end
 
-  @spec as_time_buckets(Ecto.Queryable.t(), {String.t(), :avg | :count | :max | :min | :stddev | :sum | :variance | {:percentile, float()}}) :: Ecto.Query.t()
+  @spec as_time_buckets(Ecto.Queryable.t(), {:avg | :count | :max | :min | :stddev | :sum | :variance | {:percentile, float()}, String.t()}) :: Ecto.Query.t()
   def as_time_buckets(query, {:count, interval}) do
     query
     |> select([
