@@ -56,11 +56,13 @@ defmodule Aot.NodeQueries do
           id -> id
         end
       end)
+      |> Enum.map(& "#{&1}")
 
-    query
-    |> join(:left, [n], nn in NetworkNode, n.id == nn.node_id)
-    |> join(:left, [nn], e in Network, nn.network_id == e.id)
-    |> where([e], e.id in ^network_ids or e.slug in ^network_ids)
+    from n in query,
+      left_join: nn in NetworkNode, on: n.id == nn.node_id,
+      left_join: e in Network, on: e.id == nn.network_id,
+      where: fragment("?::text = ANY(?)", e.id, type(^network_ids, {:array, :string})) or e.slug in type(^network_ids, {:array, :string}),
+      distinct: true
   end
 
   @spec has_sensor(Ecto.Queryable.t(), Sensor.t() | integer() | String.t()) :: Ecto.Queryable.t()
@@ -77,11 +79,13 @@ defmodule Aot.NodeQueries do
           id -> id
         end
       end)
+      |> Enum.map(& "#{&1}")
 
-    query
-    |> join(:left, [n], ns in NodeSensor, n.id == ns.node_id)
-    |> join(:left, [ns], s in Sensor, ns.sensor_id == s.id)
-    |> where([s], s.id in ^sensor_ids or s.path in ^sensor_ids)
+    from n in query,
+      left_join: ns in NodeSensor, on: n.id == ns.node_id,
+      left_join: s in Sensor, on: s.id == ns.sensor_id,
+      where: fragment("?::text = ANY(?)", s.id, type(^sensor_ids, {:array, :string})) or s.path in type(^sensor_ids, {:array, :string}),
+      distinct: true
   end
 
   @spec located_within(Ecto.Queryable.t(), Geo.PostGIS.Geometry.t()) :: Ecto.Queryable.t()

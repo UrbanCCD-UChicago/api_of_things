@@ -7,6 +7,8 @@ defmodule Aot.Network do
   import Ecto.Changeset
 
   alias Aot.{
+    NetworkNode,
+    NetworkSensor,
     Node,
     Sensor
   }
@@ -32,11 +34,11 @@ defmodule Aot.Network do
     field :hull, Geometry, default: nil
 
     # reverse relationships
-    many_to_many :nodes, Node, join_through: "networks_nodes"
-    many_to_many :sensors, Sensor, join_through: "networks_sensors"
+    many_to_many :nodes, Node, join_through: NetworkNode
+    many_to_many :sensors, Sensor, join_through: NetworkSensor
   end
 
-  @attrs ~W( name bbox hull archive_url recent_url first_observation latest_observation ) |> Enum.map(&String.to_atom/1)
+  @attrs ~W( name bbox hull archive_url recent_url bbox hull first_observation latest_observation ) |> Enum.map(&String.to_atom/1)
   @reqd ~W( name archive_url recent_url ) |> Enum.map(&String.to_atom/1)
   @https ~r/https/
 

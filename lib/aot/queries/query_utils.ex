@@ -15,9 +15,15 @@ defmodule Aot.QueryUtils do
   @doc """
   Generically applies pagination. This should be delegated to from the query modules.
   """
-  @spec paginate(Ecto.Queryable.t(), {non_neg_integer(), non_neg_integer()}) :: Ecto.Queryable.t()
+  @spec paginate(Ecto.Queryable.t(), {non_neg_integer(), non_neg_integer()}) :: Ecto.Queryable.t() | no_return()
   def paginate(query, {page, size}) do
-    starting_at = (page * size) + 1
+    cond do
+      !is_integer(page) or page < 1 -> raise "page must be a non-negative integer"
+      !is_integer(size) or size < 1 -> raise "size must be a non-negative integer"
+      true -> :ok
+    end
+
+    starting_at = (page - 1) * size
 
     query
     |> offset(^starting_at)

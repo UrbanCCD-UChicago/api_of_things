@@ -13,6 +13,7 @@ defmodule Aot.SensorQueries do
     Network,
     NetworkSensor,
     Node,
+    NodeSensor,
     Sensor,
     SensorQueries
   }
@@ -52,11 +53,13 @@ defmodule Aot.SensorQueries do
           id -> id
         end
       end)
+      |> Enum.map(& "#{&1}")
 
-    query
-    |> join(:left, [s], ns in NetworkSensor, s.id == ns.sensor_id)
-    |> join(:left, [ns], n in Network, ns.network_id == n.id)
-    |> where([n], n.id in ^network_ids or n.slug in ^network_ids)
+    from s in query,
+      left_join: ns in NetworkSensor, on: s.id == ns.sensor_id,
+      left_join: n in Network, on: n.id == ns.network_id,
+      where: fragment("?::text = ANY(?)", n.id, type(^network_ids, {:array, :string})) or n.slug in type(^network_ids, {:array, :string}),
+      distinct: true
   end
 
   @spec onboard_node(Ecto.Queryable.t(), Node.t() | integer() | String.t()) :: Ecto.Queryable.t()
@@ -74,10 +77,11 @@ defmodule Aot.SensorQueries do
         end
       end)
 
-    query
-    |> join(:left, [s], ns in NodeSensor, s.id == ns.sensor_id)
-    |> join(:left, [ns], n in Node, ns.node_id == n.id)
-    |> where([n], n.id in ^node_ids or n.vsn in ^node_ids)
+    from s in query,
+      left_join: ns in NodeSensor, on: s.id == ns.sensor_id,
+      left_join: n in Node, on: n.id == ns.node_id,
+      where: n.id in type(^node_ids, {:array, :string}) or n.vsn in type(^node_ids, {:array, :string}),
+      distinct: true
   end
 
   defdelegate order(query, args), to: Aot.QueryUtils

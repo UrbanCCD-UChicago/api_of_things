@@ -8,7 +8,9 @@ defmodule Aot.Sensor do
 
   alias Aot.{
     Network,
+    NetworkSensor,
     Node,
+    NodeSensor,
     Observation
   }
 
@@ -29,8 +31,8 @@ defmodule Aot.Sensor do
 
     # reverse relationships
     has_many :observations, Observation
-    many_to_many :networks, Network, join_through: "networks_sensors"
-    many_to_many :nodes, Node, join_through: "nodes_sensors"
+    many_to_many :networks, Network, join_through: NetworkSensor
+    many_to_many :nodes, Node, join_through: NodeSensor
   end
 
   @attrs ~W( ontology subsystem sensor parameter  unit ) |> Enum.map(&String.to_atom/1)

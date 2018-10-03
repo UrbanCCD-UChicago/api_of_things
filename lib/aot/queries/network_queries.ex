@@ -56,10 +56,11 @@ defmodule Aot.NetworkQueries do
         end
       end)
 
-    query
-    |> join(:left, [n], nn in NetworkNode, n.id == nn.network_id)
-    |> join(:left, [nn], o in Node, nn.node_id == o.id)
-    |> where([o], o.id in ^node_ids or o.vsn in ^node_ids)
+    from n in query,
+      left_join: nn in NetworkNode, on: n.id == nn.network_id,
+      left_join: o in Node, on: o.id == nn.node_id,
+      where: o.id in type(^node_ids, {:array, :string}) or o.vsn in type(^node_ids, {:array, :string}),
+      distinct: true
   end
 
   @spec has_sensor(Ecto.Queryable.t(), Sensor.t() | integer() | String.t()) :: Ecto.Query.t()
@@ -76,11 +77,13 @@ defmodule Aot.NetworkQueries do
           id -> id
         end
       end)
+      |> Enum.map(& "#{&1}")
 
-    query
-    |> join(:left, [n], ns in NetworkSensor, n.id == ns.network_id)
-    |> join(:left, [ns], s in Sensor, ns.sensor_id == s.id)
-    |> where([s], s.id in ^sensor_ids or s.path in ^sensor_ids)
+    from n in query,
+      left_join: ns in NetworkSensor, on: n.id == ns.network_id,
+      left_join: s in Sensor, on: s.id == ns.sensor_id,
+      where: fragment("?::text = ANY(?)", s.id, type(^sensor_ids, {:array, :string})) or s.path in type(^sensor_ids, {:array, :string}),
+      distinct: true
   end
 
   @spec bbox_contains(Ecto.Queryable.t(), Geo.PostGIS.Geometry.t()) :: Ecto.Query.t()
