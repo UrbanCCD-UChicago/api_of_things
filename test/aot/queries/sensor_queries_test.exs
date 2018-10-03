@@ -51,12 +51,12 @@ defmodule Aot.Testing.SensorQueriesTest do
     assert sensor_ids == [sensor1.id, sensor2.id]
   end
 
-  test "onboard_nodes/2", %{node1: node1, node2: node2, sensor1: sensor1, sensor2: sensor2} do
+  test "onboard_nodes/2", %{node1: node1, node2: node2, sensor1: sensor1, sensor2: sensor2, sensor3: sensor3} do
     sensor_ids =
       SensorActions.list(onboard_nodes: [node1, node2])
       |> Enum.map(& &1.id)
 
-    assert sensor_ids == [sensor1.id, sensor2.id]
+    assert sensor_ids == [sensor1.id, sensor2.id, sensor3.id]
   end
 
   test "handle_opts/2", %{node1: node1, sensor1: sensor1, sensor2: sensor2} do

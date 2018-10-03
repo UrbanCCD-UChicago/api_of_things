@@ -85,9 +85,6 @@ defmodule Aot.Testing.ObservationActionsTest do
     end)
   end
 
-  # I can't believe we have to do this... why can't we have a proper fucking
-  # queue of data so we don't have to deal with these shitty tarballs with
-  # nonsense data in them?
   defp parse_value(row, key) do
     raw = row[key]
     cond do
@@ -112,7 +109,7 @@ defmodule Aot.Testing.ObservationActionsTest do
     end
   end
 
-  @num_obs 906  # because even though there are a thousand rows, a bunch are trash...
+  @num_obs 906
   @hrf 744
   @raw 162
   @num_networks 1

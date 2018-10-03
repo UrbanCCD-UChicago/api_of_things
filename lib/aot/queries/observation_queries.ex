@@ -57,11 +57,13 @@ defmodule Aot.ObservationQueries do
           id -> id
         end
       end)
+      |> Enum.map(& "#{&1}")
 
-    query
-    |> join(:left, [o], nn in NetworkNode, o.node_id == nn.node_id)
-    |> join(:left, [nn], n in Network, nn.network_id == n.id)
-    |> where([e], e.id in ^network_ids or e.slug in ^network_ids)
+    from o in query,
+      left_join: nn in NetworkNode, on: o.node_id == nn.node_id,
+      left_join: n in Network, on: n.id == nn.network_id,
+      where: fragment("?::text = ANY(?)", n.id, type(^network_ids, {:array, :string})) or n.slug in type(^network_ids, {:array, :string}),
+      distinct: true
   end
 
   @spec for_node(Ecto.Queryable.t(), Node.t() | String.t()) :: Ecto.Query.t()
@@ -79,9 +81,9 @@ defmodule Aot.ObservationQueries do
         end
       end)
 
-    query
-    |> join(:left, [o], n in Node, o.node_id == n.id)
-    |> where([n], n.id in ^node_ids or n.vsn in ^node_ids)
+    from o in query,
+      left_join: n in Node, on: o.node_id == n.id,
+      where: n.id in type(^node_ids, {:array, :string}) or n.vsn in type(^node_ids, {:array, :string})
   end
 
   @spec for_sensor(Ecto.Queryable.t(), Sensor.t() | integer() | String.t()) :: Ecto.Queryable.t()
@@ -98,10 +100,11 @@ defmodule Aot.ObservationQueries do
           id -> id
         end
       end)
+      |> Enum.map(& "#{&1}")
 
-    query
-    |> join(:left, [o], s in Sensor, o.sensor_id == s.id)
-    |> where([s], s.id in ^sensor_ids or s.path in ^sensor_ids)
+    from o in query,
+      left_join: s in Sensor, on: o.sensor_id == s.id,
+      where: fragment("?::text = ANY(?)", s.id, type(^sensor_ids, {:array, :string})) or s.path in type(^sensor_ids, {:array, :string})
   end
 
   @spec timestamp_op(Ecto.Queryable.t(), {:between | :eq | :ge | :gt | :in | :le | :lt, NaiveDateTime.t()}) :: Ecto.Queryable.t()
@@ -112,16 +115,16 @@ defmodule Aot.ObservationQueries do
 
   @spec located_within(Ecto.Queryable.t(), Geo.PostGIS.Geometry.t()) :: Ecto.Queryable.t()
   def located_within(query, geom) do
-    query
-    |> join(:left, [o], n in Node, o.node_id == n.id)
-    |> where([n], st_contains(^geom, n.location))
+    from o in query,
+      left_join: n in Node, on: o.node_id == n.id,
+      where: st_contains(^geom, n.location)
   end
 
   @spec within_distance(Ecto.Queryable.t(), {Geo.PostGIS.Geometry.t(), float()}) :: Ecto.Queryable.t()
   def within_distance(query, {geom, meters}) do
-    query
-    |> join(:left, [o], n in Node, o.node_id == n.id)
-    |> where([n], st_dwithin_in_meters(n.location, ^geom, ^meters))
+    from o in query,
+      left_join: n in Node, on: o.node_id == n.id,
+      where: st_dwithin_in_meters(n.location, ^geom, ^meters)
   end
 
   @spec histogram(Ecto.Queryable.t(), {float(), float(), integer(), atom()}) :: Ecto.Queryable.t()
