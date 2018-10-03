@@ -127,143 +127,146 @@ defmodule Aot.ObservationQueries do
       where: st_dwithin_in_meters(n.location, ^geom, ^meters)
   end
 
-  @spec histogram(Ecto.Queryable.t(), {float(), float(), integer(), atom()}) :: Ecto.Queryable.t()
-  def histogram(query, {min, max, num_buckets, groupby}) do
+  @spec as_histogram(Ecto.Queryable.t(), {float(), float(), integer(), atom()}) :: Ecto.Queryable.t()
+  def as_histogram(query, {min, max, num_buckets, groupby}) do
     query
-    |> select([o], %{o | histogram: fragment("histogram(value, ?, ?, ?) as histogram", ^min, ^max, ^num_buckets)})
+    |> select([o], [
+      field(o, ^groupby),
+      fragment("histogram(value, ?, ?, ?)", ^min, ^max, ^num_buckets)
+    ])
     |> group_by([o], field(o, ^groupby))
   end
 
   @spec value_agg(Ecto.Queryable.t(), {:avg | :count | :first | :last | :max | :min | :stddev | :sum | :variance, atom()} | {:percentile, {float(), atom()}}) :: Ecto.Queryable.t()
-  def value_agg(query, {:first, _groupby}), do: select(query, [o], %{o | first: fragment("first(value, timestamp) as first")})
+  def value_agg(query, {:first, _groupby}), do: select(query, [o], fragment("first(value, timestamp)"))
 
-  def value_agg(query, {:last, _groupby}), do: select(query, [o], %{o | last: fragment("last(value, timestamp) as last")})
+  def value_agg(query, {:last, _groupby}), do: select(query, [o], fragment("last(value, timestamp)"))
 
   def value_agg(query, {:count, groupby}) do
     query
-    |> select([o], %{o | count: fragment("count(value) as count")})
+    |> select([o], [field(o, ^groupby), fragment("count(value)")])
     |> group_by([o], field(o, ^groupby))
   end
 
   def value_agg(query, {:min, groupby}) do
     query
-    |> select([o], %{o | min: fragment("min(value) as min")})
+    |> select([o], [field(o, ^groupby), fragment("min(value)")])
     |> group_by([o], field(o, ^groupby))
   end
 
   def value_agg(query, {:max, groupby}) do
     query
-    |> select([o], %{o | max: fragment("max(value) as max")})
+    |> select([o], [field(o, ^groupby), fragment("max(value)")])
     |> group_by([o], field(o, ^groupby))
   end
 
   def value_agg(query, {:avg, groupby}) do
     query
-    |> select([o], %{o | avg: fragment("avg(value) as avg")})
+    |> select([o], [field(o, ^groupby), fragment("avg(value)")])
     |> group_by([o], field(o, ^groupby))
   end
 
   def value_agg(query, {:sum, groupby}) do
     query
-    |> select([o], %{o | sum: fragment("sum(value) as sum")})
+    |> select([o], [field(o, ^groupby), fragment("sum(value)")])
     |> group_by([o], field(o, ^groupby))
   end
 
   def value_agg(query, {:stddev, groupby}) do
     query
-    |> select([o], %{o | stddev: fragment("stddev_samp(value) as stddev")})
+    |> select([o], [field(o, ^groupby), fragment("stddev_samp(value)")])
     |> group_by([o], field(o, ^groupby))
   end
 
   def value_agg(query, {:variance, groupby}) do
     query
-    |> select([o], %{o | variance: fragment("var_samp(value) as variance")})
+    |> select([o], [field(o, ^groupby), fragment("var_samp(value)")])
     |> group_by([o], field(o, ^groupby))
   end
 
   def value_agg(query, {:percentile, {perc, groupby}}) do
     query
-    |> select([o], %{o | percentile: fragment("percentile_cont(?) within group (order by value) as percentile", ^perc)})
+    |> select([o], [field(o, ^groupby), fragment("percentile_cont(?) within group (order by value)", ^perc)])
     |> group_by([o], field(o, ^groupby))
   end
 
-  @spec time_bucket(Ecto.Queryable.t(), {String.t(), :avg | :count | :max | :min | :stddev | :sum | :variance | {:percentile, float()}}) :: Ecto.Query.t()
-  def time_bucket(query, {interval, :count}) do
+  @spec as_time_buckets(Ecto.Queryable.t(), {String.t(), :avg | :count | :max | :min | :stddev | :sum | :variance | {:percentile, float()}}) :: Ecto.Query.t()
+  def as_time_buckets(query, {:count, interval}) do
     query
-    |> select(%{
-      bucket: fragment("time_bucket(?, timestamp) as bucket", ^interval),
-      count: fragment("count(value) as count")
-    })
+    |> select([
+      fragment("time_bucket(?::interval, timestamp) as bucket", type(^interval, :string)),
+      fragment("count(value) as count")
+    ])
     |> group_by(fragment("bucket"))
     |> order_by(fragment("bucket DESC"))
   end
 
-  def time_bucket(query, {interval, :min}) do
+  def as_time_buckets(query, {:min, interval}) do
     query
-    |> select(%{
-      bucket: fragment("time_bucket(?, timestamp) as bucket", ^interval),
-      min: fragment("min(value) as min")
-    })
+    |> select([
+      fragment("time_bucket(?::interval, timestamp) as bucket", type(^interval, :string)),
+      fragment("min(value) as min")
+    ])
     |> group_by(fragment("bucket"))
     |> order_by(fragment("bucket DESC"))
   end
 
-  def time_bucket(query, {interval, :max}) do
+  def as_time_buckets(query, {:max, interval}) do
     query
-    |> select(%{
-      bucket: fragment("time_bucket(?, timestamp) as bucket", ^interval),
-      max: fragment("max(value) as max")
-    })
+    |> select([
+      fragment("time_bucket(?::interval, timestamp) as bucket", type(^interval, :string)),
+      fragment("max(value) as max")
+    ])
     |> group_by(fragment("bucket"))
     |> order_by(fragment("bucket DESC"))
   end
 
-  def time_bucket(query, {interval, :avg}) do
+  def as_time_buckets(query, {:avg, interval}) do
     query
-    |> select(%{
-      bucket: fragment("time_bucket(?, timestamp) as bucket", ^interval),
-      avg: fragment("avg(value) as avg")
-    })
+    |> select([
+      fragment("time_bucket(?::interval, timestamp) as bucket", type(^interval, :string)),
+      fragment("avg(value) as avg")
+    ])
     |> group_by(fragment("bucket"))
     |> order_by(fragment("bucket DESC"))
   end
 
-  def time_bucket(query, {interval, :sum}) do
+  def as_time_buckets(query, {:sum, interval}) do
     query
-    |> select(%{
-      bucket: fragment("time_bucket(?, timestamp) as bucket", ^interval),
-      sum: fragment("sum(value) as sum")
-    })
+    |> select([
+      fragment("time_bucket(?::interval, timestamp) as bucket", type(^interval, :string)),
+      fragment("sum(value) as sum")
+    ])
     |> group_by(fragment("bucket"))
     |> order_by(fragment("bucket DESC"))
   end
 
-  def time_bucket(query, {interval, :stddev}) do
+  def as_time_buckets(query, {:stddev, interval}) do
     query
-    |> select(%{
-      bucket: fragment("time_bucket(?, timestamp) as bucket", ^interval),
-      stddev: fragment("stddev_samp(value) as stddev")
-    })
+    |> select([
+      fragment("time_bucket(?::interval, timestamp) as bucket", type(^interval, :string)),
+      fragment("stddev_samp(value) as stddev")
+    ])
     |> group_by(fragment("bucket"))
     |> order_by(fragment("bucket DESC"))
   end
 
-  def time_bucket(query, {interval, :variance}) do
+  def as_time_buckets(query, {:variance, interval}) do
     query
-    |> select(%{
-      bucket: fragment("time_bucket(?, timestamp) as bucket", ^interval),
-      variance: fragment("var_samp(value) as variance")
-    })
+    |> select([
+      fragment("time_bucket(?::interval, timestamp) as bucket", type(^interval, :string)),
+      fragment("var_samp(value) as variance")
+    ])
     |> group_by(fragment("bucket"))
     |> order_by(fragment("bucket DESC"))
   end
 
-  def time_bucket(query, {interval, {:percentile, perc}}) do
+  def as_time_buckets(query, {{:percentile, perc}, interval}) do
     query
-    |> select(%{
-      bucket: fragment("time_bucket(?, timestamp) as bucket", ^interval),
-      percentile: fragment("percentile_cont(?) within group (order by value) as percentile", ^perc)
-    })
+    |> select([
+      fragment("time_bucket(?::interval, timestamp) as bucket", type(^interval, :string)),
+      fragment("percentile_cont(?) within group (order by value) as percentile", ^perc)
+    ])
     |> group_by(fragment("bucket"))
     |> order_by(fragment("bucket DESC"))
   end
@@ -289,9 +292,9 @@ defmodule Aot.ObservationQueries do
       value_op: :empty,
       located_within: :empty,
       within_distance: :empty,
-      histogram: :empty,
+      as_histogram: :empty,
       value_agg: :empty,
-      time_bucket: :empty,
+      as_time_buckets: :empty,
       order: :empty,
       paginate: :empty
     ]
