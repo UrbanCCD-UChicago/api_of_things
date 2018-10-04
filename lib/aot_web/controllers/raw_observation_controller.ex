@@ -1,8 +1,6 @@
 defmodule AotWeb.RawObservationController do
   use AotWeb, :controller
 
-  import Aot.ControllerUtils, only: [ halt_with: 3 ]
-
   import Aot.Plugs
 
   import Plug.Conn, only: [ assign: 3 ]
