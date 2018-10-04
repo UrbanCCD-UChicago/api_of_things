@@ -15,6 +15,6 @@ defmodule AotWeb.FallbackController do
   def call(conn, {:error, :not_found}) do
     conn
     |> put_status(:not_found)
-    |> render(AotWeb.ErrorView, :"404")
+    |> render(AotWeb.ErrorView, :"404", [])
   end
 end

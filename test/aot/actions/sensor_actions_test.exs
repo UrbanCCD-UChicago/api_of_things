@@ -80,11 +80,11 @@ defmodule Aot.Testing.SensorActionsTest do
   describe "get!/2" do
     @moduletag build: :sensor
 
-    test "using the with_networks option will embed the list of associated networks", %{sensor: sensor} do
+    test "using the include_networks option will embed the list of associated networks", %{sensor: sensor} do
       found = SensorActions.get!(sensor.id)
       refute Ecto.assoc_loaded?(found.networks)
 
-      found = SensorActions.get!(sensor.id, with_networks: true)
+      found = SensorActions.get!(sensor.id, include_networks: true)
       assert Ecto.assoc_loaded?(found.networks)
     end
   end
@@ -101,11 +101,11 @@ defmodule Aot.Testing.SensorActionsTest do
   describe "list/1" do
     @moduletag build: :sensor
 
-    test "using the with_networks option will embed the list of associated networks" do
+    test "using the include_networks option will embed the list of associated networks" do
       SensorActions.list()
       |> Enum.each(& refute Ecto.assoc_loaded?(&1.networks))
 
-      SensorActions.list(with_networks: true)
+      SensorActions.list(include_networks: true)
       |> Enum.each(& assert Ecto.assoc_loaded?(&1.networks))
     end
   end

@@ -3,19 +3,19 @@ defmodule Aot.Testing.SensorQueriesTest do
 
   alias Aot.SensorActions
 
-  test "with_networks/1" do
+  test "include_networks/1" do
     SensorActions.list()
     |> Enum.each(& refute Ecto.assoc_loaded?(&1.networks))
 
-    SensorActions.list(with_networks: true)
+    SensorActions.list(include_networks: true)
     |> Enum.each(& assert Ecto.assoc_loaded?(&1.networks))
   end
 
-  test "with_nodes/1" do
+  test "include_nodes/1" do
     SensorActions.list()
     |> Enum.each(& refute Ecto.assoc_loaded?(&1.nodes))
 
-    SensorActions.list(with_nodes: true)
+    SensorActions.list(include_nodes: true)
     |> Enum.each(& assert Ecto.assoc_loaded?(&1.nodes))
   end
 
@@ -77,8 +77,8 @@ defmodule Aot.Testing.SensorQueriesTest do
   test "handle_opts/2", %{node1: node1, sensor1: sensor1, sensor2: sensor2} do
     sensors =
       SensorActions.list(
-        with_networks: true,
-        with_nodes: true,
+        include_networks: true,
+        include_nodes: true,
         onboard_node: node1,
         has_ontology: "/sensing/physical/temperature"
       )

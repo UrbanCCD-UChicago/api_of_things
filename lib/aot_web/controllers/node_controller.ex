@@ -1,42 +1,51 @@
 defmodule AotWeb.NodeController do
   use AotWeb, :controller
 
-  alias Aot.Meta
-  # alias Aot.Meta.Node
+  import Aot.Plugs
 
-  # action_fallback AotWeb.FallbackController
+  import Plug.Conn, only: [ assign: 3 ]
+
+  alias Aot.NodeActions
+
+  alias Plug.Conn
+
+  # controller specific plugs
+
+  def node_assert_alive(%Conn{params: %{"only_alive" => alive?}} = conn, _opts),
+    do: if alive?, do: assign(conn, :assert_alive, true), else: conn
+
+  def node_assert_alive(conn, _opts), do: conn
+
+  def node_assert_dead(%Conn{params: %{"only_dead" => dead?}} = conn, _opts),
+    do: if dead?, do: assign(conn, :assert_dead, true), else: conn
+
+  def node_assert_dead(conn, _opts), do: conn
+
+  # inline plugs
+
+  plug :include_networks
+  plug :include_sensors
+  plug :node_assert_alive
+  plug :node_assert_dead
+  plug :for_related, func: :within_network
+  plug :for_related, func: :has_sensor
+  plug :geom_field, field: "location", func_map: %{"within" => :located_within, "proximity" => :within_distance}
+  plug :timestamp_op, field: "commissioned_on", func: :commissioned_on_op
+  plug :timestamp_op, field: "decommissioned_on", func: :decommissioned_on_op
+  plug :order_by, default: "asc:id"
+  plug :validate_page
+  plug :validate_size
+  plug :paginate
+
+  action_fallback AotWeb.FallbackController
 
   def index(conn, _params) do
-    nodes = Meta.list_nodes()
+    nodes = NodeActions.list(Map.to_list(conn.assigns))
     render(conn, "index.json", nodes: nodes)
   end
 
   def show(conn, %{"id" => id}) do
-    node = Meta.get_node!(id)
+    node = NodeActions.get!(id, Map.to_list(conn.assigns))
     render(conn, "show.json", node: node)
   end
-
-  # def create(conn, %{"node" => node_params}) do
-  #   with {:ok, %Node{} = node} <- Meta.create_node(node_params) do
-  #     conn
-  #     |> put_status(:created)
-  #     |> put_resp_header("location", node_path(conn, :show, node))
-  #     |> render("show.json", node: node)
-  #   end
-  # end
-
-  # def update(conn, %{"id" => id, "node" => node_params}) do
-  #   node = Meta.get_node!(id)
-  #
-  #   with {:ok, %Node{} = node} <- Meta.update_node(node, node_params) do
-  #     render(conn, "show.json", node: node)
-  #   end
-  # end
-
-  # def delete(conn, %{"id" => id}) do
-  #   node = Meta.get_node!(id)
-  #   with {:ok, %Node{}} <- Meta.delete_node(node) do
-  #     send_resp(conn, :no_content, "")
-  #   end
-  # end
 end

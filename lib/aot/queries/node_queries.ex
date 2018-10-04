@@ -30,11 +30,11 @@ defmodule Aot.NodeQueries do
   @spec get(String.t()) :: Ecto.Queryable.t()
   def get(id), do: where(Node, [n], n.id == ^id or n.vsn == ^id)
 
-  @spec with_networks(Ecto.Queryable.t()) :: Ecto.Queryable.t()
-  def with_networks(query), do: preload(query, networks: :nodes)
+  @spec include_networks(Ecto.Queryable.t()) :: Ecto.Queryable.t()
+  def include_networks(query), do: preload(query, networks: :nodes)
 
-  @spec with_sensors(Ecto.Queryable.t()) :: Ecto.Queryable.t()
-  def with_sensors(query), do: preload(query, sensors: :nodes)
+  @spec include_sensors(Ecto.Queryable.t()) :: Ecto.Queryable.t()
+  def include_sensors(query), do: preload(query, sensors: :nodes)
 
   @spec assert_alive(Ecto.Queryable.t()) :: Ecto.Queryable.t()
   def assert_alive(query), do: where(query, [n], is_nil(n.decommissioned_on))
@@ -106,8 +106,8 @@ defmodule Aot.NodeQueries do
   @spec handle_opts(Ecto.Queryable.t(), keyword()) :: Ecto.Queryable.t()
   def handle_opts(query, opts \\ []) do
     [
-      with_networks: false,
-      with_sensors: false,
+      include_networks: false,
+      include_sensors: false,
       assert_alive: false,
       assert_dead: false,
       within_network: :empty,

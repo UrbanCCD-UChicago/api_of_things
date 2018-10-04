@@ -134,8 +134,8 @@ defmodule Aot.Testing.ObservationActionsTest do
       Enum.each(observations, & assert &1.raw?)
     end
 
-    test "with_node, with_sensor, with_networks" do
-      ObservationActions.list(with_node: true, with_sensor: true, with_networks: true)
+    test "include_node, include_sensor, include_networks" do
+      ObservationActions.list(include_node: true, include_sensor: true, include_networks: true)
       |> Enum.each(fn obs ->
         assert Ecto.assoc_loaded?(obs.node)
         assert Ecto.assoc_loaded?(obs.sensor)

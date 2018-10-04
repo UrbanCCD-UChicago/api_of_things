@@ -1,43 +1,30 @@
 defmodule AotWeb.NetworkController do
   use AotWeb, :controller
 
-  alias Aot.Meta
-  # alias Aot.Meta.Network
+  import Aot.Plugs
 
-  # action_fallback AotWeb.FallbackController
+  alias Aot.NetworkActions
+
+  action_fallback AotWeb.FallbackController
+
+  plug :include_nodes
+  plug :include_sensors
+  plug :for_related, func: :has_node
+  plug :for_related, func: :has_sensor
+  plug :geom_field, field: "bbox", func_map: %{"contains" => :bbox_contains, "intersects" => :bbox_intersects}
+  plug :geom_field, field: "hull", func_map: %{"contains" => :hull_contains, "intersects" => :hull_intersects}
+  plug :order_by, default: "asc:name"
+  plug :validate_page
+  plug :validate_size
+  plug :paginate
 
   def index(conn, _params) do
-    networks = Meta.list_networks()
+    networks = NetworkActions.list(Map.to_list(conn.assigns))
     render(conn, "index.json", networks: networks)
   end
 
   def show(conn, %{"slug" => slug}) do
-    network = Meta.get_network!(slug)
+    network = NetworkActions.get!(slug, Map.to_list(conn.assigns))
     render(conn, "show.json", network: network)
   end
-
-  # def create(conn, %{"network" => network_params}) do
-  #   with {:ok, %Network{} = network} <- Meta.create_network(network_params) do
-  #     conn
-  #     |> put_status(:created)
-  #     |> put_resp_header("location", network_path(conn, :show, network))
-  #     |> render("show.json", network: network)
-  #   end
-  # end
-
-  # def update(conn, %{"id" => id, "network" => network_params}) do
-  #   network = Meta.get_network!(id)
-  #
-  #   with {:ok, %Network{} = network} <- Meta.update_network(network, network_params) do
-  #     render(conn, "show.json", network: network)
-  #   end
-  # end
-
-  # def delete(conn, %{"id" => id}) do
-  #   network = Meta.get_network!(id)
-
-  #   with {:ok, %Network{}} <- Meta.delete_network(network) do
-  #     send_resp(conn, :no_content, "")
-  #   end
-  # end
 end

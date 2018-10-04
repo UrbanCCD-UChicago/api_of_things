@@ -28,14 +28,14 @@ defmodule Aot.ObservationQueries do
   @spec list() :: Ecto.Queryable.t()
   def list, do: Observation
 
-  @spec with_node(Ecto.Queryable.t()) :: Ecto.Queryable.t()
-  def with_node(query), do: preload(query, :node)
+  @spec include_node(Ecto.Queryable.t()) :: Ecto.Queryable.t()
+  def include_node(query), do: preload(query, :node)
 
-  @spec with_sensor(Ecto.Queryable.t()) :: Ecto.Queryable.t()
-  def with_sensor(query), do: preload(query, :sensor)
+  @spec include_sensor(Ecto.Queryable.t()) :: Ecto.Queryable.t()
+  def include_sensor(query), do: preload(query, :sensor)
 
-  @spec with_networks(Ecto.Queryable.t()) :: Ecto.Queryable.t()
-  def with_networks(query), do: preload(query, node: :networks)
+  @spec include_networks(Ecto.Queryable.t()) :: Ecto.Queryable.t()
+  def include_networks(query), do: preload(query, node: :networks)
 
   @spec assert_hrf(Ecto.Queryable.t()) :: Ecto.Queryable.t()
   def assert_hrf(query), do: where(query, [o], o.raw? == false)
@@ -190,7 +190,7 @@ defmodule Aot.ObservationQueries do
     |> group_by([o], field(o, ^groupby))
   end
 
-  @spec as_time_buckets(Ecto.Queryable.t(), {:avg | :count | :max | :min | :stddev | :sum | :variance | {:percentile, float()}, String.t()}) :: Ecto.Query.t()
+  @spec as_time_buckets(Ecto.Queryable.t(), {:avg | :count | :max | :min | :stddev | :sum | :variance, String.t()} | {:percentile, {float(), String.t()}}) :: Ecto.Query.t()
   def as_time_buckets(query, {:count, interval}) do
     query
     |> select([
@@ -261,7 +261,7 @@ defmodule Aot.ObservationQueries do
     |> order_by(fragment("bucket DESC"))
   end
 
-  def as_time_buckets(query, {{:percentile, perc}, interval}) do
+  def as_time_buckets(query, {:percentile, {perc, interval}}) do
     query
     |> select([
       fragment("time_bucket(?::interval, timestamp) as bucket", type(^interval, :string)),
@@ -277,9 +277,9 @@ defmodule Aot.ObservationQueries do
   @spec handle_opts(Ecto.Queryable.t(), keyword()) :: Ecto.Queryable.t()
   def handle_opts(query, opts) do
     [
-      with_node: false,
-      with_sensor: false,
-      with_networks: false,
+      include_node: false,
+      include_sensor: false,
+      include_networks: false,
       assert_hrf: false,
       assert_raw: false,
       for_network: :empty,

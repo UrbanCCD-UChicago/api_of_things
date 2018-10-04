@@ -150,27 +150,27 @@ defmodule Aot.Testing.ObservationQueriesTest do
 
   @point_and_distance {%Geo.Point{srid: 4326, coordinates: {-87.12, 41.43}}, 2000}
 
-  test "with_node/1" do
+  test "include_node/1" do
     ObservationActions.list()
     |> Enum.map(& refute Ecto.assoc_loaded?(&1.node))
 
-    ObservationActions.list(with_node: true)
+    ObservationActions.list(include_node: true)
     |> Enum.map(& assert Ecto.assoc_loaded?(&1.node))
   end
 
-  test "with_sensor/1" do
+  test "include_sensor/1" do
     ObservationActions.list()
     |> Enum.map(& refute Ecto.assoc_loaded?(&1.sensor))
 
-    ObservationActions.list(with_sensor: true)
+    ObservationActions.list(include_sensor: true)
     |> Enum.map(& assert Ecto.assoc_loaded?(&1.sensor))
   end
 
-  test "with_networks/1" do
+  test "include_networks/1" do
     ObservationActions.list()
     |> Enum.map(& refute Ecto.assoc_loaded?(&1.node))
 
-    ObservationActions.list(with_networks: true)
+    ObservationActions.list(include_networks: true)
     |> Enum.map(& assert Ecto.assoc_loaded?(&1.node.networks))
   end
 
@@ -388,7 +388,7 @@ defmodule Aot.Testing.ObservationQueriesTest do
     end
 
     test "percentile (.5 ~ median)" do
-      ObservationActions.list(as_time_buckets: {{:percentile, 0.5}, "1 seconds"})
+      ObservationActions.list(as_time_buckets: {:percentile, {0.5, "1 seconds"}})
       |> Enum.each(fn [{_ymd, _hms}, min] -> assert is_float(min) end)
     end
   end

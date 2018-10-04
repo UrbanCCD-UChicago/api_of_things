@@ -3,19 +3,19 @@ defmodule Aot.Testing.NodeQueriesTest do
 
   alias Aot.NodeActions
 
-  test "with_networks/1" do
+  test "include_networks/1" do
     NodeActions.list()
     |> Enum.each(& refute Ecto.assoc_loaded?(&1.networks))
 
-    NodeActions.list(with_networks: true)
+    NodeActions.list(include_networks: true)
     |> Enum.each(& assert Ecto.assoc_loaded?(&1.networks))
   end
 
-  test "with_sensors/1" do
+  test "include_sensors/1" do
     NodeActions.list()
     |> Enum.each(& refute Ecto.assoc_loaded?(&1.sensors))
 
-    NodeActions.list(with_sensors: true)
+    NodeActions.list(include_sensors: true)
     |> Enum.each(& assert Ecto.assoc_loaded?(&1.sensors))
   end
 
@@ -179,8 +179,8 @@ defmodule Aot.Testing.NodeQueriesTest do
 
     nodes =
       NodeActions.list(
-        with_networks: true,
-        with_sensors: true,
+        include_networks: true,
+        include_sensors: true,
         assert_alive: true,
         has_sensor: sensor1,
         within_distance: {%Geo.Point{srid: 4326, coordinates: {-87.12, 41.43}}, 2000}

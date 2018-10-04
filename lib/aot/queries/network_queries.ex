@@ -35,11 +35,11 @@ defmodule Aot.NetworkQueries do
     end
   end
 
-  @spec with_nodes(Ecto.Queryable.t()) :: Ecto.Query.t()
-  def with_nodes(query), do: preload(query, nodes: :networks)
+  @spec include_nodes(Ecto.Queryable.t()) :: Ecto.Query.t()
+  def include_nodes(query), do: preload(query, nodes: :networks)
 
-  @spec with_sensors(Ecto.Queryable.t()) :: Ecto.Query.t()
-  def with_sensors(query), do: preload(query, sensors: :networks)
+  @spec include_sensors(Ecto.Queryable.t()) :: Ecto.Query.t()
+  def include_sensors(query), do: preload(query, sensors: :networks)
 
   @spec has_node(Ecto.Queryable.t(), Node.t() | integer() | String.t()) :: Ecto.Query.t()
   def has_node(query, %Node{id: id}), do: has_node(query, id)
@@ -104,8 +104,8 @@ defmodule Aot.NetworkQueries do
   @spec handle_opts(Ecto.Queryable.t(), keyword()) :: Ecto.Queryable.t()
   def handle_opts(query, opts \\ []) do
     [
-      with_nodes: false,
-      with_sensors: false,
+      include_nodes: false,
+      include_sensors: false,
       has_node: :empty,
       has_nodes: :empty,
       has_sensor: :empty,

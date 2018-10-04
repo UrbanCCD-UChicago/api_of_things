@@ -111,11 +111,11 @@ defmodule Aot.TestingNodeActionsTest do
   describe "get!/2" do
     @describetag build: :node
 
-    test "using with_networks should embed a list of associated networks", %{node: node} do
+    test "using include_networks should embed a list of associated networks", %{node: node} do
       found = NodeActions.get!(node.id)
       refute Ecto.assoc_loaded?(found.networks)
 
-      found = NodeActions.get!(node.id, with_networks: true)
+      found = NodeActions.get!(node.id, include_networks: true)
       assert Ecto.assoc_loaded?(found.networks)
     end
   end
@@ -132,11 +132,11 @@ defmodule Aot.TestingNodeActionsTest do
   describe "list/1" do
     @describetag build: :node
 
-    test "using with_networks should embed a list of associated networks" do
+    test "using include_networks should embed a list of associated networks" do
       NodeActions.list()
       |> Enum.each(&refute Ecto.assoc_loaded?(&1.networks))
 
-      NodeActions.list(with_networks: true)
+      NodeActions.list(include_networks: true)
       |> Enum.each(&assert Ecto.assoc_loaded?(&1.networks))
     end
   end

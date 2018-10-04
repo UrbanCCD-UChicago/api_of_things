@@ -30,11 +30,11 @@ defmodule Aot.SensorQueries do
     end
   end
 
-  @spec with_networks(Ecto.Queryable.t()) :: Ecto.Queryable.t()
-  def with_networks(query), do: preload(query, networks: :sensors)
+  @spec include_networks(Ecto.Queryable.t()) :: Ecto.Queryable.t()
+  def include_networks(query), do: preload(query, networks: :sensors)
 
-  @spec with_nodes(Ecto.Queryable.t()) :: Ecto.Queryable.t()
-  def with_nodes(query), do: preload(query, nodes: :sensors)
+  @spec include_nodes(Ecto.Queryable.t()) :: Ecto.Queryable.t()
+  def include_nodes(query), do: preload(query, nodes: :sensors)
 
   @spec has_ontology(Ecto.Queryable.t(), String.t()) :: Ecto.Queryable.t()
   def has_ontology(query, ont), do: where(query, [s], s.ontology == ^ont)
@@ -90,8 +90,8 @@ defmodule Aot.SensorQueries do
   @spec handle_opts(Ecto.Queryable.t(), keyword()) :: Ecto.Queryable.t()
   def handle_opts(query, opts \\ []) do
     [
-      with_networks: false,
-      with_nodes: false,
+      include_networks: false,
+      include_nodes: false,
       has_ontology: :empty,
       observes_network: :empty,
       observes_networks: :empty,

@@ -3,19 +3,19 @@ defmodule Aot.Testing.NetworkQueriesTest do
 
   alias Aot.NetworkActions
 
-  test "with_nodes/1" do
+  test "include_nodes/1" do
     NetworkActions.list()
     |> Enum.each(& refute Ecto.assoc_loaded?(&1.nodes))
 
-    NetworkActions.list(with_nodes: true)
+    NetworkActions.list(include_nodes: true)
     |> Enum.each(& assert Ecto.assoc_loaded?(&1.nodes))
   end
 
-  test "with_sensors/1" do
+  test "include_sensors/1" do
     NetworkActions.list()
     |> Enum.each(& refute Ecto.assoc_loaded?(&1.sensors))
 
-    NetworkActions.list(with_sensors: true)
+    NetworkActions.list(include_sensors: true)
     |> Enum.each(& assert Ecto.assoc_loaded?(&1.sensors))
   end
 
@@ -173,8 +173,8 @@ defmodule Aot.Testing.NetworkQueriesTest do
 
     networks =
       NetworkActions.list(
-        with_nodes: true,
-        with_sensors: true,
+        include_nodes: true,
+        include_sensors: true,
         has_sensors: [sensor1, sensor2],
         bbox_intersects: chi_poly
       )
