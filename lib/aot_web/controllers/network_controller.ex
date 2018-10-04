@@ -1,6 +1,8 @@
 defmodule AotWeb.NetworkController do
   use AotWeb, :controller
 
+  import Aot.ControllerUtils, only: [ resp_format: 1 ]
+
   import Aot.Plugs
 
   alias Aot.NetworkActions
@@ -20,11 +22,19 @@ defmodule AotWeb.NetworkController do
 
   def index(conn, _params) do
     networks = NetworkActions.list(Map.to_list(conn.assigns))
-    render(conn, "index.json", networks: networks)
+    fmt = resp_format(conn)
+
+    render conn, "index.json",
+      networks: networks,
+      resp_format: fmt
   end
 
   def show(conn, %{"slug" => slug}) do
     network = NetworkActions.get!(slug, Map.to_list(conn.assigns))
-    render(conn, "show.json", network: network)
+    fmt = resp_format(conn)
+
+    render conn, "show.json",
+      network: network,
+      resp_format: fmt
   end
 end

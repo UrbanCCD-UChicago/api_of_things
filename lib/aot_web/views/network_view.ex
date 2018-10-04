@@ -2,21 +2,39 @@ defmodule AotWeb.NetworkView do
   use AotWeb, :view
   alias AotWeb.NetworkView
 
-  def render("index.json", %{networks: networks}) do
-    %{data: render_many(networks, NetworkView, "network.json")}
+  def render("index.json", %{networks: networks, resp_format: fmt}) do
+    %{data: render_many(networks, NetworkView, "network.#{fmt}")}
   end
 
-  def render("show.json", %{network: network}) do
-    %{data: render_one(network, NetworkView, "network.json")}
+  def render("show.json", %{network: network, resp_format: fmt}) do
+    %{data: render_one(network, NetworkView, "network.#{fmt}")}
   end
 
-  def render("network.json", %{network: network}) do
-    %{id: network.id,
-      name: network.name,
-      slug: network.slug,
-      bbox: network.bbox,
-      hull: network.hull,
-      num_observations: network.num_observations,
-      num_raw_observations: network.num_raw_observations}
+  def render("network.json", %{network: net}) do
+    %{
+      id: net.id,
+      name: net.name,
+      slug: net.slug,
+      full_archive: net.archive_url,
+      first_observation: net.first_observation,
+      latest_observation: net.latest_observation,
+      bbox: Geo.JSON.encode!(net.bbox),
+      hull: Geo.JSON.encode!(net.hull)
+    }
+  end
+
+  def render("network.geojson", %{network: net}) do
+    %{
+      type: "Feature",
+      geometry: Geo.JSON.encode!(net.bbox),
+      properties: %{
+        id: net.id,
+        name: net.name,
+        slug: net.slug,
+        full_archive: net.archive_url,
+        first_observation: net.first_observation,
+        latest_observation: net.latest_observation
+      }
+    }
   end
 end

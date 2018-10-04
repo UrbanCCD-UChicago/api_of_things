@@ -1,6 +1,8 @@
 defmodule AotWeb.NodeController do
   use AotWeb, :controller
 
+  import Aot.ControllerUtils, only: [ resp_format: 1 ]
+
   import Aot.Plugs
 
   import Plug.Conn, only: [ assign: 3 ]
@@ -41,11 +43,19 @@ defmodule AotWeb.NodeController do
 
   def index(conn, _params) do
     nodes = NodeActions.list(Map.to_list(conn.assigns))
-    render(conn, "index.json", nodes: nodes)
+    fmt = resp_format(conn)
+
+    render conn, "index.json",
+      nodes: nodes,
+      resp_format: fmt
   end
 
   def show(conn, %{"id" => id}) do
     node = NodeActions.get!(id, Map.to_list(conn.assigns))
-    render(conn, "show.json", node: node)
+    fmt = resp_format(conn)
+
+    render conn, "show.json",
+      node: node,
+      resp_format: fmt
   end
 end

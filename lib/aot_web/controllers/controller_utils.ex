@@ -13,6 +13,8 @@ defmodule Aot.ControllerUtils do
       reason_phrase: 1
   ]
 
+  alias Plug.Conn
+
   @doc """
   This function applies a status and message, then stops processing a request. This cannot be
   inlined in a function, rather it needs to be used as the sole action of a function that
@@ -49,5 +51,12 @@ defmodule Aot.ControllerUtils do
     |> put_resp_header("content-type", "application/json")
     |> resp(code, body)
     |> halt()
-end
+  end
+
+  @doc """
+  Gets the client's expected response format.
+  """
+  @spec resp_format(Plug.Conn.t()) :: String.t()
+  def resp_format(%Conn{params: %{"format" => "geojson"}}), do: "geojson"
+  def resp_format(_), do: "json"
 end

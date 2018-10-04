@@ -11,13 +11,14 @@ defmodule AotWeb.SensorView do
   end
 
   def render("sensor.json", %{sensor: sensor}) do
-    %{id: sensor.id,
+    %{
+      id: sensor.id,
+      path: sensor.path,
       ontology: sensor.ontology,
       subsystem: sensor.subsystem,
       sensor: sensor.sensor,
       parameter: sensor.parameter,
-      unit: sensor.unit,
-      min_val: sensor.min_val,
-      max_val: sensor.max_val}
+      unit: sensor.unit
+    }
   end
 end
