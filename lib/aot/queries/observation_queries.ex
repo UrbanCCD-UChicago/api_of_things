@@ -1,6 +1,6 @@
 defmodule Aot.ObservationQueries do
   @moduledoc """
-  Stored base queries and functions to compose queries for Nodes.
+  Stored base queries and functions to compose queries for Observations.
   """
 
   import Aot.QueryUtils, only: [
@@ -36,12 +36,6 @@ defmodule Aot.ObservationQueries do
 
   @spec include_networks(Ecto.Queryable.t()) :: Ecto.Queryable.t()
   def include_networks(query), do: preload(query, node: :networks)
-
-  @spec assert_hrf(Ecto.Queryable.t()) :: Ecto.Queryable.t()
-  def assert_hrf(query), do: where(query, [o], o.raw? == false)
-
-  @spec assert_raw(Ecto.Queryable.t()) :: Ecto.Queryable.t()
-  def assert_raw(query), do: where(query, [o], o.raw? == true)
 
   @spec for_network(Ecto.Queryable.t(), Network.t() | integer() | String.t()) :: Ecto.Queryable.t()
   def for_network(query, %Network{id: id}), do: for_network(query, id)
@@ -280,8 +274,6 @@ defmodule Aot.ObservationQueries do
       include_node: false,
       include_sensor: false,
       include_networks: false,
-      assert_hrf: false,
-      assert_raw: false,
       for_network: :empty,
       for_networks: :empty,
       for_node: :empty,

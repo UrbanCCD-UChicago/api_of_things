@@ -1,17 +1,17 @@
-defmodule Aot.Testing.ObservationActionsTest do
+defmodule Aot.Testing.RawObservationActionsTest do
   use ExUnit.Case
 
   alias Aot.{
     M2MActions,
     NetworkActions,
     NodeActions,
-    ObservationActions,
+    RawObservationActions,
     SensorActions
   }
 
   # NOTE: this is run once at the start of the tests. it's a heavy procedure and
   # doesn't need to be rerun for each test case. also note that it pretty thoroughly
-  # tests ObservationActions.create/1 .
+  # tests RawObservationActions.create/1 .
   setup_all do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(Aot.Repo)
     :ok = Ecto.Adapters.SQL.Sandbox.mode(Aot.Repo, {:shared, self()})
@@ -73,55 +73,44 @@ defmodule Aot.Testing.ObservationActionsTest do
       # insert observations
       timestamp = Timex.parse!(row["timestamp"], "%Y/%m/%d %H:%M:%S", :strftime)
 
-      case parse_value(row, "value_hrf") do
-        nil -> :ok
-        parsed -> {:ok, _} = ObservationActions.create(node: node, sensor: sensor, timestamp: timestamp, value: parsed)
-      end
-
       case parse_value(row, "value_raw") do
-        nil -> :ok
-        parsed -> {:ok, _} = ObservationActions.create(node: node, sensor: sensor, timestamp: timestamp, value: parsed, raw?: true)
+        nil ->
+          :ok
+
+        parsed ->
+          hrf = parse_value(row, "value_hrf")
+          {:ok, _} = RawObservationActions.create(node: node, sensor: sensor, timestamp: timestamp, hrf: hrf, raw: parsed)
       end
     end)
+
+    node = NodeActions.get!("001e0610ee41")
+
+    sensor = SensorActions.get!("lightsense.apds_9006_020.intensity")
+
+    {:ok, network: network, node: node, sensor: sensor}
   end
 
   defp parse_value(row, key) do
-    raw = row[key]
-    cond do
-      is_number(raw) ->
-        raw
-
-      is_nil(raw) ->
-        nil
-
-      true ->
-        try do
-          String.to_float(raw)
-        rescue
-          ArgumentError ->
-            try do
-              String.to_integer(raw)
-            rescue
-              ArgumentError ->
-                nil
-            end
-        end
+    value = row[key]
+    case Regex.match?(~r/^\d.*/i, value) do
+      true -> value
+      false -> nil
     end
   end
 
-  @num_obs 906
+  @num_obs 806
   @num_networks 1
 
   describe "list/0" do
     test "gets all the observations" do
-      observations = ObservationActions.list()
+      observations = RawObservationActions.list()
       assert length(observations) == @num_obs
     end
   end
 
   describe "list/1" do
     test "include_node, include_sensor, include_networks" do
-      ObservationActions.list(include_node: true, include_sensor: true, include_networks: true)
+      RawObservationActions.list(include_node: true, include_sensor: true, include_networks: true)
       |> Enum.each(fn obs ->
         assert Ecto.assoc_loaded?(obs.node)
         assert Ecto.assoc_loaded?(obs.sensor)

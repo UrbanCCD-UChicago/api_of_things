@@ -9,6 +9,7 @@ defmodule Aot.Node do
   alias Aot.{
     Network,
     Observation,
+    RawObservation,
     Sensor
   }
 
@@ -34,6 +35,7 @@ defmodule Aot.Node do
 
     # reverse relationships
     has_many :observations, Observation
+    has_many :raw_observations, RawObservation
     many_to_many :networks, Network, join_through: "networks_nodes"
     many_to_many :sensors, Sensor, join_through: "nodes_sensors"
   end

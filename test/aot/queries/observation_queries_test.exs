@@ -77,11 +77,6 @@ defmodule Aot.Testing.ObservationQueriesTest do
         nil -> :ok
         parsed -> {:ok, _} = ObservationActions.create(node: node, sensor: sensor, timestamp: timestamp, value: parsed)
       end
-
-      case parse_value(row, "value_raw") do
-        nil -> :ok
-        parsed -> {:ok, _} = ObservationActions.create(node: node, sensor: sensor, timestamp: timestamp, value: parsed, raw?: true)
-      end
     end)
 
     node = NodeActions.get!("001e0610ee41")
@@ -115,27 +110,25 @@ defmodule Aot.Testing.ObservationQueriesTest do
     end
   end
 
-  @num_obs 906
-  @hrf 744
-  @raw 162
+  @num_obs 744
 
-  @node_obs 18
+  @node_obs 17
 
   @sensor_obs 28
 
   @timestamp ~N[2018-09-28 16:35:48]
-  @ts_eq 66
-  @ts_lt 186
-  @ts_le 252
-  @ts_ge 720
-  @ts_gt 654
+  @ts_eq 56
+  @ts_lt 154
+  @ts_le 210
+  @ts_ge 590
+  @ts_gt 534
 
   @value 54.51
   @v_eq 1
-  @v_lt 534
-  @v_le 535
-  @v_ge 372
-  @v_gt 371
+  @v_lt 517
+  @v_le 518
+  @v_ge 227
+  @v_gt 226
 
   @polygon %Geo.Polygon{
     srid: 4326,
@@ -172,16 +165,6 @@ defmodule Aot.Testing.ObservationQueriesTest do
 
     ObservationActions.list(include_networks: true)
     |> Enum.map(& assert Ecto.assoc_loaded?(&1.node.networks))
-  end
-
-  test "assert_hrf/1" do
-    obs = ObservationActions.list(assert_hrf: true)
-    assert length(obs) == @hrf
-  end
-
-  test "assert_raw/1" do
-    obs = ObservationActions.list(assert_raw: true)
-    assert length(obs) == @raw
   end
 
   test "for_network/2", %{network: network} do

@@ -1,21 +1,6 @@
 defmodule Aot.ObservationActions do
   @moduledoc """
   The internal API for working with Observations.
-
-  /observations
-    ?timestamp=gt:2018-01-01T00:00:00
-    &distance_within=2000:1,-2
-    &metsense.tsys01.temperature=between:20,25
-    &include_raw=true
-
-  [
-    timestamp_op: {:gt, ~N[2018-01-01 00:00:00]},
-    distance_within: {%Geo.Point{srid: 4326, coordinates: {1, -2}}},
-    for_sensor: "metsense.tsys01.temperature",
-    value: {:between, {20, 25}},
-    assert_hrf: true,
-    assert_raw: true,
-  ]
   """
 
   import Aot.ActionUtils

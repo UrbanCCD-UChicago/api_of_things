@@ -11,6 +11,7 @@ defmodule Aot.Sensor do
     NetworkSensor,
     Node,
     NodeSensor,
+    RawObservation,
     Observation
   }
 
@@ -31,6 +32,7 @@ defmodule Aot.Sensor do
 
     # reverse relationships
     has_many :observations, Observation
+    has_many :raw_observations, RawObservation
     many_to_many :networks, Network, join_through: NetworkSensor
     many_to_many :nodes, Node, join_through: NodeSensor
   end
