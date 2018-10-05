@@ -6,11 +6,12 @@ defmodule AotWeb.Router do
   end
 
   scope "/api", AotWeb do
-    pipe_through(:api)
+    pipe_through :api
+
     resources "/networks", NetworkController, only: [:index, :show]
     resources "/nodes", NodeController, only: [:index, :show]
     resources "/sensors", SensorController, only: [:index, :show]
-    resources "/observations", ObservationController, only: [:index, :show]
-    resources "/raw-observations", RawObservationController, only: [:index, :show]
+    resources "/observations", ObservationController, only: [:index]
+    resources "/raw-data", RawObservationController, only: [:index]
   end
 end

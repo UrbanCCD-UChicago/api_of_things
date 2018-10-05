@@ -1,4 +1,4 @@
-defmodule AotWeb.ConnCase do
+defmodule AotWeb.Testing.ConnCase do
   @moduledoc """
   This module defines the test case to be used by
   tests that require setting up a connection.
@@ -30,7 +30,7 @@ defmodule AotWeb.ConnCase do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(Aot.Repo)
 
     unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(Aot.Repo, {:shared, self()})
+      :ok = Ecto.Adapters.SQL.Sandbox.mode(Aot.Repo, {:shared, self()})
     end
 
     {:ok, conn: Phoenix.ConnTest.build_conn()}

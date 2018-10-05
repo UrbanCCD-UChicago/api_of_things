@@ -45,6 +45,18 @@ defmodule Aot.NetworkActions do
     |> Repo.all()
   end
 
+  def get(id, opts \\ []) do
+    resp =
+      NetworkQueries.get(id)
+      |> NetworkQueries.handle_opts(opts)
+      |> Repo.one()
+
+    case resp do
+      nil -> {:error, :not_found}
+      net -> {:ok, net}
+    end
+  end
+
   @doc """
   Gets a single Network and optionally augments the query.
   """

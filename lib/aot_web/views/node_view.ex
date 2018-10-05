@@ -1,5 +1,8 @@
 defmodule AotWeb.NodeView do
   use AotWeb, :view
+
+  import AotWeb.ViewUtils
+
   alias AotWeb.NodeView
 
   def render("index.json", %{nodes: nodes, resp_format: fmt}) do
@@ -14,7 +17,7 @@ defmodule AotWeb.NodeView do
     %{
       id: node.id,
       vsn: node.vsn,
-      location: Geo.JSON.encode!(node.location),
+      location: encode_geom(node.location),
       description: node.description,
       address: node.address,
       commissioned_on: node.commissioned_on,
@@ -25,7 +28,7 @@ defmodule AotWeb.NodeView do
   def render("node.geojson", %{node: node}) do
     %{
       type: "Feature",
-      geometry: Geo.JSON.encode!(node.location),
+      geometry: encode_geom(node.location),
       properties: %{
         id: node.id,
         vsn: node.vsn,

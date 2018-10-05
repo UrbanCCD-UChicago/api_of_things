@@ -1,89 +1,151 @@
-# defmodule AotWeb.NetworkControllerTest do
-#   use AotWeb.ConnCase
+defmodule AotWeb.Testing.NetworkControllerTest do
+  use AotWeb.Testing.ConnCase
 
-#   alias Aot.Meta
-#   alias Aot.Meta.Network
+  alias Aot.{
+    M2MActions,
+    NetworkActions,
+    NodeActions,
+    SensorActions
+  }
 
-#   @create_attrs %{bbox: "some bbox", hull: "some hull", name: "some name", num_observations: 42, num_raw_observations: 42, slug: "some slug"}
-#   @update_attrs %{bbox: "some updated bbox", hull: "some updated hull", name: "some updated name", num_observations: 43, num_raw_observations: 43, slug: "some updated slug"}
-#   @invalid_attrs %{bbox: nil, hull: nil, name: nil, num_observations: nil, num_raw_observations: nil, slug: nil}
+  setup do
+    chi_poly = %Geo.Polygon{
+      srid: 4326,
+      coordinates: [[
+        {-85, 40},
+        {-85, 45},
+        {-90, 45},
+        {-90, 40},
+        {-85, 40}
+      ]]
+    }
 
-#   def fixture(:network) do
-#     {:ok, network} = Meta.create_network(@create_attrs)
-#     network
-#   end
+    denver_poly = %Geo.Polygon{
+      srid: 4326,
+      coordinates: [[
+        {-100, 30},
+        {-100, 32},
+        {-102, 32},
+        {-102, 30},
+        {-100, 30}
+      ]]
+    }
 
-#   setup %{conn: conn} do
-#     {:ok, conn: put_req_header(conn, "accept", "application/json")}
-#   end
+    {:ok, chicago} =
+      NetworkActions.create(
+        name: "Chicago Complete",
+        archive_url: "https://example.com/archive-chi",
+        recent_url: "https://example.com/recent-chi",
+        first_observation: ~N[2018-01-01 00:00:00],
+        latest_observation: NaiveDateTime.utc_now(),
+        bbox: chi_poly
+      )
 
-#   describe "index" do
-#     test "lists all networks", %{conn: conn} do
-#       conn = get conn, network_path(conn, :index)
-#       assert json_response(conn, 200)["data"] == []
-#     end
-#   end
+    {:ok, denver} =
+      NetworkActions.create(
+        name: "Denver Complete",
+        archive_url: "https://example.com/archive-den",
+        recent_url: "https://example.com/recent-den",
+        first_observation: ~N[2018-06-01 00:00:00],
+        latest_observation: NaiveDateTime.utc_now(),
+        bbox: denver_poly
+      )
 
-#   # describe "create network" do
-#   #   test "renders network when data is valid", %{conn: conn} do
-#   #     conn = post conn, network_path(conn, :create), network: @create_attrs
-#   #     assert %{"id" => id} = json_response(conn, 201)["data"]
+    {:ok, chicago: chicago, denver: denver}
+  end
 
-#   #     conn = get conn, network_path(conn, :show, id)
-#   #     assert json_response(conn, 200)["data"] == %{
-#   #       "id" => id,
-#   #       "bbox" => "some bbox",
-#   #       "hull" => "some hull",
-#   #       "name" => "some name",
-#   #       "num_observations" => 42,
-#   #       "num_raw_observations" => 42,
-#   #       "slug" => "some slug"}
-#   #   end
+  describe "index/2" do
+    test "no filters should return them all", %{conn: conn, chicago: chi, denver: den} do
+      resp =
+        conn
+        |> get(network_path(conn, :index))
+        |> json_response(:ok)
 
-#   #   test "renders errors when data is invalid", %{conn: conn} do
-#   #     conn = post conn, network_path(conn, :create), network: @invalid_attrs
-#   #     assert json_response(conn, 422)["errors"] != %{}
-#   #   end
-#   # end
+      assert length(resp["data"]) == 2
 
-#   # describe "update network" do
-#   #   setup [:create_network]
+      slugs = Enum.map(resp["data"], & &1["slug"])
+      [chi.slug, den.slug]
+      |> Enum.each(& assert Enum.member?(slugs, &1))
+    end
 
-#   #   test "renders network when data is valid", %{conn: conn, network: %Network{id: id} = network} do
-#   #     conn = put conn, network_path(conn, :update, network), network: @update_attrs
-#   #     assert %{"id" => ^id} = json_response(conn, 200)["data"]
+    test "using `include_nodes` should embed related nodes", %{conn: conn, chicago: chicago} do
+      # not specified? then empty array
+      resp =
+        conn
+        |> get(network_path(conn, :index))
+        |> json_response(:ok)
 
-#   #     conn = get conn, network_path(conn, :show, id)
-#   #     assert json_response(conn, 200)["data"] == %{
-#   #       "id" => id,
-#   #       "bbox" => "some updated bbox",
-#   #       "hull" => "some updated hull",
-#   #       "name" => "some updated name",
-#   #       "num_observations" => 43,
-#   #       "num_raw_observations" => 43,
-#   #       "slug" => "some updated slug"}
-#   #   end
+      resp["data"]
+      |> Enum.each(& assert &1["nodes"] == [])
 
-#   #   test "renders errors when data is invalid", %{conn: conn, network: network} do
-#   #     conn = put conn, network_path(conn, :update, network), network: @invalid_attrs
-#   #     assert json_response(conn, 422)["errors"] != %{}
-#   #   end
-#   # end
+      # specified? embed the nodes
+      {:ok, node} =
+        NodeActions.create(
+          id: "123ABC456DEF",
+          vsn: "010",
+          longitude: -87.1234,
+          latitude: 43.4321,
+          commissioned_on: NaiveDateTime.utc_now()
+        )
+      {:ok, _} = M2MActions.create_network_node(network: chicago, node: node)
 
-#   # describe "delete network" do
-#   #   setup [:create_network]
+      resp =
+        conn
+        |> get(network_path(conn, :index, include_nodes: true))
+        |> json_response(:ok)
 
-#   #   test "deletes chosen network", %{conn: conn, network: network} do
-#   #     conn = delete conn, network_path(conn, :delete, network)
-#   #     assert response(conn, 204)
-#   #     assert_error_sent 404, fn ->
-#   #       get conn, network_path(conn, :show, network)
-#   #     end
-#   #   end
-#   # end
+      chi_el = List.first(resp["data"])
+      assert length(chi_el["nodes"]) == 1
 
-#   defp create_network(_) do
-#     network = fixture(:network)
-#     {:ok, network: network}
-#   end
-# end
+      den_el = List.last(resp["data"])
+      assert length(den_el["nodes"]) == 0
+    end
+
+    test "using `include_sensors` should embed related sensors", %{conn: conn} do
+    end
+
+    test "using `has_node` should filter the nets", %{conn: conn} do
+    end
+
+    test "using `has_nodes[]` should filter the nets", %{conn: conn} do
+    end
+
+    test "using `has_sensor` should filter the nets", %{conn: conn} do
+    end
+
+    test "using `has_sensors[]` should filter the nets", %{conn: conn} do
+    end
+
+    test "using `bbox=contains:` should filter the nets", %{conn: conn} do
+    end
+
+    test "using `bbox=intersects:` should filter the nets", %{conn: conn} do
+    end
+
+    test "using `order_by` should set the ordering of the nodes", %{conn: conn} do
+    end
+
+    test "using `page` and `size` should paginate the results", %{conn: conn} do
+    end
+  end
+
+  describe "show/2" do
+    test "using a known slug as the param", %{conn: conn, chicago: chicago} do
+      conn
+      |> get(network_path(conn, :show, chicago))
+      |> json_response(:ok)
+    end
+
+    test "using a known id", %{conn: conn, chicago: chicago} do
+      conn
+      |> get(network_path(conn, :show, chicago.id))
+      |> json_response(:ok)
+    end
+
+    test "using an unknown identifier should 404", %{conn: conn} do
+      conn
+      |> get(network_path(conn, :show, "i-dont-exist"))
+      |> json_response(:not_found)
+    end
+  end
+end

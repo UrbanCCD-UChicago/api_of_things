@@ -1,5 +1,8 @@
 defmodule AotWeb.NetworkView do
   use AotWeb, :view
+
+  import AotWeb.ViewUtils
+
   alias AotWeb.NetworkView
 
   def render("index.json", %{networks: networks, resp_format: fmt}) do
@@ -18,8 +21,10 @@ defmodule AotWeb.NetworkView do
       full_archive: net.archive_url,
       first_observation: net.first_observation,
       latest_observation: net.latest_observation,
-      bbox: Geo.JSON.encode!(net.bbox),
-      hull: Geo.JSON.encode!(net.hull)
+      bbox: encode_geom(net.bbox),
+      hull: encode_geom(net.hull),
+      nodes: nest_related(net.nodes, AotWeb.NodeView, "node.json"),
+      sensors: nest_related(net.sensors, AotWeb.SensorView, "sensor.json")
     }
   end
 
@@ -33,7 +38,9 @@ defmodule AotWeb.NetworkView do
         slug: net.slug,
         full_archive: net.archive_url,
         first_observation: net.first_observation,
-        latest_observation: net.latest_observation
+        latest_observation: net.latest_observation,
+        nodes: nest_related(net.nodes, AotWeb.NodeView, "node.geojson"),
+        sensors: nest_related(net.sensors, AotWeb.SensorView, "sensor.json")
       }
     }
   end

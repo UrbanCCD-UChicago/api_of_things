@@ -29,12 +29,8 @@ defmodule AotWeb.NetworkController do
       resp_format: fmt
   end
 
-  def show(conn, %{"slug" => slug}) do
-    network = NetworkActions.get!(slug, Map.to_list(conn.assigns))
-    fmt = resp_format(conn)
-
-    render conn, "show.json",
-      network: network,
-      resp_format: fmt
+  def show(conn, %{"id" => slug}) do
+    with {:ok, network} <- NetworkActions.get(slug, Map.to_list(conn.assigns)),
+      do: render conn, "show.json", network: network, resp_format: resp_format(conn)
   end
 end

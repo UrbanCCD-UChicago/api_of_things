@@ -84,12 +84,12 @@ defmodule Aot.Plugs do
       true ->
         [dir, field] = String.split(order, ":", parts: 2)
         dir = String.downcase(dir)
-        assign(conn, :order_by, {String.to_atom(dir), String.to_atom(field)})
+        assign(conn, :order, {String.to_atom(dir), String.to_atom(field)})
     end
   end
 
   def order_by(conn, opts) do
-    %Conn{conn | params: Map.put(conn.params, "order_by", opts[:default_order])}
+    %Conn{conn | params: Map.put(conn.params, "order_by", opts[:default])}
     |> order_by(opts)
   end
 
