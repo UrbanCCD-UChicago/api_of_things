@@ -35,4 +35,18 @@ defmodule Aot.ObservationActions do
     |> ObservationQueries.handle_opts(opts)
     |> Repo.all()
   end
+
+  def data_csv_row_to_params(%{"parameter" => "id"}, _), do: nil
+  def data_csv_row_to_params(%{"value_hrf" => value}, _) when not is_number(value), do: nil
+  def data_csv_row_to_params(row, sensors) do
+    path = "#{row["subsystem"]}.#{row["sensor"]}.#{row["parameter"]}"
+    sensor = Map.get(sensors, path)
+
+    %{
+      node_id: row["node_id"],
+      sensor_id: sensor.id,
+      timestamp: parse_timestamp(row["timestamp"]),
+      value: row["value_hrf"]
+    }
+  end
 end

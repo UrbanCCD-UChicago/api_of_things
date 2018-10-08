@@ -1,43 +1,7 @@
 defmodule Aot.Testing.ObservationQueriesTest do
-  use Aot.Testing.ObservationsCase
+  use Aot.Testing.BaseCase
 
-  alias Aot.{
-    NetworkActions,
-    ObservationActions
-  }
-
-  @num_obs 744
-
-  @node_obs 17
-
-  @sensor_obs 28
-
-  @timestamp ~N[2018-09-28 16:35:48]
-  @ts_eq 56
-  @ts_lt 154
-  @ts_le 210
-  @ts_ge 590
-  @ts_gt 534
-
-  @value 54.51
-  @v_eq 1
-  @v_lt 517
-  @v_le 518
-  @v_ge 227
-  @v_gt 226
-
-  @polygon %Geo.Polygon{
-    srid: 4326,
-    coordinates: [[
-      {-89, 40},
-      {-89, 45},
-      {-85, 45},
-      {-85, 40},
-      {-89, 40}
-    ]]
-  }
-
-  @point_and_distance {%Geo.Point{srid: 4326, coordinates: {-87.12, 41.43}}, 2000}
+  alias Aot.ObservationActions
 
   test "include_node/1" do
     ObservationActions.list()
@@ -63,85 +27,83 @@ defmodule Aot.Testing.ObservationQueriesTest do
     |> Enum.map(& assert Ecto.assoc_loaded?(&1.node.networks))
   end
 
-  test "for_network/2", %{network: network} do
-    {:ok, net} =
-      NetworkActions.create(
-        name: "Chicago Complete",
-        archive_url: "https://example.com/archive1",
-        recent_url: "https://example.com/recent1",
-        first_observation: ~N[2018-01-01 00:00:00],
-        latest_observation: NaiveDateTime.utc_now()
-      )
+  @tag add2ctx: :networks
+  test "for_network/2", %{denver: denver} do
+    obs = ObservationActions.list(for_network: denver)
+    assert length(obs) == 12
 
-    obs = ObservationActions.list(for_network: net)
+  end
+
+  @tag add2ctx: :nodes
+  test "for_node/2", %{n000: node} do
+    obs = ObservationActions.list(for_node: node)
+    assert length(obs) == 12
+  end
+
+  @tag add2ctx: :sensors
+  test "for_sensor/2", %{s1: s1, s13: s13} do
+    obs = ObservationActions.list(for_sensor: s1)
     assert length(obs) == 0
 
-    obs = ObservationActions.list(for_network: network)
-    assert length(obs) == @num_obs
-
-  end
-
-  test "for_node/2", %{node: node} do
-    obs = ObservationActions.list(for_node: node)
-    assert length(obs) == @node_obs
-  end
-
-  test "for_sensor/2", %{sensor: sensor} do
-    obs = ObservationActions.list(for_sensor: sensor)
-    assert length(obs) == @sensor_obs
+    obs = ObservationActions.list(for_sensor: s13)
+    assert length(obs) == 20
   end
 
   describe "timestamp_op/2" do
+    @timestamp ~N[2018-10-01 00:01:00]
+
     test "eq" do
       obs = ObservationActions.list(timestamp_op: {:eq, @timestamp})
-      assert length(obs) == @ts_eq
+      assert length(obs) == 15
     end
 
     test "lt" do
       obs = ObservationActions.list(timestamp_op: {:lt, @timestamp})
-      assert length(obs) == @ts_lt
+      assert length(obs) == 30
     end
 
     test "le" do
       obs = ObservationActions.list(timestamp_op: {:le, @timestamp})
-      assert length(obs) == @ts_le
+      assert length(obs) == 45
     end
 
     test "ge" do
       obs = ObservationActions.list(timestamp_op: {:ge, @timestamp})
-      assert length(obs) == @ts_ge
+      assert length(obs) == 30
     end
 
     test "gt" do
       obs = ObservationActions.list(timestamp_op: {:gt, @timestamp})
-      assert length(obs) == @ts_gt
+      assert length(obs) == 15
     end
   end
 
   describe "value_op/2" do
+    @value 54.5
+
     test "eq" do
       obs = ObservationActions.list(value_op: {:eq, @value})
-      assert length(obs) == @v_eq
+      assert length(obs) == 39
     end
 
     test "lt" do
       obs = ObservationActions.list(value_op: {:lt, @value})
-      assert length(obs) == @v_lt
+      assert length(obs) == 0
     end
 
     test "le" do
       obs = ObservationActions.list(value_op: {:le, @value})
-      assert length(obs) == @v_le
+      assert length(obs) == 39
     end
 
     test "ge" do
       obs = ObservationActions.list(value_op: {:ge, @value})
-      assert length(obs) == @v_ge
+      assert length(obs) == 60
     end
 
     test "gt" do
       obs = ObservationActions.list(value_op: {:gt, @value})
-      assert length(obs) == @v_gt
+      assert length(obs) == 21
     end
   end
 
@@ -158,16 +120,29 @@ defmodule Aot.Testing.ObservationQueriesTest do
     })
     assert length(obs) == 0
 
-    obs = ObservationActions.list(located_within: @polygon)
-    assert length(obs) == @num_obs
+    poly = %Geo.Polygon{
+      srid: 4326,
+      coordinates: [[
+        {-89, 40},
+        {-89, 45},
+        {-85, 45},
+        {-85, 40},
+        {-89, 40}
+      ]]
+    }
+    obs = ObservationActions.list(located_within: poly)
+    assert length(obs) == 48
   end
 
   test "within_distance/2" do
     obs = ObservationActions.list(within_distance: {%Geo.Point{srid: 4326, coordinates: {1, 1}}, 1000})
     assert length(obs) == 0
 
-    obs = ObservationActions.list(within_distance: @point_and_distance)
-    assert length(obs) == @num_obs
+    obs = ObservationActions.list(within_distance: {
+      %Geo.Point{srid: 4326, coordinates: {-87.6022692567378, 41.8259500191867}},
+      20000
+    })
+    assert length(obs) == 48
   end
 
   test "histogram/2" do
@@ -273,16 +248,22 @@ defmodule Aot.Testing.ObservationQueriesTest do
   end
 
   test "handle_opts/2" do
-    # i want the average temperature by node
-    # from nodes within 2 km of my location
+    # i want the average humidity by node
+    # from nodes within 20 km of my location
     # and i know a few of these nodes report
     # bad data, so i'm setting an upper bound
-    ObservationActions.list(
-      for_sensor: "metsense.bmp180.temperature",
-      within_distance: @point_and_distance,
-      value_agg: {:avg, :node_id},
-      value_op: {:lt, 100}
-    )
-    |> Enum.each(fn [_node_id, avg] -> assert avg < 100 end)
+
+    pt = %Geo.Point{srid: 4326, coordinates: {-87.627678, 41.878377}}
+
+    obs =
+      ObservationActions.list(
+        for_sensor: "metsense.hih4030.humidity",
+        within_distance: {pt, 20000},
+        value_agg: {:avg, :node_id},
+        value_op: {:lt, 100},
+      )
+
+    assert length(obs) == 4
+    Enum.each(obs, fn [_node_id, avg] -> assert avg < 100 end)
   end
 end

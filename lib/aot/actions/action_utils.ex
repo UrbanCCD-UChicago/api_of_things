@@ -38,4 +38,12 @@ defmodule Aot.ActionUtils do
 
     Map.put(params, id_key, id_value)
   end
+
+  @doc """
+  Parses the timestamps found in the AoT archive files... because apparently
+  dumping values to an acutally readable ISO 8601 format is too much to ask for.
+  """
+  @spec parse_timestamp(String.t()) :: NaiveDateTime.t() | no_return()
+  def parse_timestamp(nil), do: nil
+  def parse_timestamp(value), do: Timex.parse!(value, "%Y/%m/%d %H:%M:%S", :strftime)
 end

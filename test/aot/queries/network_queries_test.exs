@@ -1,5 +1,5 @@
 defmodule Aot.Testing.NetworkQueriesTest do
-  use Aot.Testing.CompleteMetaCase
+  use Aot.Testing.BaseCase
 
   alias Aot.NetworkActions
 
@@ -19,65 +19,36 @@ defmodule Aot.Testing.NetworkQueriesTest do
     |> Enum.each(& assert Ecto.assoc_loaded?(&1.sensors))
   end
 
-  test "has_node/2", %{node1: node1, net1: net1, net2: net2} do
-    network_ids =
-      NetworkActions.list(has_node: node1)
-      |> Enum.map(& &1.id)
+  @tag add2ctx: :nodes
+  test "has_nodes/2", %{n000: n000, n004: n004, n006: n006} do
+    networks = NetworkActions.list(has_node: n000)
+    assert length(networks) == 1
 
-    assert length(network_ids) == 2
-
-    [net1.id, net2.id]
-    |> Enum.each(& assert Enum.member?(network_ids, &1))
+    networks = NetworkActions.list(has_nodes: [n004, n006])
+    assert length(networks) == 2
   end
 
-  test "has_nodes/2", %{node1: node1, node2: node2, net1: net1, net2: net2} do
-    network_ids =
-      NetworkActions.list(has_nodes: [node1, node2])
-      |> Enum.map(& &1.id)
+  @tag add2ctx: :sensors
+  test "has_sensors/2", %{s1: s1, s2: s2, s13: s13} do
+    networks = NetworkActions.list(has_sensor: s13)
+    assert length(networks) == 3
 
-    assert length(network_ids) == 2
-
-    [net1.id, net2.id]
-    |> Enum.each(& assert Enum.member?(network_ids, &1))
+    networks = NetworkActions.list(has_sensors: [s1, s2])
+    assert length(networks) == 1
   end
 
-  test "has_sensor/2", %{sensor3: sensor3, net1: net1, net2: net2} do
-    network_ids =
-      NetworkActions.list(has_sensor: sensor3)
-      |> Enum.map(& &1.id)
-
-    assert length(network_ids) == 2
-
-    [net1.id, net2.id]
-    |> Enum.each(& assert Enum.member?(network_ids, &1))
-  end
-
-  test "has_sensors/2", %{sensor1: sensor1, sensor3: sensor3, net1: net1, net2: net2, net3: net3} do
-    network_ids =
-      NetworkActions.list(has_sensors: [sensor1, sensor3])
-      |> Enum.map(& &1.id)
-
-    assert length(network_ids) == 3
-
-    [net1.id, net2.id, net3.id]
-    |> Enum.each(& assert Enum.member?(network_ids, &1))
-  end
-
-  test "bbox_contains/2", %{net3: net3} do
-    networks = NetworkActions.list(bbox_contains: %Geo.Point{srid: 4326, coordinates: {0, 0}})
+  test "bbox_contains/2" do
+    nope_point = %Geo.Point{srid: 4326, coordinates: {0, 0}}
+    networks = NetworkActions.list(bbox_contains: nope_point)
     assert length(networks) == 0
 
-    network_ids =
-      NetworkActions.list(bbox_contains: %Geo.Point{srid: 4326, coordinates: {-98.1234, 35.4321}})
-      |> Enum.map(& &1.id)
-
-    assert length(network_ids) == 1
-
-    [net3.id]
-    |> Enum.each(& assert Enum.member?(network_ids, &1))
+    point = %Geo.Point{srid: 4326, coordinates: {-87.6, 41.8}}
+    networks = NetworkActions.list(bbox_contains: point)
+    assert length(networks) == 2
   end
 
-  test "bbox_intersects/2", %{net1: net1, net2: net2} do
+  @tag add2ctx: :networks
+  test "bbox_intersects/2" do
     nope_poly = %Geo.Polygon{
       srid: 4326,
       coordinates: [[
@@ -101,31 +72,21 @@ defmodule Aot.Testing.NetworkQueriesTest do
         {-88, 40}
       ]]
     }
-    network_ids =
-      NetworkActions.list(bbox_intersects: chi_poly)
-      |> Enum.map(& &1.id)
-
-    assert length(network_ids) == 2
-
-    [net1.id, net2.id]
-    |> Enum.each(& assert Enum.member?(network_ids, &1))
+    networks = NetworkActions.list(bbox_intersects: chi_poly)
+    assert length(networks) == 2
   end
 
-  test "hull_contains/2", %{net3: net3} do
-    networks = NetworkActions.list(hull_contains: %Geo.Point{srid: 4326, coordinates: {0, 0}})
+  test "hull_contains/2" do
+    nope_point = %Geo.Point{srid: 4326, coordinates: {0, 0}}
+    networks = NetworkActions.list(hull_contains: nope_point)
     assert length(networks) == 0
 
-    network_ids =
-      NetworkActions.list(hull_contains: %Geo.Point{srid: 4326, coordinates: {-98.1234, 35.4321}})
-      |> Enum.map(& &1.id)
-
-    assert length(network_ids) == 1
-
-    [net3.id]
-    |> Enum.each(& assert Enum.member?(network_ids, &1))
+    point = %Geo.Point{srid: 4326, coordinates: {-87.6022692567378, 41.8259500191867}}
+    networks = NetworkActions.list(hull_contains: point)
+    assert length(networks) == 2
   end
 
-  test "hull_intersects/2", %{net1: net1, net2: net2} do
+  test "hull_intersects/2" do
     nope_poly = %Geo.Polygon{
       srid: 4326,
       coordinates: [[
@@ -149,17 +110,12 @@ defmodule Aot.Testing.NetworkQueriesTest do
         {-88, 40}
       ]]
     }
-    network_ids =
-      NetworkActions.list(hull_intersects: chi_poly)
-      |> Enum.map(& &1.id)
-
-    assert length(network_ids) == 2
-
-    [net1.id, net2.id]
-    |> Enum.each(& assert Enum.member?(network_ids, &1))
+    networks = NetworkActions.list(hull_intersects: chi_poly)
+    assert length(networks) == 2
   end
 
-  test "handle_opts/2", %{sensor1: sensor1, sensor2: sensor2, net1: net1, net2: net2} do
+  @tag add2ctx: [:sensors, :networks]
+  test "handle_opts/2", %{s1: s1, s2: s2, chicago_complete: chic} do
     chi_poly = %Geo.Polygon{
       srid: 4326,
       coordinates: [[
@@ -175,16 +131,12 @@ defmodule Aot.Testing.NetworkQueriesTest do
       NetworkActions.list(
         include_nodes: true,
         include_sensors: true,
-        has_sensors: [sensor1, sensor2],
+        has_sensors: [s1, s2],
         bbox_intersects: chi_poly
       )
 
     network_ids = Enum.map(networks, & &1.id)
-
-    assert length(network_ids) == 2
-
-    [net1.id, net2.id]
-    |> Enum.each(& assert Enum.member?(network_ids, &1))
+    assert network_ids == [chic.id]
 
     networks
     |> Enum.each(fn net ->

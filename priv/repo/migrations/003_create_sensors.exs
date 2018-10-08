@@ -9,8 +9,9 @@ defmodule Aot.Repo.Migrations.CreateSensors do
       add :parameter, :text, null: false
       add :path, :text, null: false
       add :unit, :text, default: nil
-      add :min_val, :float, default: nil
-      add :max_val, :float, default: nil
+      add :min_value, :float, default: nil
+      add :max_value, :float, default: nil
+      add :data_sheet, :text, default: nil
     end
 
     create unique_index(:sensors, [:subsystem, :sensor, :parameter], name: :sensors_ssp)

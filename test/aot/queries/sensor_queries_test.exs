@@ -1,5 +1,5 @@
 defmodule Aot.Testing.SensorQueriesTest do
-  use Aot.Testing.CompleteMetaCase
+  use Aot.Testing.BaseCase
 
   alias Aot.SensorActions
 
@@ -19,71 +19,37 @@ defmodule Aot.Testing.SensorQueriesTest do
     |> Enum.each(& assert Ecto.assoc_loaded?(&1.nodes))
   end
 
-  test "has_ontology/2", %{sensor1: sensor1, sensor2: sensor2} do
-    sensor_ids =
-      SensorActions.list(has_ontology: "/sensing/physical/temperature")
-      |> Enum.map(& &1.id)
+  test "has_ontology/2" do
+    sensors = SensorActions.list(has_ontology: "/sensing/air_quality/gases/co")
+    assert length(sensors) == 1
 
-    assert length(sensor_ids) == 2
-
-    [sensor1.id, sensor2.id]
-    |> Enum.each(& assert Enum.member?(sensor_ids, &1))
+    sensors = SensorActions.list(has_ontology: "/sensing/meteorology/humidity")
+    assert length(sensors) == 2
   end
 
-  test "observes_network/2", %{net3: net3, sensor1: sensor1, sensor2: sensor2} do
-    sensor_ids =
-      SensorActions.list(observes_network: net3)
-      |> Enum.map(& &1.id)
-
-    assert length(sensor_ids) == 2
-
-    [sensor1.id, sensor2.id]
-    |> Enum.each(& assert Enum.member?(sensor_ids, &1))
+  @tag add2ctx: :networks
+  test "observes_networks/2", %{chicago_complete: chic, denver: denver} do
+    sensors = SensorActions.list(observes_networks: [chic, denver])
+    assert length(sensors) == 13
   end
 
-  test "observes_networks/2", %{net1: net1, net3: net3, sensor1: sensor1, sensor2: sensor2, sensor3: sensor3} do
-    sensor_ids =
-      SensorActions.list(observes_networks: [net1, net3])
-      |> Enum.map(& &1.id)
-
-    assert length(sensor_ids) == 3
-
-    [sensor1.id, sensor2.id, sensor3.id]
-    |> Enum.each(& assert Enum.member?(sensor_ids, &1))
+  @tag add2ctx: :nodes
+  test "onboard_nodes/2", %{n004: n004, n000: n000} do
+    sensors = SensorActions.list(onboard_nodes: [n004, n000])
+    assert length(sensors) == 13
   end
 
-  test "onboard_node/2", %{node3: node3, sensor1: sensor1, sensor2: sensor2} do
-    sensor_ids =
-      SensorActions.list(onboard_node: node3)
-      |> Enum.map(& &1.id)
-
-    assert length(sensor_ids) == 2
-
-    [sensor1.id, sensor2.id]
-    |> Enum.each(& assert Enum.member?(sensor_ids, &1))
-  end
-
-  test "onboard_nodes/2", %{node1: node1, node2: node2, sensor1: sensor1, sensor2: sensor2, sensor3: sensor3} do
-    sensor_ids =
-      SensorActions.list(onboard_nodes: [node1, node2])
-      |> Enum.map(& &1.id)
-
-    assert length(sensor_ids) == 3
-
-    [sensor1.id, sensor2.id, sensor3.id]
-    |> Enum.each(& assert Enum.member?(sensor_ids, &1))
-  end
-
-  test "handle_opts/2", %{node1: node1, sensor1: sensor1, sensor2: sensor2} do
+  @tag add2ctx: [:nodes, :sensors]
+  test "handle_opts/2", %{n004: n004, s11: s11, s12: s12} do
     sensors =
       SensorActions.list(
         include_networks: true,
         include_nodes: true,
-        onboard_node: node1,
-        has_ontology: "/sensing/physical/temperature"
+        onboard_node: n004,
+        has_ontology: "/sensing/meteorology/humidity"
       )
 
-    assert Enum.map(sensors, & &1.id) == [sensor1.id, sensor2.id]
+    assert Enum.map(sensors, & &1.id) == [s11.id, s12.id]
     assert Enum.each(sensors, & assert Ecto.assoc_loaded?(&1.networks))
     assert Enum.each(sensors, & assert Ecto.assoc_loaded?(&1.nodes))
   end

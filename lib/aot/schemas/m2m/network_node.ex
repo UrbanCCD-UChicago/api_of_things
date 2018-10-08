@@ -2,7 +2,6 @@ defmodule Aot.NetworkNode do
   use Ecto.Schema
   import Ecto.Changeset
 
-  @primary_key false
   schema "networks_nodes" do
     belongs_to :network, Aot.Network
     belongs_to :node, Aot.Node, type: :string

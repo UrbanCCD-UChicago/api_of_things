@@ -2,7 +2,6 @@ defmodule Aot.NodeSensor do
   use Ecto.Schema
   import Ecto.Changeset
 
-  @primary_key false
   schema "nodes_sensors" do
     belongs_to :node, Aot.Node, type: :string
     belongs_to :sensor, Aot.Sensor

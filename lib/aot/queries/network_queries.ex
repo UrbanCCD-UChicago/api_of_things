@@ -11,7 +11,10 @@ defmodule Aot.NetworkQueries do
 
   import Geo.PostGIS, only: [
     st_contains: 2,
-    st_intersects: 2
+    st_convex_hull: 1,
+    st_envelope: 1,
+    st_intersects: 2,
+    st_union: 1
   ]
 
   alias Aot.{
@@ -119,5 +122,19 @@ defmodule Aot.NetworkQueries do
     ]
     |> Keyword.merge(opts)
     |> apply_opts(query, NetworkQueries)
+  end
+
+  def bbox(id) do
+    from n in Node,
+    left_join: nn in NetworkNode, on: n.id == nn.node_id,
+    where: nn.network_id == ^id,
+    select: st_envelope(st_union(n.location))
+  end
+
+  def hull(id) do
+    from n in Node,
+    left_join: nn in NetworkNode, on: n.id == nn.node_id,
+    where: nn.network_id == ^id,
+    select: st_convex_hull(st_union(n.location))
   end
 end

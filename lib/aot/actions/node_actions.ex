@@ -54,4 +54,20 @@ defmodule Aot.NodeActions do
     |> NodeQueries.handle_opts(opts)
     |> Repo.one!()
   end
+
+  def node_csv_row_to_params(row) do
+    %{
+      id: row["node_id"],
+      vsn: row["vsn"],
+      longitude: row["lon"],
+      latitude: row["lat"],
+      address: row["address"],
+      description: row["description"],
+      commissioned_on: parse_timestamp(row["start_timestamp"]),
+      decommissioned_on: parse_timestamp(empty_to_nil(row["end_timestamp"]))
+    }
+  end
+
+  defp empty_to_nil(""), do: nil
+  defp empty_to_nil(value), do: value
 end

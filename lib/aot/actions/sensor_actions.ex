@@ -54,4 +54,18 @@ defmodule Aot.SensorActions do
     |> SensorQueries.handle_opts(opts)
     |> Repo.one!()
   end
+
+  def sensor_csv_row_to_params(%{"parameter" => "id"}), do: nil
+  def sensor_csv_row_to_params(row) do
+    %{
+      ontology: row["ontology"],
+      subsystem: row["subsystem"],
+      sensor: row["sensor"],
+      parameter: row["parameter"],
+      unit: row["hrf_unit"],
+      min_value: row["hrf_minval"],
+      max_value: row["hrf_maxval"],
+      data_sheet: row["datasheet"]
+    }
+  end
 end

@@ -1,36 +1,7 @@
 defmodule Aot.Testing.RawObservationQueriesTest do
-  use Aot.Testing.RawObservationsCase
+  use Aot.Testing.BaseCase
 
-  alias Aot.{
-    NetworkActions,
-    RawObservationActions
-  }
-
-  @num_obs 806
-
-  @node_obs 11
-
-  @sensor_obs 28
-
-  @timestamp ~N[2018-09-28 16:35:48]
-  @ts_eq 61
-  @ts_lt 161
-  @ts_le 222
-  @ts_ge 645
-  @ts_gt 584
-
-  @polygon %Geo.Polygon{
-    srid: 4326,
-    coordinates: [[
-      {-89, 40},
-      {-89, 45},
-      {-85, 45},
-      {-85, 40},
-      {-89, 40}
-    ]]
-  }
-
-  @point_and_distance {%Geo.Point{srid: 4326, coordinates: {-87.12, 41.43}}, 2000}
+  alias Aot.RawObservationActions
 
   test "include_node/1" do
     RawObservationActions.list()
@@ -56,58 +27,54 @@ defmodule Aot.Testing.RawObservationQueriesTest do
     |> Enum.map(& assert Ecto.assoc_loaded?(&1.node.networks))
   end
 
-  test "for_network/2", %{network: network} do
-    {:ok, net} =
-      NetworkActions.create(
-        name: "Chicago Complete",
-        archive_url: "https://example.com/archive1",
-        recent_url: "https://example.com/recent1",
-        first_observation: ~N[2018-01-01 00:00:00],
-        latest_observation: NaiveDateTime.utc_now()
-      )
-
-    obs = RawObservationActions.list(for_network: net)
-    assert length(obs) == 0
-
-    obs = RawObservationActions.list(for_network: network)
-    assert length(obs) == @num_obs
+  @tag add2ctx: :networks
+  test "for_network/2", %{denver: denver} do
+    obs = RawObservationActions.list(for_network: denver)
+    assert length(obs) == 12
 
   end
 
-  test "for_node/2", %{node: node} do
+  @tag add2ctx: :nodes
+  test "for_node/2", %{n000: node} do
     obs = RawObservationActions.list(for_node: node)
-    assert length(obs) == @node_obs
+    assert length(obs) == 12
   end
 
-  test "for_sensor/2", %{sensor: sensor} do
-    obs = RawObservationActions.list(for_sensor: sensor)
-    assert length(obs) == @sensor_obs
+  @tag add2ctx: :sensors
+  test "for_sensor/2", %{s1: s1, s13: s13} do
+    obs = RawObservationActions.list(for_sensor: s1)
+    assert length(obs) == 12
+
+    obs = RawObservationActions.list(for_sensor: s13)
+    assert length(obs) == 20
   end
 
   describe "timestamp_op/2" do
+    @timestamp ~N[2018-10-01 00:01:00]
+
     test "eq" do
       obs = RawObservationActions.list(timestamp_op: {:eq, @timestamp})
-      assert length(obs) == @ts_eq
+      assert length(obs) == 45
     end
 
     test "lt" do
       obs = RawObservationActions.list(timestamp_op: {:lt, @timestamp})
-      assert length(obs) == @ts_lt
+      assert length(obs) == 90
     end
 
     test "le" do
       obs = RawObservationActions.list(timestamp_op: {:le, @timestamp})
-      assert length(obs) == @ts_le
+      assert length(obs) == 135
     end
 
     test "ge" do
       obs = RawObservationActions.list(timestamp_op: {:ge, @timestamp})
-      assert length(obs) == @ts_ge
+      assert length(obs) == 90
     end
 
     test "gt" do
       obs = RawObservationActions.list(timestamp_op: {:gt, @timestamp})
-      assert length(obs) == @ts_gt
+      assert length(obs) == 45
     end
   end
 
@@ -124,15 +91,28 @@ defmodule Aot.Testing.RawObservationQueriesTest do
     })
     assert length(obs) == 0
 
-    obs = RawObservationActions.list(located_within: @polygon)
-    assert length(obs) == @num_obs
+    poly = %Geo.Polygon{
+      srid: 4326,
+      coordinates: [[
+        {-89, 40},
+        {-89, 45},
+        {-85, 45},
+        {-85, 40},
+        {-89, 40}
+      ]]
+    }
+    obs = RawObservationActions.list(located_within: poly)
+    assert length(obs) == 168
   end
 
   test "within_distance/2" do
     obs = RawObservationActions.list(within_distance: {%Geo.Point{srid: 4326, coordinates: {1, 1}}, 1000})
     assert length(obs) == 0
 
-    obs = RawObservationActions.list(within_distance: @point_and_distance)
-    assert length(obs) == @num_obs
+    obs = RawObservationActions.list(within_distance: {
+      %Geo.Point{srid: 4326, coordinates: {-87.6022692567378, 41.8259500191867}},
+      20000
+    })
+    assert length(obs) == 168
   end
 end

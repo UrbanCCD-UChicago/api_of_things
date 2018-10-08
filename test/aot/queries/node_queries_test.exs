@@ -1,5 +1,5 @@
 defmodule Aot.Testing.NodeQueriesTest do
-  use Aot.Testing.CompleteMetaCase
+  use Aot.Testing.BaseCase
 
   alias Aot.NodeActions
 
@@ -21,59 +21,33 @@ defmodule Aot.Testing.NodeQueriesTest do
 
   test "assert_alive/1" do
     nodes = NodeActions.list(assert_alive: true)
-    assert length(nodes) == 3
+    assert length(nodes) == 5
   end
 
   test "assert_dead/1" do
     nodes = NodeActions.list(assert_dead: true)
-    assert length(nodes) == 0
+    assert length(nodes) == 1
   end
 
-  test "within_network/2", %{net1: net1, node1: node1, node2: node2} do
-    node_ids =
-      NodeActions.list(within_network: net1)
-      |> Enum.map(& &1.id)
+  @tag add2ctx: [:networks, :nodes]
+  test "within_networks/2", %{denver: denver, chicago_complete: chic} do
+    nodes = NodeActions.list(within_network: denver)
+    assert length(nodes) == 1
 
-    assert length(node_ids) == 2
-
-    [node1.id, node2.id]
-    |> Enum.each(& assert Enum.member?(node_ids, &1))
+    nodes = NodeActions.list(within_networks: [denver, chic])
+    assert length(nodes) == 6
   end
 
-  test "witin_networks/2", %{net1: net1, net3: net3, node1: node1, node2: node2, node3: node3} do
-    node_ids =
-      NodeActions.list(within_networks: [net1, net3])
-      |> Enum.map(& &1.id)
+  @tag add2ctx: [:sensors, :nodes]
+  test "has_sensors/2", %{s12: s12, s13: s13} do
+    nodes = NodeActions.list(has_sensor: s12)
+    assert length(nodes) == 5
 
-    assert length(node_ids) == 3
-
-    [node1.id, node2.id, node3.id]
-    |> Enum.each(& assert Enum.member?(node_ids, &1))
+    nodes = NodeActions.list(has_sensors: [s12, s13])
+    assert length(nodes) == 5
   end
 
-  test "has_sensor/2", %{sensor3: sensor3, node1: node1, node2: node2} do
-    node_ids =
-      NodeActions.list(has_sensor: sensor3)
-      |> Enum.map(& &1.id)
-
-    assert length(node_ids) == 2
-
-    [node1.id, node2.id]
-    |> Enum.each(& assert Enum.member?(node_ids, &1))
-  end
-
-  test "has_sensors/2", %{sensor1: sensor1, sensor2: sensor2, node1: node1, node2: node2, node3: node3} do
-    node_ids =
-      NodeActions.list(has_sensors: [sensor1, sensor2])
-      |> Enum.map(& &1.id)
-
-    assert length(node_ids) == 3
-
-    [node1.id, node2.id, node3.id]
-    |> Enum.each(& assert Enum.member?(node_ids, &1))
-  end
-
-  test "located_witin/2", %{node1: node1, node2: node2} do
+  test "located_witin/2" do
     nodes = NodeActions.list(located_within: %Geo.Polygon{
       srid: 4326,
       coordinates: [[
@@ -86,114 +60,84 @@ defmodule Aot.Testing.NodeQueriesTest do
     })
     assert length(nodes) == 0
 
-    node_ids =
-      NodeActions.list(located_within: %Geo.Polygon{
-        srid: 4326,
-        coordinates: [[
-          {-89, 40},
-          {-89, 45},
-          {-85, 45},
-          {-85, 40},
-          {-89, 40}
-        ]]
-      })
-      |> Enum.map(& &1.id)
+    nodes =
+      NodeActions.list(located_within:
+        %Geo.Polygon{
+          srid: 4326,
+          coordinates: [[
+            {-89, 40},
+            {-89, 45},
+            {-85, 45},
+            {-85, 40},
+            {-89, 40}
+          ]]
+        })
 
-    assert length(node_ids) == 2
-
-    [node1.id, node2.id]
-    |> Enum.each(& assert Enum.member?(node_ids, &1))
+    assert length(nodes) == 5
   end
 
-  test "within_distance", %{node3: node3} do
+  test "within_distance" do
     nodes = NodeActions.list(within_distance: {%Geo.Point{srid: 4326, coordinates: {1, 2}}, 2000})
     assert length(nodes) == 0
 
-    node_ids =
-      NodeActions.list(within_distance: {%Geo.Point{srid: 4326, coordinates: {-98.12, 35.43}}, 2000})
-      |> Enum.map(& &1.id)
+    nodes =
+      NodeActions.list(within_distance: {
+        %Geo.Point{srid: 4326, coordinates: {-87.6022692567378, 41.8259500191867}},
+        20000
+      })
 
-    assert length(node_ids) == 1
-
-    [node3.id]
-    |> Enum.each(& assert Enum.member?(node_ids, &1))
+    assert length(nodes) == 5
   end
 
   describe "commissioned_on_op/2" do
-    test "eq", %{node1: node1} do
-      node_ids =
-        NodeActions.list(commissioned_on_op: {:eq, ~N[2018-04-21 15:00:00]})
-        |> Enum.map(& &1.id)
-
-      assert length(node_ids) == 1
-
-      [node1.id]
-      |> Enum.each(& assert Enum.member?(node_ids, &1))
+    test "eq" do
+      nodes = NodeActions.list(commissioned_on_op: {:eq, ~N[2018-04-21 15:00:00]})
+      assert nodes == []
     end
 
-    test "lt", %{node2: node2, node3: node3} do
-      node_ids =
-        NodeActions.list(commissioned_on_op: {:lt, ~N[2018-04-21 15:00:00]})
-        |> Enum.map( & &1.id)
-
-      assert length(node_ids) == 2
-
-      [node3.id, node2.id]
-      |> Enum.each(& assert Enum.member?(node_ids, &1))
+    test "lt" do
+      nodes = NodeActions.list(commissioned_on_op: {:lt, ~N[2018-04-21 15:00:00]})
+      assert length(nodes) == 6
     end
 
-    test "le", %{node1: node1, node2: node2, node3: node3} do
-      node_ids =
-        NodeActions.list(commissioned_on_op: {:le, ~N[2018-04-21 15:00:00]})
-        |> Enum.map( & &1.id)
-
-      assert length(node_ids) == 3
-
-      [node1.id, node2.id, node3.id]
-      |> Enum.each(& assert Enum.member?(node_ids, &1))
+    test "le" do
+      nodes = NodeActions.list(commissioned_on_op: {:le, ~N[2017-12-01 00:00:00]})
+      assert length(nodes) == 4
     end
 
-    test "ge", %{node1: node1} do
-      node_ids =
-        NodeActions.list(commissioned_on_op: {:ge, ~N[2018-04-21 15:00:00]})
-        |> Enum.map(& &1.id)
-
-      assert length(node_ids) == 1
-
-      [node1.id]
-      |> Enum.each(& assert Enum.member?(node_ids, &1))
+    test "ge" do
+      nodes = NodeActions.list(commissioned_on_op: {:ge, ~N[2017-12-01 00:00:00]})
+      assert length(nodes) == 3
     end
 
     test "gt" do
-      node_ids =
-        NodeActions.list(commissioned_on_op: {:gt, ~N[2018-04-21 15:00:00]})
-        |> Enum.map(& &1.id)
-
-      assert node_ids == []
+      nodes = NodeActions.list(commissioned_on_op: {:gt, ~N[2018-04-21 15:00:00]})
+      assert nodes == []
     end
   end
 
-  test "handle_opts/2", %{node1: node1, node2: node2, net1: net1, net2: net2, sensor1: sensor1, sensor2: sensor2, sensor3: sensor3} do
-    # make node2 dead
-    {:ok, node2} = NodeActions.update(node2, decommissioned_on: NaiveDateTime.utc_now())
-
+  @tag add2ctx: [:sensors, :nodes]
+  test "handle_opts/2", %{s1: s1, n004: n004, n006: n006, n00D: n00D} do
     nodes =
       NodeActions.list(
         include_networks: true,
         include_sensors: true,
         assert_alive: true,
-        has_sensor: sensor1,
-        within_distance: {%Geo.Point{srid: 4326, coordinates: {-87.12, 41.43}}, 2000}
+        has_sensor: s1,
+        within_distance: {%Geo.Point{srid: 4326, coordinates: {-87.6022692567378, 41.8259500191867}}, 20000}
       )
 
-    assert length(nodes) == 1
-    node = List.first(nodes)
+    assert length(nodes) == 3
 
-    assert node.id == node1.id
-    assert Enum.map(node.networks, & &1.id) == [net1.id, net2.id]
-    assert Enum.map(node.sensors, & &1.id) == [sensor1.id, sensor2.id, sensor3.id]
+    node_ids = Enum.map(nodes, & &1.id)
+    [n004.id, n006.id, n00D.id]
+    |> Enum.each(& assert Enum.member?(node_ids, &1))
 
-    # undo kill
-    {:ok, _} = NodeActions.update(node2, decommissioned_on: nil)
+    nodes
+    |> Enum.each(fn node ->
+      assert Ecto.assoc_loaded?(node.networks)
+      assert Ecto.assoc_loaded?(node.sensors)
+      assert Enum.member?(Enum.map(node.sensors, & &1.id), s1.id)
+    end)
   end
 end

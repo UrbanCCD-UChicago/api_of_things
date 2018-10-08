@@ -29,6 +29,9 @@ defmodule Aot.Sensor do
 
     # cleaned value's unit of measurement
     field :unit, :string, default: nil
+    field :min_value, :float, default: nil
+    field :max_value, :float, default: nil
+    field :data_sheet, :string, default: nil
 
     # reverse relationships
     has_many :observations, Observation
@@ -37,7 +40,7 @@ defmodule Aot.Sensor do
     many_to_many :nodes, Node, join_through: NodeSensor
   end
 
-  @attrs ~W( ontology subsystem sensor parameter  unit ) |> Enum.map(&String.to_atom/1)
+  @attrs ~W( ontology subsystem sensor parameter unit min_value max_value data_sheet ) |> Enum.map(&String.to_atom/1)
   @reqd ~W( ontology subsystem sensor parameter ) |> Enum.map(&String.to_atom/1)
   @uniq "the set of {subsystem, sensor, parameter} has already been taken"
 

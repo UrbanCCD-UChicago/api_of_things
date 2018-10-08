@@ -7,7 +7,7 @@ config :aot, AotWeb.Endpoint,
   server: false
 
 # Print only warnings and errors during test
-config :logger, level: :warn
+config :logger, level: :debug
 
 # Configure your databases
 config :aot, Aot.Repo, pool: Ecto.Adapters.SQL.Sandbox

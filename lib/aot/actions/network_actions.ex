@@ -11,12 +11,14 @@ defmodule Aot.NetworkActions do
     Repo
   }
 
-  @type ok_network :: {:ok, Aot.Network.t()} | {:error, Ecto.Changeset.t()}
+  alias Ecto.Changeset
+
+  # CRUD FUNCTIONS
 
   @doc """
   Creates a new Network.
   """
-  @spec create(keyword() | map()) :: ok_network
+  @spec create(keyword() | map()) :: {:ok, Network.t()} | {:error, Changeset.t()}
   def create(params) do
     params = atomize(params)
 
@@ -27,7 +29,7 @@ defmodule Aot.NetworkActions do
   @doc """
   Updates an existing Network.
   """
-  @spec update(Network.t(), keyword() | map()) :: ok_network
+  @spec update(Network.t(), keyword() | map()) :: {:ok, Network.t()} | {:error, Changeset.t()}
   def update(network, params) do
     params = atomize(params)
 
@@ -45,6 +47,10 @@ defmodule Aot.NetworkActions do
     |> Repo.all()
   end
 
+  @doc """
+  Gets a single Network and optionally augments the query.
+  """
+  @spec get(String.t() | integer(), keyword()) :: {:ok, Network.t()} | {:error, :not_found}
   def get(id, opts \\ []) do
     resp =
       NetworkQueries.get(id)
@@ -57,13 +63,39 @@ defmodule Aot.NetworkActions do
     end
   end
 
+  # UPDATE HELPERS
+
   @doc """
-  Gets a single Network and optionally augments the query.
+  Uses PostGIS functions to compute a bounding box from the
+  related Nodes' locations.
   """
-  @spec get!(String.t() | integer(), keyword()) :: Network.t()
-  def get!(id, opts \\ []) do
-    NetworkQueries.get(id)
-    |> NetworkQueries.handle_opts(opts)
-    |> Repo.one!()
+  @spec compute_bbox(Network.t() | integer()) :: Geo.Polygon.t()
+  def compute_bbox(%Network{id: id}), do: compute_bbox(id)
+  def compute_bbox(id) do
+    poly =
+      NetworkQueries.bbox(id)
+      |> Repo.one()
+
+    case poly do
+      %Geo.Polygon{} -> %Geo.Polygon{poly | srid: 4326}
+      _ -> nil
+    end
+  end
+
+  @doc """
+  Uses PostGIS functions to compute a convex hull from the
+  related Nodes' locations.
+  """
+  @spec compute_hull(Network.t() | integer()) :: Geo.Polygon.t()
+  def compute_hull(%Network{id: id}), do: compute_hull(id)
+  def compute_hull(id) do
+    poly =
+      NetworkQueries.hull(id)
+      |> Repo.one()
+
+    case poly do
+      %Geo.Polygon{} -> %Geo.Polygon{poly | srid: 4326}
+      _ -> nil
+    end
   end
 end
