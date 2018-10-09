@@ -15,11 +15,10 @@ defmodule Aot.Network do
 
   alias Geo.PostGIS.Geometry
 
+  @primary_key {:slug, :string, autogenerate: false}
   @derive {Phoenix.Param, key: :slug}
   schema "networks" do
-    # identification
     field :name, :string
-    field :slug, :string
 
     # source info
     field :archive_url, :string
@@ -34,8 +33,13 @@ defmodule Aot.Network do
     field :hull, Geometry, default: nil
 
     # reverse relationships
-    many_to_many :nodes, Node, join_through: NetworkNode
-    many_to_many :sensors, Sensor, join_through: NetworkSensor
+    many_to_many :nodes, Node,
+      join_through: NetworkNode,
+      join_keys: [network_slug: :slug, node_id: :id]
+
+    many_to_many :sensors, Sensor,
+      join_through: NetworkSensor,
+      join_keys: [network_slug: :slug, sensor_path: :path]
   end
 
   @attrs ~W( name bbox hull archive_url recent_url bbox hull first_observation latest_observation ) |> Enum.map(&String.to_atom/1)

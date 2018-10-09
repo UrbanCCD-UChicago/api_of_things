@@ -70,14 +70,14 @@ defmodule Aot.NetworkActions do
   related Nodes' locations.
   """
   @spec compute_bbox(Network.t() | integer()) :: Geo.Polygon.t()
-  def compute_bbox(%Network{id: id}), do: compute_bbox(id)
-  def compute_bbox(id) do
+  def compute_bbox(%Network{slug: slug}), do: compute_bbox(slug)
+  def compute_bbox(slug) do
     poly =
-      NetworkQueries.bbox(id)
+      NetworkQueries.compute_bbox(slug)
       |> Repo.one()
 
     case poly do
-      %Geo.Polygon{} -> %Geo.Polygon{poly | srid: 4326}
+      %Geo.Polygon{} -> poly
       _ -> nil
     end
   end
@@ -87,14 +87,14 @@ defmodule Aot.NetworkActions do
   related Nodes' locations.
   """
   @spec compute_hull(Network.t() | integer()) :: Geo.Polygon.t()
-  def compute_hull(%Network{id: id}), do: compute_hull(id)
-  def compute_hull(id) do
+  def compute_hull(%Network{slug: slug}), do: compute_hull(slug)
+  def compute_hull(slug) do
     poly =
-      NetworkQueries.hull(id)
+      NetworkQueries.compute_hull(slug)
       |> Repo.one()
 
     case poly do
-      %Geo.Polygon{} -> %Geo.Polygon{poly | srid: 4326}
+      %Geo.Polygon{} -> poly
       _ -> nil
     end
   end

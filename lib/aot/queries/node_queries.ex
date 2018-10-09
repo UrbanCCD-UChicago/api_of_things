@@ -1,11 +1,9 @@
 defmodule Aot.NodeQueries do
   @moduledoc """
-  Stored base queries and functions to compose queries for Nodes.
   """
 
   import Aot.QueryUtils, only: [
-    apply_opts: 3,
-    typed_field_op: 5
+    apply_opts: 3
   ]
 
   import Ecto.Query
@@ -24,100 +22,155 @@ defmodule Aot.NodeQueries do
     Sensor
   }
 
-  @spec list() :: Ecto.Queryable.t()
-  def list, do: Node
+  # BASE QUERIES
 
-  @spec get(String.t()) :: Ecto.Queryable.t()
-  def get(id), do: where(Node, [n], n.id == ^id or n.vsn == ^id)
+  def list,
+    do: from node in Node
 
-  @spec include_networks(Ecto.Queryable.t()) :: Ecto.Queryable.t()
-  def include_networks(query), do: preload(query, networks: :nodes)
+  def get(id),
+    do: from node in Node,
+      where: node.id == ^id
 
-  @spec include_sensors(Ecto.Queryable.t()) :: Ecto.Queryable.t()
-  def include_sensors(query), do: preload(query, sensors: :nodes)
+  # BOOLEAN COMPOSE
 
-  @spec assert_alive(Ecto.Queryable.t()) :: Ecto.Queryable.t()
-  def assert_alive(query), do: where(query, [n], is_nil(n.decommissioned_on))
+  def include_networks(query),
+    do: from node in query,
+      preload: [networks: :nodes]
 
-  @spec assert_dead(Ecto.Queryable.t()) :: Ecto.Queryable.t()
-  def assert_dead(query), do: where(query, [n], not is_nil(n.decommissioned_on))
+  def include_sensors(query),
+    do: from node in query,
+      preload: [sensors: :nodes]
 
-  @spec within_network(Ecto.Queryable.t(), Network.t() | integer() | String.t()) :: Ecto.Queryable.t()
-  def within_network(query, %Network{id: id}), do: within_network(query, id)
-  def within_network(query, id), do: within_networks(query, [id])
+  def assert_alive(query),
+    do: from node in query,
+      where: is_nil(node.decommissioned_on)
 
-  @spec within_networks(Ecto.Queryable.t(), list(Network.t() | integer() | String.t())) :: Ecto.Queryable.t()
-  def within_networks(query, networks) do
-    network_ids =
+  def assert_dead(query),
+    do: from node in query,
+      where: not is_nil(node.decommissioned_on)
+
+
+  # FILTER COMPOSE
+
+  def within_network(query, %Network{slug: slug}),
+    do: within_network(query, slug)
+
+  def within_network(query, slug) when is_binary(slug),
+    do: within_networks(query, [slug])
+
+  def within_networks(query, networks) when is_list(networks) do
+    slugs =
       networks
-      |> Enum.map(fn network ->
-        case network do
-          %Network{id: id} -> id
-          id -> id
+      |> Enum.map(fn net ->
+        case net do
+          %Network{} -> net.slug
+          slug -> slug
         end
       end)
-      |> Enum.map(& "#{&1}")
 
-    from n in query,
-      left_join: nn in NetworkNode, on: n.id == nn.node_id,
-      left_join: e in Network, on: e.id == nn.network_id,
-      where: fragment("?::text = ANY(?)", e.id, type(^network_ids, {:array, :string})) or e.slug in type(^network_ids, {:array, :string}),
-      distinct: true
+    from node in query,
+      left_join: nn in NetworkNode, as: :nn, on: nn.node_id == node.id,
+      left_join: net in Network, as: :net, on: nn.network_slug == net.slug,
+      where: net.slug in ^slugs
   end
 
-  @spec has_sensor(Ecto.Queryable.t(), Sensor.t() | integer() | String.t()) :: Ecto.Queryable.t()
-  def has_sensor(query, %Sensor{id: id}), do: has_sensor(query, id)
-  def has_sensor(query, id), do: has_sensors(query, [id])
+  def within_networks_exact(query, networks) when is_list(networks) do
+    slugs =
+      networks
+      |> Enum.map(fn net ->
+        case net do
+          %Network{} -> net.slug
+          slug -> slug
+        end
+      end)
 
-  @spec has_sensors(Ecto.Queryable.t(), list(Sensor.t() | integer() | String.t())) :: Ecto.Queryable.t()
-  def has_sensors(query, sensors) do
-    sensor_ids =
+    from node in query,
+      left_join: nn in NetworkNode, as: :nn, on: nn.node_id == node.id,
+      left_join: net in Network, as: :net, on: nn.network_slug == net.slug,
+      group_by: node.id,
+      having: fragment("array_agg(?) @> ?", net.slug, ^slugs)
+  end
+
+  def has_sensor(query, %Sensor{path: path}),
+    do: has_sensor(query, path)
+
+  def has_sensor(query, path) when is_binary(path),
+    do: has_sensors(query, [path])
+
+  def has_sensors(query, sensors) when is_list(sensors) do
+    paths =
       sensors
       |> Enum.map(fn sensor ->
         case sensor do
-          %Sensor{id: id} -> id
-          id -> id
+          %Sensor{} -> sensor.path
+          path -> path
         end
       end)
-      |> Enum.map(& "#{&1}")
 
-    from n in query,
-      left_join: ns in NodeSensor, on: n.id == ns.node_id,
-      left_join: s in Sensor, on: s.id == ns.sensor_id,
-      where: fragment("?::text = ANY(?)", s.id, type(^sensor_ids, {:array, :string})) or s.path in type(^sensor_ids, {:array, :string}),
-      distinct: true
+    from node in query,
+      left_join: ns in NodeSensor, as: :ns, on: ns.node_id == node.id,
+      left_join: sensor in Sensor, as: :sensor, on: ns.sensor_path == sensor.path,
+      where: sensor.path in ^paths
   end
 
-  @spec located_within(Ecto.Queryable.t(), Geo.PostGIS.Geometry.t()) :: Ecto.Queryable.t()
-  def located_within(query, geom), do: where(query, [n], st_contains(^geom, n.location))
+  def has_sensors_exact(query, sensors) when is_list(sensors) do
+    paths =
+      sensors
+      |> Enum.map(fn sensor ->
+        case sensor do
+          %Sensor{} -> sensor.path
+          path -> path
+        end
+      end)
 
-  @spec within_distance(Ecto.Queryable.t(), {Geo.PostGIS.Geometry.t(), float()}) :: Ecto.Queryable.t()
-  def within_distance(query, {geom, meters}), do: where(query, [n], st_dwithin_in_meters(n.location, ^geom, ^meters))
+    from node in query,
+      left_join: ns in NodeSensor, as: :ns, on: ns.node_id == node.id,
+      left_join: sensor in Sensor, as: :sensor, on: ns.sensor_path == sensor.path,
+      group_by: node.id,
+      having: fragment("array_agg(?) @> ?", sensor.path, ^paths)
+  end
 
-  @spec commissioned_on_op(Ecto.Queryable.t(), {:between | :eq | :ge | :gt | :in | :le | :lt, NaiveDateTime.t()}) :: Ecto.Queryable.t()
-  def commissioned_on_op(query, {op, value}), do: typed_field_op(query, :commissioned_on, op, value, :naive_datetime)
+  def located_within_distance(query, {meters, geom}),
+    do: from node in query,
+      where: st_dwithin_in_meters(node.location, ^geom, ^meters)
 
-  @spec decommissioned_on_op(Ecto.Queryable.t(), {:between | :eq | :ge | :gt | :in | :le | :lt, NaiveDateTime.t()}) :: Ecto.Queryable.t()
-  def decommissioned_on_op(query, {op, value}), do: typed_field_op(query, :decommissioned_on, op, value, :naive_datetime)
+  def located_within(query, geom),
+    do: from node in query,
+      where: st_contains(^geom, node.location)
+
+  def commissioned_on(query, {:lt, value}), do: from node in query, where: node.commissioned_on < ^value
+  def commissioned_on(query, {:le, value}), do: from node in query, where: node.commissioned_on <= ^value
+  def commissioned_on(query, {:eq, value}), do: from node in query, where: node.commissioned_on == ^value
+  def commissioned_on(query, {:ge, value}), do: from node in query, where: node.commissioned_on >= ^value
+  def commissioned_on(query, {:gt, value}), do: from node in query, where: node.commissioned_on > ^value
+
+  def decommissioned_on(query, {:lt, value}), do: from node in query, where: node.decommissioned_on < ^value
+  def decommissioned_on(query, {:le, value}), do: from node in query, where: node.decommissioned_on <= ^value
+  def decommissioned_on(query, {:eq, value}), do: from node in query, where: node.decommissioned_on == ^value
+  def decommissioned_on(query, {:ge, value}), do: from node in query, where: node.decommissioned_on >= ^value
+  def decommissioned_on(query, {:gt, value}), do: from node in query, where: node.decommissioned_on > ^value
 
   defdelegate order(query, args), to: Aot.QueryUtils
   defdelegate paginate(query, args), to: Aot.QueryUtils
 
-  @spec handle_opts(Ecto.Queryable.t(), keyword()) :: Ecto.Queryable.t()
+  # OTHER ACTION HELPERS
+
   def handle_opts(query, opts \\ []) do
     [
       include_networks: false,
       include_sensors: false,
       assert_alive: false,
       assert_dead: false,
-      within_network: :empty,
-      within_networks: :empty,
+      has_network: :empty,
+      has_networks: :empty,
+      has_networks_exact: :empty,
       has_sensor: :empty,
       has_sensors: :empty,
+      has_sensors_exact: :empty,
+      located_within_distance: :empty,
       located_within: :empty,
-      within_distance: :empty,
-      commissioned_on_op: :empty,
-      decommissioned_on_op: :empty,
+      commissioned_on: :empty,
+      decommissioned_on: :empty,
       order: :empty,
       paginate: :empty
     ]
@@ -125,3 +178,38 @@ defmodule Aot.NodeQueries do
     |> apply_opts(query, NodeQueries)
   end
 end
+
+
+
+
+# defmodule Aot.NodeQueries do
+
+#   def commissioned_on_op(query, {op, value}), do: typed_field_op(query, :commissioned_on, op, value, :naive_datetime)
+
+#   def decommissioned_on_op(query, {op, value}), do: typed_field_op(query, :decommissioned_on, op, value, :naive_datetime)
+
+#   defdelegate order(query, args), to: Aot.QueryUtils
+#   defdelegate paginate(query, args), to: Aot.QueryUtils
+
+#   @spec handle_opts(Ecto.Queryable.t(), keyword()) :: Ecto.Queryable.t()
+#   def handle_opts(query, opts \\ []) do
+#     [
+#       include_networks: false,
+#       include_sensors: false,
+#       assert_alive: false,
+#       assert_dead: false,
+#       within_network: :empty,
+#       within_networks: :empty,
+#       has_sensor: :empty,
+#       has_sensors: :empty,
+#       located_within: :empty,
+#       within_distance: :empty,
+#       commissioned_on_op: :empty,
+#       decommissioned_on_op: :empty,
+#       order: :empty,
+#       paginate: :empty
+#     ]
+#     |> Keyword.merge(opts)
+#     |> apply_opts(query, NodeQueries)
+#   end
+# end

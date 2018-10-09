@@ -15,6 +15,12 @@ defmodule Aot.Sensor do
     Observation
   }
 
+  # the path field is the dotted join of subsystem, sensor and parameter
+  # it's there so we can provide a string id for the sensor and be able
+  # to do observations ops like ``metsense.htu21d.temperature > 30``.
+
+  @primary_key {:path, :string, autogenerate: false}
+  @derive {Phoenix.Param, key: :path}
   schema "sensors" do
     # path
     field :ontology, :string
@@ -22,25 +28,26 @@ defmodule Aot.Sensor do
     field :sensor, :string
     field :parameter, :string
 
-    # the path field is the dotted join of subsystem, sensor and parameter
-    # it's there so we can provide a string id for the sensor and be able
-    # to do observations ops like ``metsense.htu21d.temperature > 30``.
-    field :path, :string
-
     # cleaned value's unit of measurement
-    field :unit, :string, default: nil
-    field :min_value, :float, default: nil
-    field :max_value, :float, default: nil
+    field :uom, :string, default: nil
+    field :min, :float, default: nil
+    field :max, :float, default: nil
     field :data_sheet, :string, default: nil
 
     # reverse relationships
     has_many :observations, Observation
     has_many :raw_observations, RawObservation
-    many_to_many :networks, Network, join_through: NetworkSensor
-    many_to_many :nodes, Node, join_through: NodeSensor
+
+    many_to_many :networks, Network,
+      join_through: NetworkSensor,
+      join_keys: [sensor_path: :path, network_slug: :slug]
+
+    many_to_many :nodes, Node,
+      join_through: NodeSensor,
+      join_keys: [sensor_path: :path, node_id: :id]
   end
 
-  @attrs ~W( ontology subsystem sensor parameter unit min_value max_value data_sheet ) |> Enum.map(&String.to_atom/1)
+  @attrs ~W( ontology subsystem sensor parameter uom min max data_sheet ) |> Enum.map(&String.to_atom/1)
   @reqd ~W( ontology subsystem sensor parameter ) |> Enum.map(&String.to_atom/1)
   @uniq "the set of {subsystem, sensor, parameter} has already been taken"
 

@@ -1,6 +1,5 @@
 defmodule Aot.NetworkQueries do
   @moduledoc """
-  Stored base queries and functions to compose queries for Networks.
   """
 
   import Aot.QueryUtils, only: [
@@ -26,97 +25,130 @@ defmodule Aot.NetworkQueries do
     Sensor
   }
 
-  @spec list() :: Ecto.Queryable.t()
-  def list, do: Network
+  # BASE QUERIES
 
-  @spec get(binary() | integer()) :: Ecto.Queryable.t()
-  def get(id) when is_integer(id), do: where(Network, [n], n.id == ^id)
-  def get(id) when is_bitstring(id) do
-    case Regex.match?(~r/^\d+$/, id) do
-      true -> where(Network, [n], n.id == ^id)
-      false -> where(Network, [n], n.slug == ^id)
-    end
-  end
+  def list,
+    do: from net in Network
 
-  @spec include_nodes(Ecto.Queryable.t()) :: Ecto.Query.t()
-  def include_nodes(query), do: preload(query, nodes: :networks)
+  def get(slug),
+    do: from net in Network,
+      where: net.slug == ^slug
 
-  @spec include_sensors(Ecto.Queryable.t()) :: Ecto.Query.t()
-  def include_sensors(query), do: preload(query, sensors: :networks)
+  # BOOLEAN COMPOSE
 
-  @spec has_node(Ecto.Queryable.t(), Node.t() | integer() | String.t()) :: Ecto.Query.t()
-  def has_node(query, %Node{id: id}), do: has_node(query, id)
-  def has_node(query, id), do: has_nodes(query, [id])
+  def include_nodes(query),
+    do: from net in query,
+      preload: [nodes: :networks]
 
-  @spec has_nodes(Ecto.Queryable.t(), list(Node.t() | integer() | String.t())) :: Ecto.Query.t()
+  def include_sensors(query),
+    do: from net in query,
+      preload: [sensors: :networks]
+
+  # FILTER COMPOSE
+
+  def has_node(query, %Node{id: id}),
+    do: has_node(query, id)
+
+  def has_node(query, id) when is_binary(id),
+    do: has_nodes(query, [id])
+
   def has_nodes(query, nodes) when is_list(nodes) do
-    node_ids =
+    ids =
       nodes
       |> Enum.map(fn node ->
         case node do
-          %Node{id: id} -> id
+          %Node{} -> node.id
           id -> id
         end
       end)
 
-    from n in query,
-      left_join: nn in NetworkNode, on: n.id == nn.network_id,
-      left_join: o in Node, on: o.id == nn.node_id,
-      where: o.id in type(^node_ids, {:array, :string}) or o.vsn in type(^node_ids, {:array, :string}),
-      distinct: true
+    from net in query,
+      left_join: nn in NetworkNode, as: :nn, on: nn.network_slug == net.slug,
+      left_join: node in Node, as: :node, on: node.id == nn.node_id,
+      where: node.id in ^ids
   end
 
-  @spec has_sensor(Ecto.Queryable.t(), Sensor.t() | integer() | String.t()) :: Ecto.Query.t()
-  def has_sensor(query, %Sensor{id: id}), do: has_sensor(query, id)
-  def has_sensor(query, id), do: has_sensors(query, [id])
+  def has_nodes_exact(query, nodes) when is_list(nodes) do
+    ids =
+      nodes
+      |> Enum.map(fn node ->
+        case node do
+          %Node{} -> node.id
+          id -> id
+        end
+      end)
 
-  @spec has_sensors(Ecto.Queryable.t(), list(Sensor.t() | integer() | String.t())) :: Ecto.Query.t()
+    from net in query,
+      left_join: nn in NetworkNode, as: :nn, on: nn.network_slug == net.slug,
+      left_join: node in Node, as: :node, on: node.id == nn.node_id,
+      group_by: net.slug,
+      having: fragment("array_agg(?) @> ?", node.id, ^ids)
+  end
+
+  def has_sensor(query, %Sensor{path: path}),
+    do: has_sensor(query, path)
+
+  def has_sensor(query, path) when is_binary(path),
+    do: has_sensors(query, [path])
+
   def has_sensors(query, sensors) when is_list(sensors) do
-    sensor_ids =
+    paths =
       sensors
       |> Enum.map(fn sensor ->
         case sensor do
-          %Sensor{id: id} -> id
-          id -> id
+          %Sensor{} -> sensor.path
+          path -> path
         end
       end)
-      |> Enum.map(& "#{&1}")
 
-    from n in query,
-      left_join: ns in NetworkSensor, on: n.id == ns.network_id,
-      left_join: s in Sensor, on: s.id == ns.sensor_id,
-      where: fragment("?::text = ANY(?)", s.id, type(^sensor_ids, {:array, :string})) or s.path in type(^sensor_ids, {:array, :string}),
-      distinct: true
+    from net in query,
+      left_join: ns in NetworkSensor, as: :ns, on: ns.network_slug == net.slug,
+      left_join: sensor in Sensor, as: :sensor, on: sensor.path == ns.sensor_path,
+      where: sensor.path in ^paths
   end
 
-  @spec bbox_contains(Ecto.Queryable.t(), Geo.PostGIS.Geometry.t()) :: Ecto.Query.t()
-  def bbox_contains(query, geom), do: where(query, [n], st_contains(n.bbox, ^geom))
+  def has_sensors_exact(query, sensors) when is_list(sensors) do
+    paths =
+      sensors
+      |> Enum.map(fn sensor ->
+        case sensor do
+          %Sensor{} -> sensor.path
+          path -> path
+        end
+      end)
 
-  @spec bbox_intersects(Ecto.Queryable.t(), Geo.PostGIS.Geometry.t()) :: Ecto.Query.t()
-  def bbox_intersects(query, geom), do: where(query, [n], st_intersects(n.bbox, ^geom))
+    from net in query,
+      left_join: ns in NetworkSensor, as: :ns, on: ns.network_slug == net.slug,
+      left_join: sensor in Sensor, as: :sensor, on: sensor.path == ns.sensor_path,
+      group_by: net.slug,
+      having: fragment("array_agg(?) @> ?", sensor.path, ^paths)
+  end
 
-  @spec hull_contains(Ecto.Queryable.t(), Geo.PostGIS.Geometry.t()) :: Ecto.Query.t()
-  def hull_contains(query, geom), do: where(query, [n], st_contains(n.hull, ^geom))
+  def bbox_contains(query, geom),
+    do: from net in query,
+      where: st_contains(net.bbox, ^geom)
 
-  @spec hull_intersects(Ecto.Queryable.t(), Geo.PostGIS.Geometry.t()) :: Ecto.Query.t()
-  def hull_intersects(query, geom), do: where(query, [n], st_intersects(n.hull, ^geom))
+  def bbox_intersects(query, geom),
+    do: from net in query,
+      where: st_intersects(net.bbox, ^geom)
 
   defdelegate order(query, args), to: Aot.QueryUtils
   defdelegate paginate(query, args), to: Aot.QueryUtils
 
-  @spec handle_opts(Ecto.Queryable.t(), keyword()) :: Ecto.Queryable.t()
+  # OTHER ACTION HELPERS
+
   def handle_opts(query, opts \\ []) do
     [
       include_nodes: false,
       include_sensors: false,
       has_node: :empty,
       has_nodes: :empty,
+      has_nodes_exact: :empty,
       has_sensor: :empty,
       has_sensors: :empty,
+      has_sensors_exact: :empty,
       bbox_contains: :empty,
       bbox_intersects: :empty,
-      hull_contains: :empty,
-      hull_intersects: :empty,
       order: :empty,
       paginate: :empty
     ]
@@ -124,17 +156,17 @@ defmodule Aot.NetworkQueries do
     |> apply_opts(query, NetworkQueries)
   end
 
-  def bbox(id) do
-    from n in Node,
-    left_join: nn in NetworkNode, on: n.id == nn.node_id,
-    where: nn.network_id == ^id,
-    select: st_envelope(st_union(n.location))
-  end
+  def compute_bbox(%Network{slug: slug}), do: compute_bbox(slug)
+  def compute_bbox(slug),
+    do: from node in Node,
+      left_join: nn in NetworkNode, as: :nn, on: node.id == nn.node_id,
+      where: nn.network_slug == ^slug,
+      select: st_envelope(st_union(node.location))
 
-  def hull(id) do
-    from n in Node,
-    left_join: nn in NetworkNode, on: n.id == nn.node_id,
-    where: nn.network_id == ^id,
-    select: st_convex_hull(st_union(n.location))
-  end
+  def compute_hull(%Network{slug: slug}), do: compute_hull(slug)
+  def compute_hull(slug),
+    do: from node in Node,
+      left_join: nn in NetworkNode, as: :nn, on: node.id == nn.node_id,
+      where: nn.network_slug == ^slug,
+      select: st_convex_hull(st_union(node.location))
 end

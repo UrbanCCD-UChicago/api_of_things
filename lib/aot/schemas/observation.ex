@@ -13,13 +13,21 @@ defmodule Aot.Observation do
 
   @primary_key false
   schema "observations" do
-    belongs_to :node, Node, type: :string
-    belongs_to :sensor, Sensor
     field :timestamp, :naive_datetime
     field :value, :float
+
+    belongs_to :node, Node,
+      foreign_key: :node_id,
+      references: :id,
+      type: :string
+
+    belongs_to :sensor, Sensor,
+      foreign_key: :sensor_path,
+      references: :path,
+      type: :string
   end
 
-  @attrs ~W( node_id sensor_id timestamp value ) |> Enum.map(&String.to_atom/1)
+  @attrs ~W( node_id sensor_path timestamp value ) |> Enum.map(&String.to_atom/1)
 
   @doc false
   def changeset(observation, attrs) do

@@ -38,8 +38,14 @@ defmodule Aot.Node do
     # reverse relationships
     has_many :observations, Observation
     has_many :raw_observations, RawObservation
-    many_to_many :networks, Network, join_through: NetworkNode
-    many_to_many :sensors, Sensor, join_through: NodeSensor
+
+    many_to_many :networks, Network,
+      join_through: NetworkNode,
+      join_keys: [node_id: :id, network_slug: :slug]
+
+    many_to_many :sensors, Sensor,
+      join_through: NodeSensor,
+      join_keys: [node_id: :id, sensor_path: :path]
   end
 
   @attrs ~W( id vsn latitude longitude description address commissioned_on decommissioned_on ) |> Enum.map(&String.to_atom/1)

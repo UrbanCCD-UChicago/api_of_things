@@ -31,32 +31,6 @@ defmodule Aot.QueryUtils do
   end
 
   @doc """
-  Applies an arithmetic function to a given field.
-  """
-  @spec field_op(Ecto.Queryable.t(), atom(), atom(), any()) :: Ecto.Queryable.t()
-  def field_op(query, fname, :eq, value), do: where(query, [q], field(q, ^fname) == ^value)
-  def field_op(query, fname, :lt, value), do: where(query, [q], field(q, ^fname) < ^value)
-  def field_op(query, fname, :le, value), do: where(query, [q], field(q, ^fname) <= ^value)
-  def field_op(query, fname, :gt, value), do: where(query, [q], field(q, ^fname) > ^value)
-  def field_op(query, fname, :ge, value), do: where(query, [q], field(q, ^fname) >= ^value)
-  def field_op(query, fname, :in, value), do: where(query, [q], field(q, ^fname) in ^value)
-  def field_op(query, fname, :between, {lo, hi}),
-    do: where(query, [q], fragment("? between ? and ?", field(q, ^fname), ^lo, ^hi))
-
-  @doc """
-  Applies an arithmetic function to a given field and explicitly cast the type of the argument.
-  """
-  @spec typed_field_op(Ecto.Queryable.t(), atom(), atom(), any(), atom()) :: Ecto.Queryable.t()
-  def typed_field_op(query, fname, :eq, value, vtype), do: where(query, [q], field(q, ^fname) == type(^value, ^vtype))
-  def typed_field_op(query, fname, :lt, value, vtype), do: where(query, [q], field(q, ^fname) < type(^value, ^vtype))
-  def typed_field_op(query, fname, :le, value, vtype), do: where(query, [q], field(q, ^fname) <= type(^value, ^vtype))
-  def typed_field_op(query, fname, :gt, value, vtype), do: where(query, [q], field(q, ^fname) > type(^value, ^vtype))
-  def typed_field_op(query, fname, :ge, value, vtype), do: where(query, [q], field(q, ^fname) >= type(^value, ^vtype))
-  def typed_field_op(query, fname, :in, value, vtype), do: where(query, [q], field(q, ^fname) in type(^value, ^vtype))
-  def typed_field_op(query, fname, :between, {lo, hi}, vtype),
-    do: where(query, [q], fragment("? between ? and ?", field(q, ^fname), type(^lo, ^vtype), type(^hi, ^vtype)))
-
-  @doc """
   Applies the given `module.func` to the query if the flag is true, otherwise it
   simply returns the query unmodified.
   """

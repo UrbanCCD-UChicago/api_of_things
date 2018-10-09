@@ -2,7 +2,6 @@ use Mix.Config
 
 # Configures the Ecto Repos
 config :aot, Aot.Repo,
-  adapter: Ecto.Adapters.Postgres,
   username: "postgres",
   password: "password",
   database: "aot_#{Mix.env()}",

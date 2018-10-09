@@ -26,16 +26,22 @@ defmodule Aot.Mixfile do
 
   defp deps do
     [
+      # phoenix deps
       {:phoenix, "~> 1.3.4"},
       {:phoenix_pubsub, "~> 1.0"},
-      {:phoenix_ecto, "~> 3.2"},
-      {:postgrex, ">= 0.0.0"},
       {:gettext, "~> 0.11"},
       {:cowboy, "~> 1.0"},
+
+      # database deps
+      {:ecto_sql, github: "elixir-ecto/ecto_sql", branch: "master"},
+      {:postgrex, "~> 0.14.0-rc.0", override: true},
       {:geo_postgis, "~> 2.1"},
+
+      # utils
       {:slugify, "~> 1.1"},
       {:csv, "~> 2.1"},
-      {:timex, "~> 3.4"}
+      {:timex, "~> 3.4"},
+      {:jason, "~> 1.1"}
     ]
   end
 

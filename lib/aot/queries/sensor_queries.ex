@@ -1,6 +1,5 @@
 defmodule Aot.SensorQueries do
   @moduledoc """
-  Stored base queries and functions to compose queries for Sensors.
   """
 
   import Aot.QueryUtils, only: [
@@ -18,76 +17,117 @@ defmodule Aot.SensorQueries do
     SensorQueries
   }
 
-  @spec list() :: Ecto.Queryable.t()
-  def list, do: Sensor
+  # BASE QUERIES
 
-  @spec get(integer() | String.t()) :: Ecto.Queryable.t()
-  def get(id) when is_integer(id), do: where(Sensor, [s], s.id == ^id)
-  def get(id) when is_bitstring(id) do
-    case Regex.match?(~r/^\d+$/, id) do
-      true -> where(Sensor, [s], s.id == ^id)
-      false -> where(Sensor, [s], s.path == ^id)
-    end
+  def list,
+    do: from sensor in Sensor
+
+  def get(path),
+    do: from sensor in Sensor,
+      where: sensor.path == ^path
+
+  # BOOLEAN COMPOSE
+
+  def include_networks(query),
+    do: from sensor in query,
+      preload: [networks: :sensors]
+
+  def include_nodes(query),
+    do: from sensor in query,
+      preload: [nodes: :sensors]
+
+  # FILTER COMPOSE
+
+  def has_ontology(query, ontology) do
+    padded = "%#{ontology}%"
+
+    from sensor in query,
+      where: fragment("? like ?", sensor.ontology, ^padded)
   end
 
-  @spec include_networks(Ecto.Queryable.t()) :: Ecto.Queryable.t()
-  def include_networks(query), do: preload(query, networks: :sensors)
+  def observes_network(query, %Network{slug: slug}),
+    do: observes_network(query, slug)
 
-  @spec include_nodes(Ecto.Queryable.t()) :: Ecto.Queryable.t()
-  def include_nodes(query), do: preload(query, nodes: :sensors)
+  def observes_network(query, slug) when is_binary(slug),
+    do: observes_networks(query, [slug])
 
-  @spec has_ontology(Ecto.Queryable.t(), String.t()) :: Ecto.Queryable.t()
-  def has_ontology(query, ont), do: where(query, [s], s.ontology == ^ont)
-
-  @spec observes_network(Ecto.Queryable.t(), Network.t() | integer() | String.t()) :: Ecto.Queryable.t()
-  def observes_network(query, %Network{id: id}), do: observes_network(query, id)
-  def observes_network(query, id), do: observes_networks(query, [id])
-
-  @spec observes_networks(Ecto.Queryable.t(), list(Network.t() | integer() | String.t())) :: Ecto.Queryable.t()
-  def observes_networks(query, networks) do
-    network_ids =
+  def observes_networks(query, networks) when is_list(networks) do
+    slugs =
       networks
-      |> Enum.map(fn network ->
-        case network do
-          %Network{id: id} -> id
-          id -> id
+      |> Enum.map(fn net ->
+        case net do
+          %Network{} -> net.slug
+          slug -> slug
         end
       end)
-      |> Enum.map(& "#{&1}")
 
-    from s in query,
-      left_join: ns in NetworkSensor, on: s.id == ns.sensor_id,
-      left_join: n in Network, on: n.id == ns.network_id,
-      where: fragment("?::text = ANY(?)", n.id, type(^network_ids, {:array, :string})) or n.slug in type(^network_ids, {:array, :string}),
-      distinct: true
+    from sensor in query,
+      left_join: nes in NetworkSensor, as: :nes, on: nes.sensor_path == sensor.path,
+      left_join: net in Network, as: :net, on: nes.network_slug == net.slug,
+      where: net.slug in ^slugs
   end
 
-  @spec onboard_node(Ecto.Queryable.t(), Node.t() | integer() | String.t()) :: Ecto.Queryable.t()
-  def onboard_node(query, %Node{id: id}), do: onboard_node(query, id)
-  def onboard_node(query, id), do: onboard_nodes(query, [id])
+  def observes_networks_exact(query, networks) when is_list(networks) do
+    slugs =
+      networks
+      |> Enum.map(fn net ->
+        case net do
+          %Network{} -> net.slug
+          slug -> slug
+        end
+      end)
 
-  @spec onboard_nodes(Ecto.Queryable.t(), list(Node.t() | integer() | String.t())) :: Ecto.Queryable.t()
-  def onboard_nodes(query, nodes) do
-    node_ids =
+    from sensor in query,
+      left_join: nes in NetworkSensor, as: :nes, on: nes.sensor_path == sensor.path,
+      left_join: net in Network, as: :net, on: nes.network_slug == net.slug,
+      group_by: sensor.path,
+      having: fragment("array_agg(?) @> ?", net.slug, ^slugs)
+  end
+
+  def onboard_node(query, %Node{id: id}),
+    do: onboard_node(query, id)
+
+  def onboard_node(query, id) when is_binary(id),
+    do: onboard_nodes(query, [id])
+
+  def onboard_nodes(query, nodes) when is_list(nodes) do
+    ids =
       nodes
       |> Enum.map(fn node ->
         case node do
-          %Node{id: id} -> id
+          %Node{} -> node.id
           id -> id
         end
       end)
 
-    from s in query,
-      left_join: ns in NodeSensor, on: s.id == ns.sensor_id,
-      left_join: n in Node, on: n.id == ns.node_id,
-      where: n.id in type(^node_ids, {:array, :string}) or n.vsn in type(^node_ids, {:array, :string}),
-      distinct: true
+    from sensor in query,
+      left_join: nos in NodeSensor, as: :nos, on: nos.sensor_path == sensor.path,
+      left_join: node in Node, as: :node, on: nos.node_id == node.id,
+      where: node.id in ^ids
+  end
+
+  def onboard_nodes_exact(query, nodes) when is_list(nodes) do
+    ids =
+      nodes
+      |> Enum.map(fn node ->
+        case node do
+          %Node{} -> node.id
+          id -> id
+        end
+      end)
+
+    from sensor in query,
+      left_join: nos in NodeSensor, as: :nos, on: nos.sensor_path == sensor.path,
+      left_join: node in Node, as: :node, on: nos.node_id == node.id,
+      group_by: sensor.path,
+      having: fragment("array_agg(?) @> ?", node.id, ^ids)
   end
 
   defdelegate order(query, args), to: Aot.QueryUtils
   defdelegate paginate(query, args), to: Aot.QueryUtils
 
-  @spec handle_opts(Ecto.Queryable.t(), keyword()) :: Ecto.Queryable.t()
+  # OTHER ACTION HELPERS
+
   def handle_opts(query, opts \\ []) do
     [
       include_networks: false,
@@ -95,8 +135,10 @@ defmodule Aot.SensorQueries do
       has_ontology: :empty,
       observes_network: :empty,
       observes_networks: :empty,
+      observes_networks_exact: :empty,
       onboard_node: :empty,
       onboard_nodes: :empty,
+      onboard_nodes_exact: :empty,
       order: :empty,
       paginate: :empty
     ]

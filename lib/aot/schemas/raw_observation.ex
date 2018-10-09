@@ -13,15 +13,23 @@ defmodule Aot.RawObservation do
 
   @primary_key false
   schema "raw_observations" do
-    belongs_to :node, Node, type: :string
-    belongs_to :sensor, Sensor
     field :timestamp, :naive_datetime
-    field :hrf, :string
-    field :raw, :string
+    field :hrf, :float, default: nil
+    field :raw, :float
+
+    belongs_to :node, Node,
+      foreign_key: :node_id,
+      references: :id,
+      type: :string
+
+    belongs_to :sensor, Sensor,
+      foreign_key: :sensor_path,
+      references: :path,
+      type: :string
   end
 
-  @attrs ~W( node_id sensor_id timestamp hrf raw ) |> Enum.map(&String.to_atom/1)
-  @reqd ~W( node_id sensor_id timestamp raw ) |> Enum.map(&String.to_atom/1)
+  @attrs ~W( node_id sensor_path timestamp hrf raw ) |> Enum.map(&String.to_atom/1)
+  @reqd ~W( node_id sensor_path timestamp raw ) |> Enum.map(&String.to_atom/1)
 
   @doc false
   def changeset(observation, attrs) do
