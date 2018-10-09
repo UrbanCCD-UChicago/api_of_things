@@ -21,7 +21,9 @@ defmodule AotWeb.NodeView do
       description: node.description,
       address: node.address,
       commissioned_on: node.commissioned_on,
-      decommissioned_on: node.decommissioned_on
+      decommissioned_on: node.decommissioned_on,
+      networks: nest_related(node.networks, AotWeb.NetworkView, "network.json"),
+      sensors: nest_related(node.sensors, AotWeb.SensorView, "sensor.json")
     }
   end
 
@@ -35,7 +37,9 @@ defmodule AotWeb.NodeView do
         description: node.description,
         address: node.address,
         commissioned_on: node.commissioned_on,
-        decommissioned_on: node.decommissioned_on
+        decommissioned_on: node.decommissioned_on,
+        networks: nest_related(node.networks, AotWeb.NetworkView, "network.geojson"),
+        sensors: nest_related(node.sensors, AotWeb.SensorView, "sensor.json")
       }
     }
   end

@@ -51,7 +51,7 @@ defmodule Aot.Testing.BaseCase do
     |> Enum.each(&RawObservationActions.create/1)
 
     # load node/sensor m2m
-    "test/fixtures/data.csv"
+    "test/fixtures/nos.csv"
     |> File.stream!()
     |> CSV.decode!(headers: true)
     |> Enum.each(&M2MActions.create_node_sensor/1)

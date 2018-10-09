@@ -18,7 +18,10 @@ defmodule AotWeb.SensorView do
       subsystem: sensor.subsystem,
       sensor: sensor.sensor,
       parameter: sensor.parameter,
-      unit: sensor.unit
+      unit: sensor.unit,
+      min_value: sensor.min_value,
+      max_value: sensor.max_value,
+      data_sheet: sensor.data_sheet
     }
   end
 end

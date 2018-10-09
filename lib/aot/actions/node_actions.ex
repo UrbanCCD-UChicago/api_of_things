@@ -11,12 +11,10 @@ defmodule Aot.NodeActions do
     Repo
   }
 
-  @type ok_node :: {:ok, Aot.Node.t()} | {:error, Ecto.Changeset.t()}
-
   @doc """
   Creates a new Node.
   """
-  @spec create(keyword() | map()) :: ok_node
+  @spec create(keyword() | map()) :: {:ok, Aot.Node.t()} | {:error, Ecto.Changeset.t()}
   def create(params) do
     params = atomize(params)
 
@@ -27,7 +25,7 @@ defmodule Aot.NodeActions do
   @doc """
   Updates an existing Node.
   """
-  @spec update(Node.t(), keyword() | map()) :: ok_node
+  @spec update(Node.t(), keyword() | map()) :: {:ok, Aot.Node.t()} | {:error, Ecto.Changeset.t()}
   def update(node, params) do
     params = atomize(params)
 
@@ -48,11 +46,17 @@ defmodule Aot.NodeActions do
   @doc """
   Gets a single Node and optionally augments the query.
   """
-  @spec get!(String.t() | integer(), keyword()) :: Node.t()
-  def get!(id, opts \\ []) do
-    NodeQueries.get(id)
-    |> NodeQueries.handle_opts(opts)
-    |> Repo.one!()
+  @spec get(String.t() | integer(), keyword()) :: {:ok, Aot.Node.t()} | {:error, :not_found}
+  def get(id, opts \\ []) do
+    resp =
+      NodeQueries.get(id)
+      |> NodeQueries.handle_opts(opts)
+      |> Repo.one()
+
+    case resp do
+      nil -> {:error, :not_found}
+      node -> {:ok, node}
+    end
   end
 
   def node_csv_row_to_params(row) do

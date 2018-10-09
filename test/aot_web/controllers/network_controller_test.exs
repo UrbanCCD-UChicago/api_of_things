@@ -2,7 +2,7 @@ defmodule AotWeb.Testing.NetworkControllerTest do
   use Aot.Testing.BaseCase
   use AotWeb.Testing.ConnCase
 
-  describe "index/2" do
+  describe "index" do
     test "no filters should return them all", %{conn: conn} do
       resp =
         conn
@@ -11,6 +11,9 @@ defmodule AotWeb.Testing.NetworkControllerTest do
 
       assert length(resp["data"]) == 3
     end
+
+    # TODO: i don't like returning an empty list for non-loaded associations.
+    # they should be scrubbed from the response object if not loaded.
 
     test "using `include_nodes` should embed related nodes", %{conn: conn} do
       # not specified? then empty array
@@ -151,7 +154,7 @@ defmodule AotWeb.Testing.NetworkControllerTest do
     end
   end
 
-  describe "show/2" do
+  describe "show" do
     @tag add2ctx: :networks
     test "using a known slug as the param", %{conn: conn, chicago_complete: chicago} do
       conn
