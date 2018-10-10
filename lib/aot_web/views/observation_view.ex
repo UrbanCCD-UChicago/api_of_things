@@ -1,5 +1,8 @@
 defmodule AotWeb.ObservationView do
   use AotWeb, :view
+
+  import AotWeb.ViewUtils
+
   alias AotWeb.ObservationView
 
   def render("index.json", %{observations: observations}) do
@@ -17,5 +20,7 @@ defmodule AotWeb.ObservationView do
       timestamp: obs.timestamp,
       value: obs.value
     }
+    |> nest_related(:node, obs.node, AotWeb.NodeView, "node.json", :one)
+    |> nest_related(:sensor, obs.sensor, AotWeb.SensorView, "sensor.json", :one)
   end
 end

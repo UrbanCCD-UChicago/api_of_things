@@ -1,23 +1,28 @@
 defmodule AotWeb.NetworkController do
   use AotWeb, :controller
 
-  import Aot.ControllerUtils, only: [ resp_format: 1 ]
+  import AotWeb.ControllerUtils, only: [
+    resp_format: 1
+  ]
 
-  import Aot.Plugs
+  import AotWeb.GenericPlugs
+
+  import AotWeb.NetworkPlugs
 
   alias Aot.NetworkActions
 
   action_fallback AotWeb.FallbackController
 
-  plug :include_nodes
-  plug :include_sensors
-  plug :for_related, func: :has_node
-  plug :for_related, func: :has_sensor
-  plug :geom_field, field: "bbox", func_map: %{"contains" => :bbox_contains, "intersects" => :bbox_intersects}
-  plug :geom_field, field: "hull", func_map: %{"contains" => :hull_contains, "intersects" => :hull_intersects}
-  plug :order_by, default: "asc:name"
-  plug :validate_page
-  plug :validate_size
+  plug :assign_if_exists, param: "include_nodes"
+  plug :assign_if_exists, param: "include_sensors"
+  plug :assign_if_exists, param: "has_node"
+  plug :assign_if_exists, param: "has_nodes"
+  plug :assign_if_exists, param: "has_nodes_exact"
+  plug :assign_if_exists, param: "has_sensor"
+  plug :assign_if_exists, param: "has_sensors"
+  plug :assign_if_exists, param: "has_sensors_exact"
+  plug :bbox
+  plug :order, default: "asc:name"
   plug :paginate
 
   def index(conn, _params) do
@@ -30,7 +35,11 @@ defmodule AotWeb.NetworkController do
   end
 
   def show(conn, %{"id" => slug}) do
-    with {:ok, network} <- NetworkActions.get(slug, Map.to_list(conn.assigns)),
-      do: render conn, "show.json", network: network, resp_format: resp_format(conn)
+    with {:ok, network} <- NetworkActions.get(slug, Map.to_list(conn.assigns))
+    do
+      render conn, "show.json",
+        network: network,
+        resp_format: resp_format(conn)
+    end
   end
 end

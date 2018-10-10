@@ -22,21 +22,20 @@ defmodule Aot.ActionUtils do
   Parses a map to check if a related struct or id exists and updates
   the map with the id/value pair.
   """
-  @spec parse_rel(map(), atom()) :: map()
-  def parse_rel(params, key) do
-    id_key = String.to_atom("#{Atom.to_string(key)}_id")
+  @spec parse_relation(map(), atom(), atom()) :: map()
+  def parse_relation(params, struct_name, field_name) do
+    fk = String.to_atom("#{struct_name}_#{field_name}")
 
-    id_value =
-      case Map.has_key?(params, key) do
-        true ->
-          strukt = params[key]
-          strukt.id
+    value =
+      case Map.get(params, struct_name) do
+        nil ->
+          Map.get(params, fk)
 
-        false ->
-          Map.get(params, id_key, nil)
+        strukt ->
+          Map.get(strukt, field_name)
       end
 
-    Map.put(params, id_key, id_value)
+    Map.put(params, fk, value)
   end
 
   @doc """

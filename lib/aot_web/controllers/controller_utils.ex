@@ -1,4 +1,4 @@
-defmodule Aot.ControllerUtils do
+defmodule AotWeb.ControllerUtils do
 
   import Plug.Conn,
     only: [
@@ -59,4 +59,16 @@ defmodule Aot.ControllerUtils do
   @spec resp_format(Plug.Conn.t()) :: String.t()
   def resp_format(%Conn{params: %{"format" => "geojson"}}), do: "geojson"
   def resp_format(_), do: "json"
+
+  @doc """
+  Decodes GeoJSON parameters.
+  """
+  @spec decode_geojson(map()) :: {:ok, Geo.Polygon.t()} | {:error, nil}
+  def decode_geojson(%{"geometry" => %{"type" => _, "coordinates" => _} = geom}),
+    do: Geo.JSON.decode(geom)
+
+  def decode_geojson(%{"type" => _, "coordinates" => _} = geom),
+    do: Geo.JSON.decode(geom)
+
+  def decode_geojson(_), do: {:error, nil}
 end

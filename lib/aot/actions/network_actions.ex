@@ -52,12 +52,12 @@ defmodule Aot.NetworkActions do
   """
   @spec get(String.t() | integer(), keyword()) :: {:ok, Network.t()} | {:error, :not_found}
   def get(id, opts \\ []) do
-    resp =
+    res =
       NetworkQueries.get(id)
       |> NetworkQueries.handle_opts(opts)
       |> Repo.one()
 
-    case resp do
+    case res do
       nil -> {:error, :not_found}
       net -> {:ok, net}
     end

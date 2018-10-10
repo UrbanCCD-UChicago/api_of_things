@@ -21,10 +21,10 @@ defmodule AotWeb.NodeView do
       description: node.description,
       address: node.address,
       commissioned_on: node.commissioned_on,
-      decommissioned_on: node.decommissioned_on,
-      networks: nest_related(node.networks, AotWeb.NetworkView, "network.json"),
-      sensors: nest_related(node.sensors, AotWeb.SensorView, "sensor.json")
+      decommissioned_on: node.decommissioned_on
     }
+    |> nest_related(:networks, node.networks, AotWeb.NetworkView, "network.json")
+    |> nest_related(:sensors, node.sensors, AotWeb.SensorView, "sensor.json")
   end
 
   def render("node.geojson", %{node: node}) do
@@ -37,10 +37,10 @@ defmodule AotWeb.NodeView do
         description: node.description,
         address: node.address,
         commissioned_on: node.commissioned_on,
-        decommissioned_on: node.decommissioned_on,
-        networks: nest_related(node.networks, AotWeb.NetworkView, "network.geojson"),
-        sensors: nest_related(node.sensors, AotWeb.SensorView, "sensor.json")
+        decommissioned_on: node.decommissioned_on
       }
+      |> nest_related(:networks, node.networks, AotWeb.NetworkView, "network.geojson")
+      |> nest_related(:sensors, node.sensors, AotWeb.SensorView, "sensor.json")
     }
   end
 end

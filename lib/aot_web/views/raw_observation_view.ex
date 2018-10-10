@@ -1,5 +1,8 @@
 defmodule AotWeb.RawObservationView do
   use AotWeb, :view
+
+  import AotWeb.ViewUtils
+
   alias AotWeb.RawObservationView
 
   def render("index.json", %{raw_observations: obs}) do
@@ -18,5 +21,7 @@ defmodule AotWeb.RawObservationView do
       hrf: obs.hrf,
       raw: obs.raw,
     }
+    |> nest_related(:node, obs.node, AotWeb.NodeView, "node.json", :one)
+    |> nest_related(:sensor, obs.sensor, AotWeb.SensorView, "sensor.json", :one)
   end
 end

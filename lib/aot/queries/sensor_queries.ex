@@ -38,7 +38,7 @@ defmodule Aot.SensorQueries do
 
   # FILTER COMPOSE
 
-  def has_ontology(query, ontology) do
+  def ontology(query, ontology) do
     padded = "%#{ontology}%"
 
     from sensor in query,
@@ -132,7 +132,7 @@ defmodule Aot.SensorQueries do
     [
       include_networks: false,
       include_nodes: false,
-      has_ontology: :empty,
+      ontology: :empty,
       observes_network: :empty,
       observes_networks: :empty,
       observes_networks_exact: :empty,

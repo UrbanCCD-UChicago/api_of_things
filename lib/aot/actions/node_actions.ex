@@ -48,30 +48,14 @@ defmodule Aot.NodeActions do
   """
   @spec get(String.t() | integer(), keyword()) :: {:ok, Aot.Node.t()} | {:error, :not_found}
   def get(id, opts \\ []) do
-    resp =
+    res =
       NodeQueries.get(id)
       |> NodeQueries.handle_opts(opts)
       |> Repo.one()
 
-    case resp do
+    case res do
       nil -> {:error, :not_found}
       node -> {:ok, node}
     end
   end
-
-  def node_csv_row_to_params(row) do
-    %{
-      id: row["node_id"],
-      vsn: row["vsn"],
-      longitude: row["lon"],
-      latitude: row["lat"],
-      address: row["address"],
-      description: row["description"],
-      commissioned_on: parse_timestamp(row["start_timestamp"]),
-      decommissioned_on: parse_timestamp(empty_to_nil(row["end_timestamp"]))
-    }
-  end
-
-  defp empty_to_nil(""), do: nil
-  defp empty_to_nil(value), do: value
 end

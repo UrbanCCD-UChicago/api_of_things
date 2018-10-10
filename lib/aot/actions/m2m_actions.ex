@@ -20,8 +20,8 @@ defmodule Aot.M2MActions do
     params =
       params
       |> atomize()
-      |> parse_rel(:network)
-      |> parse_rel(:node)
+      |> parse_relation(:network, :slug)
+      |> parse_relation(:node, :id)
 
     NetworkNode.changeset(%NetworkNode{}, params)
     |> Repo.insert(on_conflict: :nothing)
@@ -35,8 +35,8 @@ defmodule Aot.M2MActions do
     params =
       params
       |> atomize()
-      |> parse_rel(:network)
-      |> parse_rel(:sensor)
+      |> parse_relation(:network, :slug)
+      |> parse_relation(:sensor, :path)
 
     NetworkSensor.changeset(%NetworkSensor{}, params)
     |> Repo.insert(on_conflict: :nothing)
@@ -50,8 +50,8 @@ defmodule Aot.M2MActions do
     params =
       params
       |> atomize()
-      |> parse_rel(:node)
-      |> parse_rel(:sensor)
+      |> parse_relation(:node, :id)
+      |> parse_relation(:sensor, :path)
 
     NodeSensor.changeset(%NodeSensor{}, params)
     |> Repo.insert(on_conflict: :nothing)
