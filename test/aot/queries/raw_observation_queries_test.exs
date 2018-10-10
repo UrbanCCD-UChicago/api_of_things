@@ -1,118 +1,228 @@
 defmodule Aot.Testing.RawObservationQueriesTest do
   use Aot.Testing.BaseCase
+  use Aot.Testing.DataCase
 
   alias Aot.RawObservationActions
 
-  test "include_node/1" do
-    RawObservationActions.list()
-    |> Enum.map(& refute Ecto.assoc_loaded?(&1.node))
-
-    RawObservationActions.list(include_node: true)
-    |> Enum.map(& assert Ecto.assoc_loaded?(&1.node))
-  end
-
-  test "include_sensor/1" do
-    RawObservationActions.list()
-    |> Enum.map(& refute Ecto.assoc_loaded?(&1.sensor))
-
-    RawObservationActions.list(include_sensor: true)
-    |> Enum.map(& assert Ecto.assoc_loaded?(&1.sensor))
-  end
-
-  test "include_networks/1" do
-    RawObservationActions.list()
-    |> Enum.map(& refute Ecto.assoc_loaded?(&1.node))
-
-    RawObservationActions.list(include_networks: true)
-    |> Enum.map(& assert Ecto.assoc_loaded?(&1.node.networks))
-  end
-
-  @tag add2ctx: :networks
-  test "for_network/2", %{denver: denver} do
-    obs = RawObservationActions.list(for_network: denver)
-    assert length(obs) == 12
-
-  end
-
-  @tag add2ctx: :nodes
-  test "for_node/2", %{n000: node} do
-    obs = RawObservationActions.list(for_node: node)
-    assert length(obs) == 12
-  end
-
-  @tag add2ctx: :sensors
-  test "for_sensor/2", %{s1: s1, s13: s13} do
-    obs = RawObservationActions.list(for_sensor: s1)
-    assert length(obs) == 12
-
-    obs = RawObservationActions.list(for_sensor: s13)
-    assert length(obs) == 20
-  end
-
-  describe "timestamp_op/2" do
-    @timestamp ~N[2018-10-01 00:01:00]
+  describe "raw" do
+    @value 54.5
 
     test "eq" do
-      obs = RawObservationActions.list(timestamp_op: {:eq, @timestamp})
-      assert length(obs) == 45
+      obs = RawObservationActions.list(raw: {:eq, @value})
+      assert length(obs) == 0
     end
 
     test "lt" do
-      obs = RawObservationActions.list(timestamp_op: {:lt, @timestamp})
-      assert length(obs) == 90
+      obs = RawObservationActions.list(raw: {:lt, @value})
+      assert length(obs) == 64
     end
 
     test "le" do
-      obs = RawObservationActions.list(timestamp_op: {:le, @timestamp})
-      assert length(obs) == 135
+      obs = RawObservationActions.list(raw: {:le, @value})
+      assert length(obs) == 64
     end
 
     test "ge" do
-      obs = RawObservationActions.list(timestamp_op: {:ge, @timestamp})
-      assert length(obs) == 90
+      obs = RawObservationActions.list(raw: {:ge, @value})
+      assert length(obs) == 56
     end
 
     test "gt" do
-      obs = RawObservationActions.list(timestamp_op: {:gt, @timestamp})
-      assert length(obs) == 45
+      obs = RawObservationActions.list(raw: {:gt, @value})
+      assert length(obs) == 56
     end
   end
 
-  test "located_within/2" do
-    obs = RawObservationActions.list(located_within: %Geo.Polygon{
-      srid: 4326,
-      coordinates: [[
-        {1, 1},
-        {1, 2},
-        {2, 2},
-        {2, 1},
-        {1, 1}
-      ]]
-    })
-    assert length(obs) == 0
+  describe "hrf" do
+    @value 54.5
 
-    poly = %Geo.Polygon{
-      srid: 4326,
-      coordinates: [[
-        {-89, 40},
-        {-89, 45},
-        {-85, 45},
-        {-85, 40},
-        {-89, 40}
-      ]]
-    }
-    obs = RawObservationActions.list(located_within: poly)
-    assert length(obs) == 168
+    test "eq" do
+      obs = RawObservationActions.list(hrf: {:eq, @value})
+      assert length(obs) == 0
+    end
+
+    test "lt" do
+      obs = RawObservationActions.list(hrf: {:lt, @value})
+      assert length(obs) == 40
+    end
+
+    test "le" do
+      obs = RawObservationActions.list(hrf: {:le, @value})
+      assert length(obs) == 40
+    end
+
+    test "ge" do
+      obs = RawObservationActions.list(hrf: {:ge, @value})
+      assert length(obs) == 32
+    end
+
+    test "gt" do
+      obs = RawObservationActions.list(hrf: {:gt, @value})
+      assert length(obs) == 32
+    end
   end
 
-  test "within_distance/2" do
-    obs = RawObservationActions.list(within_distance: {%Geo.Point{srid: 4326, coordinates: {1, 1}}, 1000})
-    assert length(obs) == 0
+  describe "compute_aggs" do
+    test "first" do
+      [%{raw_first: raw, hrf_first: hrf}] = RawObservationActions.list(compute_aggs: :first)
+      assert is_float(raw)
+      assert is_float(hrf)
+    end
 
-    obs = RawObservationActions.list(within_distance: {
-      %Geo.Point{srid: 4326, coordinates: {-87.6022692567378, 41.8259500191867}},
-      20000
-    })
-    assert length(obs) == 168
+    test "last" do
+      [%{raw_last: raw, hrf_last: hrf}] = RawObservationActions.list(compute_aggs: :last)
+      assert is_float(raw)
+      assert is_float(hrf)
+    end
+
+    test "count" do
+      RawObservationActions.list(compute_aggs: {:count, :node_id})
+      |> Enum.each(fn %{group: _, raw_count: raw, hrf_count: hrf} ->
+        assert raw >= 0
+        assert hrf >= 0
+      end)
+    end
+
+    test "min" do
+      RawObservationActions.list(compute_aggs: {:min, :node_id})
+      |> Enum.each(fn %{group: _, raw_min: raw, hrf_min: hrf} ->
+        assert is_float(raw)
+        assert is_float(hrf)
+      end)
+    end
+
+    test "max" do
+      RawObservationActions.list(compute_aggs: {:max, :node_id})
+      |> Enum.each(fn %{group: _, raw_max: raw, hrf_max: hrf} ->
+        assert is_float(raw)
+        assert is_float(hrf)
+      end)
+    end
+
+    test "avg" do
+      RawObservationActions.list(compute_aggs: {:avg, :node_id})
+      |> Enum.each(fn %{group: _, raw_avg: raw, hrf_avg: hrf} ->
+        assert is_float(raw)
+        assert is_float(hrf)
+      end)
+    end
+
+    test "sum" do
+      RawObservationActions.list(compute_aggs: {:sum, :node_id})
+      |> Enum.each(fn %{group: _, raw_sum: raw, hrf_sum: hrf} ->
+        assert is_float(raw)
+        assert is_float(hrf)
+      end)
+    end
+
+    test "stddev" do
+      RawObservationActions.list(compute_aggs: {:stddev, :node_id})
+      |> Enum.each(fn %{group: _, raw_stddev: raw, hrf_stddev: hrf} ->
+        assert is_float(raw)
+        assert is_float(hrf)
+      end)
+    end
+
+    test "variance" do
+      RawObservationActions.list(compute_aggs: {:variance, :node_id})
+      |> Enum.each(fn %{group: _, raw_variance: raw, hrf_variance: hrf} ->
+        assert is_float(raw)
+        assert is_float(hrf)
+      end)
+    end
+
+    test "percentile (.5 ~ median)" do
+      RawObservationActions.list(compute_aggs: {:percentile, 0.5, :node_id})
+      |> Enum.each(fn %{group: _, raw_value: raw, hrf_value: hrf} ->
+        assert is_float(raw)
+        assert is_float(hrf)
+      end)
+    end
+  end
+
+  describe "as_histograms" do
+    test "should return a map with keys 'group' and 'X_histogram'" do
+      RawObservationActions.list(as_histograms: {0, 100, 0, 100, 10, :node_id})
+      |> Enum.each(fn obj ->
+        assert is_map(obj)
+        assert Map.has_key?(obj, :group)
+        assert Map.has_key?(obj, :raw_histogram)
+        assert Map.has_key?(obj, :hrf_histogram)
+      end)
+    end
+
+    test "histograms should be a list of numbers" do
+      RawObservationActions.list(as_histograms: {0, 100, 0, 100, 10, :node_id})
+      |> Enum.each(fn hist ->
+        assert is_list(hist[:raw_histogram])
+        assert is_list(hist[:hrf_histogram])
+      end)
+    end
+  end
+
+  describe "as_time_buckets" do
+    test "count" do
+      RawObservationActions.list(as_time_buckets: {:count, "1 seconds"})
+      |> Enum.each(fn %{bucket: _, raw_count: raw, hrf_count: hrf} ->
+        assert raw >= 0
+        assert hrf >= 0
+      end)
+    end
+
+    test "min" do
+      RawObservationActions.list(as_time_buckets: {:min, "1 seconds"})
+      |> Enum.each(fn %{bucket: _, raw_min: raw, hrf_min: hrf} ->
+        assert is_float(raw)
+        assert is_float(hrf)
+      end)
+    end
+
+    test "max" do
+      RawObservationActions.list(as_time_buckets: {:max, "1 seconds"})
+      |> Enum.each(fn %{bucket: _, raw_max: raw, hrf_max: hrf} ->
+        assert is_float(raw)
+        assert is_float(hrf)
+      end)
+    end
+
+    test "avg" do
+      RawObservationActions.list(as_time_buckets: {:avg, "1 seconds"})
+      |> Enum.each(fn %{bucket: _, raw_avg: raw, hrf_avg: hrf} ->
+        assert is_float(raw)
+        assert is_float(hrf)
+      end)
+    end
+
+    test "sum" do
+      RawObservationActions.list(as_time_buckets: {:sum, "1 seconds"})
+      |> Enum.each(fn %{bucket: _, raw_sum: raw, hrf_sum: hrf} ->
+        assert is_float(raw)
+        assert is_float(hrf)
+      end)
+    end
+
+    test "stddev" do
+      RawObservationActions.list(as_time_buckets: {:stddev, "1 seconds"})
+      |> Enum.each(fn %{bucket: _, raw_stddev: raw, hrf_stddev: hrf} ->
+        assert is_float(raw)
+        assert is_float(hrf)
+      end)
+    end
+
+    test "variance" do
+      RawObservationActions.list(as_time_buckets: {:variance, "1 seconds"})
+      |> Enum.each(fn %{bucket: _, raw_variance: raw, hrf_variance: hrf} ->
+        assert is_float(raw)
+        assert is_float(hrf)
+      end)
+    end
+
+    test "percentile (.5 ~ median)" do
+      RawObservationActions.list(as_time_buckets: {:percentile, 0.5, "1 seconds"})
+      |> Enum.each(fn %{bucket: _, raw_value: raw, hrf_value: hrf} ->
+        assert is_float(raw)
+        assert is_float(hrf)
+      end)
+    end
   end
 end

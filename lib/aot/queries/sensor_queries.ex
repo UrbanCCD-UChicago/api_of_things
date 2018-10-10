@@ -64,7 +64,8 @@ defmodule Aot.SensorQueries do
     from sensor in query,
       left_join: nes in NetworkSensor, as: :nes, on: nes.sensor_path == sensor.path,
       left_join: net in Network, as: :net, on: nes.network_slug == net.slug,
-      where: net.slug in ^slugs
+      where: net.slug in ^slugs,
+      distinct: true
   end
 
   def observes_networks_exact(query, networks) when is_list(networks) do
@@ -103,7 +104,8 @@ defmodule Aot.SensorQueries do
     from sensor in query,
       left_join: nos in NodeSensor, as: :nos, on: nos.sensor_path == sensor.path,
       left_join: node in Node, as: :node, on: nos.node_id == node.id,
-      where: node.id in ^ids
+      where: node.id in ^ids,
+      distinct: true
   end
 
   def onboard_nodes_exact(query, nodes) when is_list(nodes) do

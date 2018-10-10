@@ -41,19 +41,19 @@ alias Aot.{
 |> Enum.each(&RawObservationActions.create/1)
 
 # load node/sensor m2m
-"test/fixtures/nos.csv"
+"test/fixtures/nodes_sensors.csv"
 |> File.stream!()
 |> CSV.decode!(headers: true)
 |> Enum.each(&M2MActions.create_node_sensor/1)
 
 # load network/node m2m
-"test/fixtures/nn.csv"
+"test/fixtures/networks_nodes.csv"
 |> File.stream!()
 |> CSV.decode!(headers: true)
 |> Enum.each(&M2MActions.create_network_node/1)
 
 # load network/sensor m2m
-"test/fixtures/ns.csv"
+"test/fixtures/networks_sensors.csv"
 |> File.stream!()
 |> CSV.decode!(headers: true)
 |> Enum.each(&M2MActions.create_network_sensor/1)

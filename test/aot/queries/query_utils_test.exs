@@ -10,18 +10,17 @@ defmodule Aot.Testing.QueryUtilsTest do
     1..9
     |> Enum.each(fn x ->
       {:ok, _} =
-
         NetworkActions.create(
           name: "Network #{x}",
           archive_url: "https://example.com/archive-#{x}",
           recent_url: "https://example.com/recent-#{x}",
-          first_observation: NaiveDateTime.utc_now(),
+          first_observation: Timex.shift(NaiveDateTime.utc_now(), minutes: x),
           latest_observation: NaiveDateTime.utc_now()
         )
     end)
   end
 
-  describe "order/2" do
+  describe "order" do
     test "ascending" do
       networks = NetworkActions.list(order: {:asc, :first_observation})
 
@@ -51,7 +50,7 @@ defmodule Aot.Testing.QueryUtilsTest do
     end
   end
 
-  describe "paginate/2" do
+  describe "paginate" do
     test "negative page causes an error" do
       assert_raise RuntimeError, fn ->
         NetworkActions.list(paginate: {-1, 100})

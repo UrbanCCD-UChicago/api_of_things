@@ -65,7 +65,8 @@ defmodule Aot.NetworkQueries do
     from net in query,
       left_join: nn in NetworkNode, as: :nn, on: nn.network_slug == net.slug,
       left_join: node in Node, as: :node, on: node.id == nn.node_id,
-      where: node.id in ^ids
+      where: node.id in ^ids,
+      distinct: true
   end
 
   def has_nodes_exact(query, nodes) when is_list(nodes) do
@@ -104,7 +105,8 @@ defmodule Aot.NetworkQueries do
     from net in query,
       left_join: ns in NetworkSensor, as: :ns, on: ns.network_slug == net.slug,
       left_join: sensor in Sensor, as: :sensor, on: sensor.path == ns.sensor_path,
-      where: sensor.path in ^paths
+      where: sensor.path in ^paths,
+      distinct: true
   end
 
   def has_sensors_exact(query, sensors) when is_list(sensors) do

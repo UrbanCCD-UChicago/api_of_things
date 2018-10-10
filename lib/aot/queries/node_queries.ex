@@ -71,7 +71,8 @@ defmodule Aot.NodeQueries do
     from node in query,
       left_join: nn in NetworkNode, as: :nn, on: nn.node_id == node.id,
       left_join: net in Network, as: :net, on: nn.network_slug == net.slug,
-      where: net.slug in ^slugs
+      where: net.slug in ^slugs,
+      distinct: true
   end
 
   def within_networks_exact(query, networks) when is_list(networks) do
@@ -110,7 +111,8 @@ defmodule Aot.NodeQueries do
     from node in query,
       left_join: ns in NodeSensor, as: :ns, on: ns.node_id == node.id,
       left_join: sensor in Sensor, as: :sensor, on: ns.sensor_path == sensor.path,
-      where: sensor.path in ^paths
+      where: sensor.path in ^paths,
+      distinct: true
   end
 
   def has_sensors_exact(query, sensors) when is_list(sensors) do
@@ -161,9 +163,9 @@ defmodule Aot.NodeQueries do
       include_sensors: false,
       assert_alive: false,
       assert_dead: false,
-      has_network: :empty,
-      has_networks: :empty,
-      has_networks_exact: :empty,
+      within_network: :empty,
+      within_networks: :empty,
+      within_networks_exact: :empty,
       has_sensor: :empty,
       has_sensors: :empty,
       has_sensors_exact: :empty,
@@ -178,38 +180,3 @@ defmodule Aot.NodeQueries do
     |> apply_opts(query, NodeQueries)
   end
 end
-
-
-
-
-# defmodule Aot.NodeQueries do
-
-#   def commissioned_on_op(query, {op, value}), do: typed_field_op(query, :commissioned_on, op, value, :naive_datetime)
-
-#   def decommissioned_on_op(query, {op, value}), do: typed_field_op(query, :decommissioned_on, op, value, :naive_datetime)
-
-#   defdelegate order(query, args), to: Aot.QueryUtils
-#   defdelegate paginate(query, args), to: Aot.QueryUtils
-
-#   @spec handle_opts(Ecto.Queryable.t(), keyword()) :: Ecto.Queryable.t()
-#   def handle_opts(query, opts \\ []) do
-#     [
-#       include_networks: false,
-#       include_sensors: false,
-#       assert_alive: false,
-#       assert_dead: false,
-#       within_network: :empty,
-#       within_networks: :empty,
-#       has_sensor: :empty,
-#       has_sensors: :empty,
-#       located_within: :empty,
-#       within_distance: :empty,
-#       commissioned_on_op: :empty,
-#       decommissioned_on_op: :empty,
-#       order: :empty,
-#       paginate: :empty
-#     ]
-#     |> Keyword.merge(opts)
-#     |> apply_opts(query, NodeQueries)
-#   end
-# end

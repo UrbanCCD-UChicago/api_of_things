@@ -1,5 +1,5 @@
 defmodule AotWeb.ErrorViewTest do
-  use AotWeb.ConnCase, async: true
+  use AotWeb.Testing.ConnCase, async: true
 
   # Bring render/3 and render_to_string/3 for testing custom views
   import Phoenix.View

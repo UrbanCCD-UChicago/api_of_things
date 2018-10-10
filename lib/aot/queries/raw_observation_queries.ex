@@ -171,7 +171,7 @@ defmodule Aot.RawObservationQueries do
   def compute_aggs(query, :last),
     do: from obs in query,
       select: %{
-        last_raw: fragment("last(raw, timestamp)"),
+        raw_last: fragment("last(raw, timestamp)"),
         hrf_last: fragment("last(hrf, timestamp)"),
       }
 
