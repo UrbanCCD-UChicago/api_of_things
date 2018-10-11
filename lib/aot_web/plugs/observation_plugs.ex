@@ -10,13 +10,17 @@ defmodule AotWeb.ObservationPlugs do
 
   alias Plug.Conn
 
-  @comp_regex ~r/^lt|le|eq|ge|gt\:.+/i
+  @comp_regex ~r/^(lt|le|eq|ge|gt)\:[\d\.]+/i
 
-  @no_op_agg_regex ~r/^first|last/i
+  @no_op_agg_regex ~r/^first|last$/i
 
-  @simple_agg_regex ~r/^count|min|max|avg|sum|stddev|variance\:.+/i
+  @simple_agg_regex ~r/^(count|min|max|avg|sum|stddev|variance)\:[\w\s]+/i
 
-  @perc_agg_regex ~r/^percentile\:.+\:.+/i
+  @perc_agg_regex ~r/^percentile\:[\d\.]+\:[\w\s]+/i
+
+  @value_error "could not parse filter spec for `value`"
+
+  @group_error "cannot group by given field"
 
   @doc """
   Parses the query params for a given key. If the key is found,
@@ -25,38 +29,39 @@ defmodule AotWeb.ObservationPlugs do
   applied to the connection. If nothing matches it halts.
   """
   @spec value_funcs(Conn.t(), keyword()) :: Conn.t()
-  def value_funcs(conn, opts) do
-    field = opts[:param]
-    key = String.to_atom(field)
+  def value_funcs(%Conn{params: %{"value" => filter}} = conn, opts) do
+    groupers = opts[:groupers]
 
-    case Map.get(conn.params, field) do
-      nil ->
-        conn
+    cond do
+      Regex.match?(@comp_regex, filter) ->
+        [op, value] = String.split(filter, ":", parts: 2)
+        assign(conn, :value, {String.to_atom(op), value})
 
-      filter ->
-        cond do
-          Regex.match?(@comp_regex, filter) ->
-            [op, value] = String.split(filter, ":", parts: 2)
-            assign(conn, key, {String.to_atom(op), value})
+      Regex.match?(@no_op_agg_regex, filter) ->
+        assign(conn, :value, String.to_atom(filter))
 
-          Regex.match?(@no_op_agg_regex, filter) ->
-            assign(conn, key, String.to_atom(filter))
-
-          Regex.match?(@simple_agg_regex, filter) ->
-            [op, grouper] = String.split(filter, ":", parts: 2)
-            assign(conn, key, {String.to_atom(op), grouper})
-
-          Regex.match?(@perc_agg_regex, filter) ->
-            [op, perc, grouper] = String.split(filter, ":", parts: 3)
-            assign(conn, key, {String.to_atom(op), perc, grouper})
-
-          true ->
-            halt_with(conn, :unprocessable_entity, "could not parse value for #{field}")
+      Regex.match?(@simple_agg_regex, filter) ->
+        [op, grouper] = String.split(filter, ":", parts: 2)
+        case Enum.member?(groupers, grouper) do
+          true -> assign(conn, :value, {String.to_atom(op), String.to_atom(grouper)})
+          false -> halt_with(conn, :unprocessable_entity, @group_error)
         end
+
+      Regex.match?(@perc_agg_regex, filter) ->
+        [op, perc, grouper] = String.split(filter, ":", parts: 3)
+        case Enum.member?(groupers, grouper) do
+          true -> assign(conn, :value, {String.to_atom(op), perc, String.to_atom(grouper)})
+          false -> halt_with(conn, :unprocessable_entity, @group_error)
+        end
+
+      true ->
+        halt_with(conn, :bad_request, @value_error)
     end
   end
 
-  @hist_regex ~r/^.+\:.+\:.+\:.+/i
+  def value_funcs(conn, _opts), do: conn
+
+  @hist_regex ~r/^[\d\.]+\:[\d\.]+\:[\d\.]+\:\w+/i
 
   @hist_error "histogram requires parameters as `min:max:count:group_by`"
 
@@ -64,20 +69,27 @@ defmodule AotWeb.ObservationPlugs do
   Parses and validates use of the `as_histogram` parameter.
   """
   @spec as_histogram(Conn.t(), keyword()) :: Conn.t()
-  def as_histogram(%Conn{params: %{"as_histogram" => hist}} = conn, _opts) do
+  def as_histogram(%Conn{params: %{"as_histogram" => hist}} = conn, opts) do
     case Regex.match?(@hist_regex, hist) do
       false ->
         halt_with(conn, :bad_request, @hist_error)
 
       true ->
         [min, max, count, grouper] = String.split(hist, ":", parts: 4)
-        assign(conn, :as_histogram, {min, max, count, grouper})
+        case Enum.member?(opts[:groupers], grouper) do
+          true -> assign(conn, :as_histogram, {min, max, count, String.to_atom(grouper)})
+          false -> halt_with(conn, :unprocessable_entity, @group_error)
+        end
     end
   end
 
   def as_histogram(conn, _opts), do: conn
 
-  @tb_error "time buckets require an aggregate function and grouping field `func:field`"
+  @tb_agg_regex ~r/^(count|min|max|avg|sum|stddev|variance)\:\d+\s(year|month|day|hour|minute|second)s?+/
+
+  @tb_perc_regex ~r/^percentile\:[\d\.]+\:\d+\s(year|month|day|hour|minute|second)s?/
+
+  @tb_error "time buckets require an aggregate function and postgres interval `func:n interval`"
 
   @doc """
   Parses and validates use of the `as_time_buckets` parameter.
@@ -85,13 +97,13 @@ defmodule AotWeb.ObservationPlugs do
   @spec as_time_buckets(Conn.t(), keyword()) :: Conn.t()
   def as_time_buckets(%Conn{params: %{"as_time_buckets" => buckets}} = conn, _opts) do
     cond do
-      Regex.match?(@simple_agg_regex, buckets) ->
-        [func, grouper] = String.split(buckets, ":", parts: 2)
-        assign(conn, :as_time_buckets, {String.to_atom(func), grouper})
+      Regex.match?(@tb_agg_regex, buckets) ->
+        [func, interval] = String.split(buckets, ":", parts: 2)
+        assign(conn, :as_time_buckets, {String.to_atom(func), interval})
 
-      Regex.match?(@perc_agg_regex, buckets) ->
-        [_, perc, grouper] = String.split(buckets, ":", parts: 3)
-        assign(conn, :as_time_buckets, {:percentile, perc, grouper})
+      Regex.match?(@tb_perc_regex, buckets) ->
+        [_, perc, interval] = String.split(buckets, ":", parts: 3)
+        assign(conn, :as_time_buckets, {:percentile, perc, interval})
 
       true ->
         halt_with(conn, :bad_request, @tb_error)

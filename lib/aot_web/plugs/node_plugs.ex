@@ -56,13 +56,24 @@ defmodule AotWeb.NodePlugs do
     [_, meters, geo_string] = String.split(loc, ":", parts: 3)
 
     with {:ok, geo_map} <- Jason.decode(geo_string),
-         {:ok, geojson} <- decode_geojson(geo_map)
+         {:ok, geojson} <- decode_geojson(geo_map),
+         {:ok, meters} <- parse_meters(meters)
     do
       assign(conn, :located_within_distance, {meters, geojson})
 
     else
       _ ->
         halt_with(conn, :bad_request, @loc_error)
+    end
+  end
+
+  defp parse_meters(meters) do
+    try do
+      value = String.to_integer(meters)
+      {:ok, value}
+    rescue
+      ArgumentError ->
+        {:error, nil}
     end
   end
 end

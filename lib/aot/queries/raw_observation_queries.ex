@@ -3,7 +3,8 @@ defmodule Aot.RawObservationQueries do
   """
 
   import Aot.QueryUtils, only: [
-    apply_opts: 3
+    boolean_compose: 4,
+    filter_compose: 4
   ]
 
   import Ecto.Query
@@ -24,27 +25,32 @@ defmodule Aot.RawObservationQueries do
 
   # BASE QUERIES
 
+  @spec list() :: Ecto.Queryable.t()
   def list,
     do: from obs in RawObservation
 
   # BOOLEAN COMPOSE
 
+  @spec embed_node(Ecto.Queryable.t()) :: Ecto.Queryable.t()
   def embed_node(query),
     do: from obs in query,
       preload: [node: :observations]
 
+  @spec embed_sensor(Ecto.Queryable.t()) :: Ecto.Queryable.t()
   def embed_sensor(query),
     do: from obs in query,
       preload: [sensor: :observations]
 
   # FILTER COMPOSE
 
+  @spec of_network(Ecto.Queryable.t(), binary() | Aot.Network.t()) :: Ecto.Queryable.t()
   def of_network(query, %Network{slug: slug}),
     do: of_network(query, slug)
 
   def of_network(query, slug) when is_binary(slug),
     do: of_networks(query, [slug])
 
+  @spec of_networks(Ecto.Queryable.t(), any()) :: Ecto.Queryable.t()
   def of_networks(query, networks) do
     slugs =
       networks
@@ -60,12 +66,14 @@ defmodule Aot.RawObservationQueries do
       where: nn.network_slug in ^slugs
   end
 
+  @spec from_node(Ecto.Queryable.t(), binary() | Aot.Node.t()) :: Ecto.Queryable.t()
   def from_node(query, %Node{id: id}),
     do: from_node(query, id)
 
   def from_node(query, id) when is_binary(id),
     do: from_nodes(query, [id])
 
+  @spec from_nodes(Ecto.Queryable.t(), maybe_improper_list()) :: Ecto.Queryable.t()
   def from_nodes(query, nodes) when is_list(nodes) do
     ids =
       nodes
@@ -80,12 +88,14 @@ defmodule Aot.RawObservationQueries do
       where: obs.node_id in ^ids
   end
 
+  @spec by_sensor(Ecto.Queryable.t(), binary() | Aot.Sensor.t()) :: Ecto.Queryable.t()
   def by_sensor(query, %Sensor{path: path}),
     do: by_sensor(query, path)
 
   def by_sensor(query, path) when is_binary(path),
     do: by_sensors(query, [path])
 
+  @spec by_sensors(Ecto.Queryable.t(), maybe_improper_list()) :: Ecto.Queryable.t()
   def by_sensors(query, sensors) when is_list(sensors) do
     paths =
       sensors
@@ -100,16 +110,19 @@ defmodule Aot.RawObservationQueries do
       where: obs.sensor_path in ^paths
   end
 
+  @spec located_within_distance(Ecto.Queryable.t(), {number(), Geo.Point.t()}) :: Ecto.Queryable.t()
   def located_within_distance(query, {meters, geom}),
     do: from obs in query,
       left_join: node in Node, as: :node, on: node.id == obs.node_id,
       where: st_dwithin_in_meters(node.location, ^geom, ^meters)
 
+  @spec located_within(Ecto.Queryable.t(), Geo.Polygon.t()) :: Ecto.Queryable.t()
   def located_within(query, geom),
     do: from obs in query,
       left_join: node in Node, as: :node, on: node.id == obs.node_id,
       where: st_contains(^geom, node.location)
 
+  @spec timestamp(Ecto.Queryable.t(), {:eq | :ge | :gt | :le | :lt, NaiveDateTime.t()}) :: Ecto.Queryable.t()
   def timestamp(query, {:lt, value}),
     do: from obs in query, where: obs.timestamp < ^value
 
@@ -127,6 +140,7 @@ defmodule Aot.RawObservationQueries do
 
   # raw value comparisons
 
+  @spec raw(Ecto.Queryable.t(), {:eq | :ge | :gt | :le | :lt, number()}) :: Ecto.Queryable.t()
   def raw(query, {:lt, value}),
     do: from obs in query, where: obs.raw < ^value
 
@@ -144,6 +158,7 @@ defmodule Aot.RawObservationQueries do
 
   # hrf value comparisons
 
+  @spec hrf(Ecto.Queryable.t(), {:eq | :ge | :gt | :le | :lt, number()}) :: Ecto.Queryable.t()
   def hrf(query, {:lt, value}),
     do: from obs in query, where: obs.hrf < ^value
 
@@ -161,6 +176,7 @@ defmodule Aot.RawObservationQueries do
 
   # combined value aggregates
 
+  @spec compute_aggs(Ecto.Queryable.t(), :first | :last | {:avg | :count | :max | :min | :stddev | :sum | :variance, atom()} | {:percentile, float(), atom()}) :: Ecto.Queryable.t()
   def compute_aggs(query, :first),
     do: from obs in query,
       select: %{
@@ -243,19 +259,21 @@ defmodule Aot.RawObservationQueries do
     group_by: field(obs, ^grouper),
     select: %{
       group: field(obs, ^grouper),
-      raw_value: fragment("percentile_cont(?) within group (order by raw)", ^perc),
-      hrf_value: fragment("percentile_cont(?) within group (order by hrf)", ^perc)
+      raw_value: fragment("percentile_cont(?::float) within group (order by raw)", type(^perc, :float)),
+      hrf_value: fragment("percentile_cont(?::float) within group (order by hrf)", type(^perc, :float))
     }
 
+  @spec as_histograms(Ecto.Queryable.t(), {number(), number(), number(), number(), integer(), atom()}) :: Ecto.Queryable.t()
   def as_histograms(query, {raw_min, raw_max, hrf_min, hrf_max, count, grouper}),
     do: from obs in query,
       group_by: field(obs, ^grouper),
       select: %{
         group: field(obs, ^grouper),
-        raw_histogram: fragment("histogram(raw, ?, ?, ?)", ^raw_min, ^raw_max, ^count),
-        hrf_histogram: fragment("histogram(hrf, ?, ?, ?)", ^hrf_min, ^hrf_max, ^count)
+        raw_histogram: fragment("histogram(raw, ?::float, ?::float, ?::integer)", type(^raw_min, :float), type(^raw_max, :float), type(^count, :integer)),
+        hrf_histogram: fragment("histogram(hrf, ?::float, ?::float, ?::integer)", type(^hrf_min, :float), type(^hrf_max, :float), type(^count, :integer))
       }
 
+  @spec as_time_buckets(Ecto.Queryable.t(), {:avg | :count | :max | :min | :stddev | :sum | :variance, binary()} | {:percentile, float(), binary()}) :: Ecto.Queryable.t()
   def as_time_buckets(query, {:count, interval}),
     do: from obs in query,
       group_by: fragment("bucket"),
@@ -332,8 +350,8 @@ defmodule Aot.RawObservationQueries do
       order_by: fragment("bucket ASC"),
       select: %{
         bucket: fragment("time_bucket(?::interval, timestamp) as bucket", type(^interval, :string)),
-        raw_value: fragment("percentile_cont(?) within group (order by raw)", ^perc),
-        hrf_value: fragment("percentile_cont(?) within group (order by hrf)", ^perc)
+        raw_value: fragment("percentile_cont(?::float) within group (order by raw)", type(^perc, :float)),
+        hrf_value: fragment("percentile_cont(?::float) within group (order by hrf)", type(^perc, :float))
       }
 
   defdelegate order(query, args), to: Aot.QueryUtils
@@ -341,28 +359,47 @@ defmodule Aot.RawObservationQueries do
 
   # OTHER ACTION HELPERS
 
+  @spec handle_opts(Ecto.Queryable.t(), keyword()) :: Ecto.Queryable.t()
   def handle_opts(query, opts \\ []) do
-    [
-      embed_node: false,
-      embed_sensor: false,
-      of_network: :empty,
-      of_networks: :empty,
-      from_node: :empty,
-      from_nodes: :empty,
-      by_sensor: :empty,
-      by_sensors: :empty,
-      located_within_distance: :empty,
-      located_within: :empty,
-      timestamp: :empty,
-      raw: :empty,
-      hrf: :empty,
-      compute_aggs: :empty,
-      as_histograms: :empty,
-      as_time_buckets: :empty,
-      order: :empty,
-      paginate: :empty
-    ]
-    |> Keyword.merge(opts)
-    |> apply_opts(query, RawObservationQueries)
+    opts =
+      [
+        embed_node: false,
+        embed_sensor: false,
+        of_network: :empty,
+        of_networks: :empty,
+        from_node: :empty,
+        from_nodes: :empty,
+        by_sensor: :empty,
+        by_sensors: :empty,
+        located_within_distance: :empty,
+        located_within: :empty,
+        timestamp: :empty,
+        raw: :empty,
+        hrf: :empty,
+        compute_aggs: :empty,
+        as_histograms: :empty,
+        as_time_buckets: :empty,
+        order: :empty,
+        paginate: :empty
+      ]
+      |> Keyword.merge(opts)
+
+    query
+    |> boolean_compose(opts[:embed_node], RawObservationQueries, :embed_node)
+    |> boolean_compose(opts[:embed_sensor], RawObservationQueries, :embed_sensor)
+    |> filter_compose(opts[:of_network], RawObservationQueries, :of_network)
+    |> filter_compose(opts[:of_networks], RawObservationQueries, :of_networks)
+    |> filter_compose(opts[:by_sensor], RawObservationQueries, :by_sensor)
+    |> filter_compose(opts[:by_sensors], RawObservationQueries, :by_sensors)
+    |> filter_compose(opts[:located_within], RawObservationQueries, :located_within)
+    |> filter_compose(opts[:located_within_distance], RawObservationQueries, :located_within_distance)
+    |> filter_compose(opts[:timestamp], RawObservationQueries, :timestamp)
+    |> filter_compose(opts[:raw], RawObservationQueries, :raw)
+    |> filter_compose(opts[:hrf], RawObservationQueries, :hrf)
+    |> filter_compose(opts[:compute_aggs], RawObservationQueries, :compute_aggs)
+    |> filter_compose(opts[:as_histograms], RawObservationQueries, :as_histograms)
+    |> filter_compose(opts[:as_time_buckets], RawObservationQueries, :as_time_buckets)
+    |> filter_compose(opts[:order], RawObservationQueries, :order)
+    |> filter_compose(opts[:paginate], RawObservationQueries, :paginate)
   end
 end

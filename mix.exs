@@ -34,7 +34,7 @@ defmodule Aot.Mixfile do
 
       # database deps
       {:ecto_sql, github: "elixir-ecto/ecto_sql", branch: "master"},
-      {:postgrex, "~> 0.14.0-rc.0", override: true},
+      {:postgrex, github: "elixir-ecto/postgrex", branch: "master", override: true},
       {:geo_postgis, "~> 2.1"},
 
       # utils

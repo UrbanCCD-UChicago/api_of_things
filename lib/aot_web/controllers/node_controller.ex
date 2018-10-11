@@ -13,10 +13,10 @@ defmodule AotWeb.NodeController do
 
   action_fallback AotWeb.FallbackController
 
-  plug :assign_if_exists, param: "include_networks"
-  plug :assign_if_exists, param: "include_sensors"
-  plug :assign_if_exists, param: "assert_alive"
-  plug :assign_if_exists, param: "assert_dead"
+  plug :assign_if_exists, param: "include_networks", value_override: true
+  plug :assign_if_exists, param: "include_sensors", value_override: true
+  plug :assign_if_exists, param: "assert_alive", value_override: true
+  plug :assign_if_exists, param: "assert_dead", value_override: true
   plug :assign_if_exists, param: "within_network"
   plug :assign_if_exists, param: "within_networks"
   plug :assign_if_exists, param: "within_networks_exact"
@@ -26,7 +26,7 @@ defmodule AotWeb.NodeController do
   plug :timestamp, params: "commissioned_on"
   plug :timestamp, params: "decommissioned_on"
   plug :location
-  plug :order, default: "asc:id"
+  plug :order, default: "asc:id", fields: ~W(id vsn commissioned_on decommissioned_on)
   plug :paginate
 
   def index(conn, _params) do

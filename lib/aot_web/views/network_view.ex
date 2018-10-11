@@ -30,7 +30,7 @@ defmodule AotWeb.NetworkView do
   def render("network.geojson", %{network: net}) do
     %{
       type: "Feature",
-      geometry: Geo.JSON.encode!(net.bbox),
+      geometry: encode_geom(net.bbox),
       properties: %{
         name: net.name,
         slug: net.slug,

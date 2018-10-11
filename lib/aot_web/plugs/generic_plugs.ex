@@ -32,12 +32,14 @@ defmodule AotWeb.GenericPlugs do
   @spec assign_if_exists(Conn.t(), keyword()) :: Conn.t()
   def assign_if_exists(conn, opts) do
     param = opts[:param]
+
     case Map.get(conn.params, param) do
       nil ->
         conn
 
       value ->
         key = String.to_atom(param)
+        value = Keyword.get(opts, :value_override, value)
         assign(conn, key, value)
     end
   end
@@ -117,6 +119,7 @@ defmodule AotWeb.GenericPlugs do
 
   @order_regex ~r/^asc|desc\:.+/i
   @order_error "order must follow `dir:field` format where `dir` is either 'asc' or 'desc'"
+  @order_field_error "invalid field for ordering"
 
   @doc """
   Validates the format of a given ordering parameter and applies
@@ -128,14 +131,20 @@ defmodule AotWeb.GenericPlugs do
     plug :order, default: "desc:timestamp"
   """
   @spec order(Conn.t(), any()) :: Conn.t()
-  def order(%Conn{params: %{"order" => order}} = conn, _opts) do
+  def order(%Conn{params: %{"order" => order}} = conn, opts) do
     case Regex.match?(@order_regex, order) do
       false ->
         halt_with(conn, :bad_request, @order_error)
 
       true ->
         [dir, field] = String.split(order, ":", parts: 2)
-        assign(conn, :order, {String.to_atom(dir), String.to_atom(field)})
+        case Enum.member?(opts[:fields], field) do
+          true ->
+            assign(conn, :order, {String.to_atom(dir), String.to_atom(field)})
+
+          false ->
+            halt_with(conn, :unprocessable_entity, @order_field_error)
+        end
     end
   end
 

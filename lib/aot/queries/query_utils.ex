@@ -9,8 +9,34 @@ defmodule Aot.QueryUtils do
   Genreically applies ordering. This should be delegated to from the query modules.
   """
   @spec order(Ecto.Queryable.t(), {:asc | :desc, atom()}) :: Ecto.Queryable.t()
-  def order(query, {:asc, fname}), do: order_by(query, [q], asc: ^fname)
-  def order(query, {:desc, fname}), do: order_by(query, [q], desc: ^fname)
+  def order(query, {dir, fname}) do
+    case Enum.empty?(query.order_bys) do
+      true -> do_order(query, dir, fname)
+      false -> query
+    end
+  end
+
+  defp do_order(query, :asc, fname) do
+    case Enum.empty?(query.group_bys) do
+      true ->
+        order_by(query, [q], asc: ^fname)
+
+      false ->
+        order_by(query, [q], asc: ^fname)
+        |> group_by(^fname)
+    end
+  end
+
+  defp do_order(query, :desc, fname) do
+    case Enum.empty?(query.group_bys) do
+      true ->
+        order_by(query, [q], desc: ^fname)
+
+      false ->
+        order_by(query, [q], desc: ^fname)
+        |> group_by(^fname)
+    end
+  end
 
   @doc """
   Generically applies pagination. This should be delegated to from the query modules.
@@ -34,7 +60,7 @@ defmodule Aot.QueryUtils do
   Applies the given `module.func` to the query if the flag is true, otherwise it
   simply returns the query unmodified.
   """
-  @spec boolean_compose(Ecto.Queryable.t(), boolean(), module(), fun()) :: Ecto.Queryable.t()
+  @spec boolean_compose(Ecto.Queryable.t(), boolean(), module(), atom()) :: Ecto.Queryable.t()
   def boolean_compose(query, false, _module, _func), do: query
   def boolean_compose(query, true, module, func), do: apply(module, func, [query])
 
@@ -42,22 +68,7 @@ defmodule Aot.QueryUtils do
   Applies the given `module.func` to the query with the given `value` as the parameter
   to the function if the value is not :empty, otherwise it returns the query unmodified.
   """
-  @spec filter_compose(Ecto.Queryable.t(), :empty | any(), module(), fun()) :: Ecto.Queryable.t()
+  @spec filter_compose(Ecto.Queryable.t(), :empty | any(), module(), atom()) :: Ecto.Queryable.t()
   def filter_compose(query, :empty, _module, _func), do: query
   def filter_compose(query, value, module, func), do: apply(module, func, [query, value])
-
-  @doc """
-  Generically applies `boolean_compose` and `filter_compose` to a query based on the
-  mapping given in the opts parameter. The keys of the opts must match the function
-  names in the module that will be applied.
-  """
-  @spec apply_opts(keyword(), Ecto.Queryable.t(), module()) :: Ecto.Queryable.t()
-  def apply_opts(opts, query, module) do
-    Enum.reduce(opts, query, fn {key, value}, query ->
-      case is_boolean(value) do
-        true -> boolean_compose(query, value, module, key)
-        false -> filter_compose(query, value, module, key)
-      end
-    end)
-  end
 end

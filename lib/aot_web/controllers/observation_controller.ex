@@ -11,8 +11,8 @@ defmodule AotWeb.ObservationController do
 
   alias Aot.ObservationActions
 
-  plug :assign_if_exists, param: "embed_node"
-  plug :assign_if_exists, param: "embed_sensor"
+  plug :assign_if_exists, param: "embed_node", value_override: true
+  plug :assign_if_exists, param: "embed_sensor", value_override: true
   plug :assign_if_exists, param: "of_network"
   plug :assign_if_exists, param: "of_networks"
   plug :assign_if_exists, param: "from_node"
@@ -21,10 +21,10 @@ defmodule AotWeb.ObservationController do
   plug :assign_if_exists, param: "by_sensors"
   plug :location
   plug :timestamp, param: "timestamp"
-  plug :value_funcs, param: "value"
-  plug :as_histogram
-  plug :as_time_buckets
-  plug :order, default: "desc:timestamp"
+  plug :value_funcs, groupers: ~W(node_id sensor_path)
+  plug :as_histogram, groupers: ~W(node_id sensor_path)
+  plug :as_time_buckets, groupers: ~W(node_id sensor_path)
+  plug :order, default: "desc:timestamp", fields: ~W(timestamp node_id sensor_path)
   plug :paginate
 
   def index(conn, _params) do

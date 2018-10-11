@@ -72,14 +72,8 @@ defmodule Aot.NetworkActions do
   @spec compute_bbox(Network.t() | integer()) :: Geo.Polygon.t()
   def compute_bbox(%Network{slug: slug}), do: compute_bbox(slug)
   def compute_bbox(slug) do
-    poly =
-      NetworkQueries.compute_bbox(slug)
-      |> Repo.one()
-
-    case poly do
-      %Geo.Polygon{} -> poly
-      _ -> nil
-    end
+    NetworkQueries.compute_bbox(slug)
+    |> Repo.one()
   end
 
   @doc """
@@ -89,13 +83,7 @@ defmodule Aot.NetworkActions do
   @spec compute_hull(Network.t() | integer()) :: Geo.Polygon.t()
   def compute_hull(%Network{slug: slug}), do: compute_hull(slug)
   def compute_hull(slug) do
-    poly =
-      NetworkQueries.compute_hull(slug)
-      |> Repo.one()
-
-    case poly do
-      %Geo.Polygon{} -> poly
-      _ -> nil
-    end
+    NetworkQueries.compute_hull(slug)
+    |> Repo.one()
   end
 end

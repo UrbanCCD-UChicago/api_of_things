@@ -13,8 +13,8 @@ defmodule AotWeb.NetworkController do
 
   action_fallback AotWeb.FallbackController
 
-  plug :assign_if_exists, param: "include_nodes"
-  plug :assign_if_exists, param: "include_sensors"
+  plug :assign_if_exists, param: "include_nodes", value_override: true
+  plug :assign_if_exists, param: "include_sensors", value_override: true
   plug :assign_if_exists, param: "has_node"
   plug :assign_if_exists, param: "has_nodes"
   plug :assign_if_exists, param: "has_nodes_exact"
@@ -22,7 +22,7 @@ defmodule AotWeb.NetworkController do
   plug :assign_if_exists, param: "has_sensors"
   plug :assign_if_exists, param: "has_sensors_exact"
   plug :bbox
-  plug :order, default: "asc:name"
+  plug :order, default: "asc:name", fields: ~W(name slug)
   plug :paginate
 
   def index(conn, _params) do
