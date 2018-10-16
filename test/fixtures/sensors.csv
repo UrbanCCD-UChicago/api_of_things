@@ -1,7 +1,0 @@
-subsystem,sensor,parameter,ontology,uom,min,max,data_sheet
-metsense,one,temperature,/sensing/meteorology/temperature,asdf,0,100,asdf
-metsense,one,humidity,/sensing/meteorology/humidity,asdf,0,100,asdf
-metsense,two,temperature,/sensing/meteorology/temperature,asdf,0,100,asdf
-chemsense,co,concentration,/sensing/air_quality/gases/co,asdf,0,100,asdf
-chemsense,so2,concentration,/sensing/air_quality/gases/so2,asdf,0,100,asdf
-chemsense,o3,concentration,/sensing/air_quality/gases/o3,asdf,0,100,asdf

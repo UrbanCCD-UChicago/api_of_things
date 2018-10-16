@@ -24,6 +24,19 @@ config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:user_id, :request_id]
 
+# Configures regularly scheduled jobs
+config :aot, AotJobs.Scheduler,
+  jobs: [
+    # every 5 minutes, pull in recent data from aot archives
+    {"*/5 * * * *", {AotJobs, :import_networks, []}},
+
+    # every day at 12:03 am, delete data older than 1 week
+    {"3 0 * * *", {AotJobs, :delete_old_data, []}}
+  ]
+
+# Configures concurrency when loading data csv
+config :aot, import_concurrency: [max_concurrency: 8, ordered: false]
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"

@@ -15,10 +15,10 @@ defmodule AotWeb.GenericPlugsTest do
     end
 
     @tag add2ctx: :nodes
-    test "when param is found its value is assigned", %{conn: conn, n001: node1, n005: node5} do
+    test "when param is found its value is assigned", %{conn: conn, n004: n004, n006: n006} do
       %{"data" => data} =
         conn
-        |> get(network_path(conn, :index, has_nodes_exact: [node1.id, node5.id]))
+        |> get(network_path(conn, :index, has_nodes_exact: [n004.id, n006.id]))
         |> json_response(:ok)
 
       assert length(data) == 1

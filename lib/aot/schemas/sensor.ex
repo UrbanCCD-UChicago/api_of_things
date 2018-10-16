@@ -56,6 +56,7 @@ defmodule Aot.Sensor do
     sensor
     |> cast(attrs, @attrs)
     |> validate_required(@reqd)
+    |> unique_constraint(:path, name: :sensors_pkey)
     |> unique_constraint(:subsystem, name: :sensors_ssp, message: @uniq)
     |> put_path()
   end

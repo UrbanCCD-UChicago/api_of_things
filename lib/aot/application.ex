@@ -7,8 +7,12 @@ defmodule Aot.Application do
     children = [
       # Start the Ecto repository
       supervisor(Aot.Repo, []),
+
       # Start the endpoint when the application starts
-      supervisor(AotWeb.Endpoint, [])
+      supervisor(AotWeb.Endpoint, []),
+
+      # Stat the job scheduler
+      worker(AotJobs.Scheduler, [])
     ]
 
     opts = [strategy: :one_for_one, name: Aot.Supervisor]

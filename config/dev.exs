@@ -13,6 +13,10 @@ config :logger, :console,
   format: "[$level] $message\n",
   level: :debug
 
+# Configures regularly scheduled jobs
+config :aot, AotJobs.Scheduler,
+  jobs: []
+
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.
 config :phoenix, :stacktrace_depth, 20

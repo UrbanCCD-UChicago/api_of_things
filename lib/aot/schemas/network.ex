@@ -44,7 +44,6 @@ defmodule Aot.Network do
 
   @attrs ~W( name bbox hull archive_url recent_url bbox hull first_observation latest_observation ) |> Enum.map(&String.to_atom/1)
   @reqd ~W( name archive_url recent_url ) |> Enum.map(&String.to_atom/1)
-  @https ~r/https/
 
   @doc false
   def changeset(network, attrs) do
@@ -54,8 +53,6 @@ defmodule Aot.Network do
     |> unique_constraint(:name)
     |> unique_constraint(:archive_url)
     |> unique_constraint(:recent_url)
-    |> validate_format(:archive_url, @https)
-    |> validate_format(:recent_url, @https)
     |> put_slug()
   end
 

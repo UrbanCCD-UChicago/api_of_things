@@ -14,22 +14,22 @@ defmodule Aot.Testing.RawObservationQueriesTest do
 
     test "lt" do
       obs = RawObservationActions.list(raw: {:lt, @value})
-      assert length(obs) == 64
+      assert length(obs) == 361
     end
 
     test "le" do
       obs = RawObservationActions.list(raw: {:le, @value})
-      assert length(obs) == 64
+      assert length(obs) == 361
     end
 
     test "ge" do
       obs = RawObservationActions.list(raw: {:ge, @value})
-      assert length(obs) == 56
+      assert length(obs) == 2906
     end
 
     test "gt" do
       obs = RawObservationActions.list(raw: {:gt, @value})
-      assert length(obs) == 56
+      assert length(obs) == 2906
     end
   end
 
@@ -43,22 +43,22 @@ defmodule Aot.Testing.RawObservationQueriesTest do
 
     test "lt" do
       obs = RawObservationActions.list(hrf: {:lt, @value})
-      assert length(obs) == 40
+      assert length(obs) == 2023
     end
 
     test "le" do
       obs = RawObservationActions.list(hrf: {:le, @value})
-      assert length(obs) == 40
+      assert length(obs) == 2023
     end
 
     test "ge" do
       obs = RawObservationActions.list(hrf: {:ge, @value})
-      assert length(obs) == 32
+      assert length(obs) == 552
     end
 
     test "gt" do
       obs = RawObservationActions.list(hrf: {:gt, @value})
-      assert length(obs) == 32
+      assert length(obs) == 552
     end
   end
 

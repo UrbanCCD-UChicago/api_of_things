@@ -17,7 +17,7 @@ defmodule Aot.Mixfile do
   def application do
     [
       mod: {Aot.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :briefly]
     ]
   end
 
@@ -41,7 +41,14 @@ defmodule Aot.Mixfile do
       {:slugify, "~> 1.1"},
       {:csv, "~> 2.1"},
       {:timex, "~> 3.4"},
-      {:jason, "~> 1.1"}
+      {:jason, "~> 1.1"},
+      {:httpoison, "~> 1.3"},
+      {:briefly, "~> 0.3.0"},
+      {:nimble_csv, "~> 0.4.0"},
+      {:quantum, "~> 2.3"},
+
+      # testing
+      {:mock, "~> 0.3.2", only: :test}
     ]
   end
 

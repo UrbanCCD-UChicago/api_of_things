@@ -19,7 +19,7 @@ defmodule AotWeb.Testing.SensorControllerTest do
 
   describe "show" do
     @tag add2ctx: :sensors
-    test "response data should be a single object", %{conn: conn, onetemperature: sensor} do
+    test "response data should be a single object", %{conn: conn, h2s_concentration: sensor} do
       %{"data" => data} =
         conn
         |> get(sensor_path(conn, :show, sensor))

@@ -1,14 +1,15 @@
 defmodule Aot.Testing.DataCase do
   use ExUnit.CaseTemplate
 
+  import Mock
+
   alias Aot.{
-    M2MActions,
     NetworkActions,
     NodeActions,
-    ObservationActions,
-    RawObservationActions,
     SensorActions
   }
+
+  alias AotJobs.Importer
 
   using do
     quote do
@@ -20,65 +21,72 @@ defmodule Aot.Testing.DataCase do
     end
   end
 
+  defp mock_chicago(_) do
+    content =
+      "test/fixtures/chicago.tar"
+      |> File.read!()
+
+    %HTTPoison.Response{body: content}
+  end
+
+  defp mock_detroit(_) do
+    content =
+      "test/fixtures/detroit.tar"
+      |> File.read!()
+
+    %HTTPoison.Response{body: content}
+  end
+
+  defp mock_portland(_) do
+    content =
+      "test/fixtures/portland.tar"
+      |> File.read!()
+
+    %HTTPoison.Response{body: content}
+  end
+
   setup_all do
-    # load networks
-    "test/fixtures/networks.csv"
-    |> File.stream!()
-    |> CSV.decode!(headers: true)
-    |> Enum.each(&NetworkActions.create/1)
+    # setup chicago network
+    {:ok, chicago} =
+      NetworkActions.create name: "Chicago",
+        archive_url: "https://example.com/archives/chicago",
+        recent_url: "https://example.com/recents/chicago"
 
-    # load nodes
-    "test/fixtures/nodes.csv"
-    |> File.stream!()
-    |> CSV.decode!(headers: true)
-    |> Enum.each(&NodeActions.create/1)
+    with_mock HTTPoison, get!: &mock_chicago/1 do
+      Importer.import(chicago)
+    end
 
-    # load sensors
-    "test/fixtures/sensors.csv"
-    |> File.stream!()
-    |> CSV.decode!(headers: true)
-    |> Enum.each(&SensorActions.create/1)
+    bbox = NetworkActions.compute_bbox(chicago)
+    hull = NetworkActions.compute_hull(chicago)
+    {:ok, _} = NetworkActions.update(chicago, bbox: bbox, hull: hull)
 
-    # load observations
-    "test/fixtures/data.csv"
-    |> File.stream!()
-    |> CSV.decode!(headers: true)
-    |> Enum.reject(& &1["value"] == nil)
-    |> Enum.each(&ObservationActions.create/1)
+    # setup detroit network
+    {:ok, detroit} =
+      NetworkActions.create name: "Detroit",
+        archive_url: "https://example.com/archives/detroit",
+        recent_url: "https://example.com/recents/detroit"
 
-    # load raw observations
-    "test/fixtures/data.csv"
-    |> File.stream!()
-    |> CSV.decode!(headers: true)
-    |> Enum.reject(& &1["raw"] == nil)
-    |> Enum.map(& Map.put(&1, :hrf, &1["value"]))
-    |> Enum.each(&RawObservationActions.create/1)
+    with_mock HTTPoison, get!: &mock_detroit/1 do
+      Importer.import(detroit)
+    end
 
-    # load node/sensor m2m
-    "test/fixtures/nodes_sensors.csv"
-    |> File.stream!()
-    |> CSV.decode!(headers: true)
-    |> Enum.each(&M2MActions.create_node_sensor/1)
+    bbox = NetworkActions.compute_bbox(detroit)
+    hull = NetworkActions.compute_hull(detroit)
+    {:ok, _} = NetworkActions.update(detroit, bbox: bbox, hull: hull)
 
-    # load network/node m2m
-    "test/fixtures/networks_nodes.csv"
-    |> File.stream!()
-    |> CSV.decode!(headers: true)
-    |> Enum.each(&M2MActions.create_network_node/1)
+    # setup portland network
+    {:ok, portland} =
+      NetworkActions.create name: "Portland",
+        archive_url: "https://example.com/archives/portland",
+        recent_url: "https://example.com/recents/portland"
 
-    # load network/sensor m2m
-    "test/fixtures/networks_sensors.csv"
-    |> File.stream!()
-    |> CSV.decode!(headers: true)
-    |> Enum.each(&M2MActions.create_network_sensor/1)
+    with_mock HTTPoison, get!: &mock_portland/1 do
+      Importer.import(portland)
+    end
 
-    # update network bbox and hull
-    NetworkActions.list()
-    |> Enum.each(fn network ->
-      bbox = NetworkActions.compute_bbox(network)
-      hull = NetworkActions.compute_hull(network)
-      {:ok, _} = NetworkActions.update(network, bbox: bbox, hull: hull)
-    end)
+    bbox = NetworkActions.compute_bbox(portland)
+    hull = NetworkActions.compute_hull(portland)
+    {:ok, _} = NetworkActions.update(portland, bbox: bbox, hull: hull)
 
     :ok
   end
@@ -124,7 +132,7 @@ defmodule Aot.Testing.DataCase do
 
         true ->
           SensorActions.list(order: {:asc, :path})
-          |> Enum.map(& {:"#{&1.sensor}#{&1.parameter}", &1})
+          |> Enum.map(& {:"#{&1.sensor}_#{&1.parameter}", &1})
           |> Keyword.merge(context)
       end
 

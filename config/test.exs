@@ -9,5 +9,12 @@ config :aot, AotWeb.Endpoint,
 # Print only warnings and errors during test
 config :logger, level: :warn
 
+# Configures regularly scheduled jobs
+config :aot, AotJobs.Scheduler,
+  jobs: []
+
+# Configures concurrency when loading data csv
+config :aot, import_concurrency: [max_concurrency: 1, ordered: false]
+
 # Configure your databases
 config :aot, Aot.Repo, pool: Ecto.Adapters.SQL.Sandbox

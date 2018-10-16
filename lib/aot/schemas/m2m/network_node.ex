@@ -3,8 +3,15 @@ defmodule Aot.NetworkNode do
   import Ecto.Changeset
 
   schema "networks_nodes" do
-    belongs_to :network, Aot.Network, foreign_key: :network_slug, references: :slug, type: :string
-    belongs_to :node, Aot.Node, foreign_key: :node_id, references: :id, type: :string
+    belongs_to :network, Aot.Network,
+      foreign_key: :network_slug,
+      references: :slug,
+      type: :string
+
+    belongs_to :node, Aot.Node,
+      foreign_key: :node_id,
+      references: :id,
+      type: :string
   end
 
   @doc false

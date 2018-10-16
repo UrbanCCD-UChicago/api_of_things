@@ -19,7 +19,7 @@ defmodule AotWeb.Testing.NodeControllerTest do
 
   describe "show" do
     @tag add2ctx: :nodes
-    test "response data should be a single object", %{conn: conn, n001: node} do
+    test "response data should be a single object", %{conn: conn, n004: node} do
       %{"data" => data} =
         conn
         |> get(node_path(conn, :show, node))

@@ -14,22 +14,22 @@ defmodule Aot.Testing.ObservationQueriesTest do
 
     test "lt" do
       obs = ObservationActions.list(value: {:lt, @value})
-      assert length(obs) == 40
+      assert length(obs) == 2336
     end
 
     test "le" do
       obs = ObservationActions.list(value: {:le, @value})
-      assert length(obs) == 40
+      assert length(obs) == 2336
     end
 
     test "ge" do
       obs = ObservationActions.list(value: {:ge, @value})
-      assert length(obs) == 32
+      assert length(obs) == 652
     end
 
     test "gt" do
       obs = ObservationActions.list(value: {:gt, @value})
-      assert length(obs) == 32
+      assert length(obs) == 652
     end
 
     test "first" do

@@ -3,8 +3,15 @@ defmodule Aot.NodeSensor do
   import Ecto.Changeset
 
   schema "nodes_sensors" do
-    belongs_to :node, Aot.Node, foreign_key: :node_id, references: :id, type: :string
-    belongs_to :sensor, Aot.Sensor, foreign_key: :sensor_path, references: :path, type: :string
+    belongs_to :node, Aot.Node,
+      foreign_key: :node_id,
+      references: :id,
+      type: :string
+
+    belongs_to :sensor, Aot.Sensor,
+      foreign_key: :sensor_path,
+      references: :path,
+      type: :string
   end
 
   @doc false

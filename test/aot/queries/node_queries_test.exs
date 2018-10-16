@@ -6,33 +6,33 @@ defmodule Aot.Testing.NodeQueriesTest do
 
   describe "within_networks" do
     @tag add2ctx: :networks
-    test "nodes don't need to be in every networks", %{chicago_complete: chic, chicago_public: chip} do
-      nodes = NodeActions.list(within_networks: [chic, chip])
-      assert length(nodes) == 5
+    test "nodes don't need to be in every networks", %{chicago: chic, portland: pdx} do
+      nodes = NodeActions.list(within_networks: [chic, pdx])
+      assert length(nodes) == 94
     end
   end
 
   describe "within_networks_exact" do
     @tag add2ctx: :networks
-    test "nodes need to be in every network", %{chicago_complete: chic, chicago_public: chip} do
-      nodes = NodeActions.list(within_networks_exact: [chic, chip])
-      assert length(nodes) == 1
+    test "nodes need to be in every network", %{chicago: chic, portland: pdx} do
+      nodes = NodeActions.list(within_networks_exact: [chic, pdx])
+      assert length(nodes) == 0
     end
   end
 
   describe "has_sensors" do
     @tag add2ctx: :sensors
-    test "nodes don't need all the sensors to be onboard", %{onetemperature: s1, coconcentration: s2} do
+    test "nodes don't need all the sensors to be onboard", %{h2s_concentration: s1, bmp180_pressure: s2} do
       nodes = NodeActions.list(has_sensors: [s1, s2])
-      assert length(nodes) == 6
+      assert length(nodes) == 42
     end
   end
 
   describe "has_sensors_exact" do
     @tag add2ctx: :sensors
-    test "nodes required to have every sensor onboard", %{onetemperature: s1, coconcentration: s2} do
+    test "nodes required to have every sensor onboard", %{h2s_concentration: s1, bmp180_pressure: s2} do
       nodes = NodeActions.list(has_sensors_exact: [s1, s2])
-      assert length(nodes) == 4
+      assert length(nodes) == 22
     end
   end
 end

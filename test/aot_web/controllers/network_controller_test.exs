@@ -19,7 +19,7 @@ defmodule AotWeb.Testing.NetworkControllerTest do
 
   describe "show" do
     @tag add2ctx: :networks
-    test "response data should be a single object", %{conn: conn, chicago_complete: chicago} do
+    test "response data should be a single object", %{conn: conn, chicago: chicago} do
       %{"data" => data} =
         conn
         |> get(network_path(conn, :show, chicago))
