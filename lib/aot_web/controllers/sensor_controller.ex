@@ -7,11 +7,11 @@ defmodule AotWeb.SensorController do
 
   action_fallback AotWeb.FallbackController
 
-  plug :assign_if_exists, param: "include_networks", value_override: true
+  plug :assign_if_exists, param: "include_projects", value_override: true
   plug :assign_if_exists, param: "include_nodes", value_override: true
-  plug :assign_if_exists, param: "observes_network"
-  plug :assign_if_exists, param: "observes_networks"
-  plug :assign_if_exists, param: "observes_networks_exact"
+  plug :assign_if_exists, param: "observes_project"
+  plug :assign_if_exists, param: "observes_projects"
+  plug :assign_if_exists, param: "observes_projects_exact"
   plug :assign_if_exists, param: "onboard_node"
   plug :assign_if_exists, param: "onboard_nodes"
   plug :assign_if_exists, param: "onboard_nodes_exact"

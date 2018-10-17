@@ -2,15 +2,15 @@ defmodule AotJobs do
   @moduledoc """
   """
 
-  alias Aot.NetworkActions
+  alias Aot.ProjectActions
 
   alias AotJobs.{DBManager, Importer}
 
   @doc """
   """
-  @spec import_networks() :: :ok
-  def import_networks do
-    NetworkActions.list()
+  @spec import_projects() :: :ok
+  def import_projects do
+    ProjectActions.list()
     |> Enum.each(&Importer.import/1)
   end
 

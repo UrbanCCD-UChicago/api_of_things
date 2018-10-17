@@ -1,4 +1,4 @@
-defmodule AotWeb.Testing.NetworkPlugsTest do
+defmodule AotWeb.Testing.ProjectPlugsTest do
   use Aot.Testing.BaseCase
   use Aot.Testing.DataCase
   use AotWeb.Testing.ConnCase
@@ -15,7 +15,7 @@ defmodule AotWeb.Testing.NetworkPlugsTest do
         |> Jason.encode!()
 
       conn
-      |> get(network_path(conn, :index, bbox: "contains:#{full_geojson}"))
+      |> get(project_path(conn, :index, bbox: "contains:#{full_geojson}"))
       |> json_response(:ok)
 
       geom_only =
@@ -23,13 +23,13 @@ defmodule AotWeb.Testing.NetworkPlugsTest do
         |> Jason.encode!()
 
       conn
-      |> get(network_path(conn, :index, bbox: "contains:#{geom_only}"))
+      |> get(project_path(conn, :index, bbox: "contains:#{geom_only}"))
       |> json_response(:ok)
     end
 
     test "a bad value will 400", %{conn: conn} do
       conn
-      |> get(network_path(conn, :index, bbox: "contains:illinois"))
+      |> get(project_path(conn, :index, bbox: "contains:illinois"))
       |> json_response(:bad_request)
     end
   end
@@ -55,7 +55,7 @@ defmodule AotWeb.Testing.NetworkPlugsTest do
         |> Jason.encode!()
 
       conn
-      |> get(network_path(conn, :index, bbox: "intersects:#{full_geojson}"))
+      |> get(project_path(conn, :index, bbox: "intersects:#{full_geojson}"))
       |> json_response(:ok)
 
       geom_only =
@@ -63,13 +63,13 @@ defmodule AotWeb.Testing.NetworkPlugsTest do
         |> Jason.encode!()
 
       conn
-      |> get(network_path(conn, :index, bbox: "intersects:#{geom_only}"))
+      |> get(project_path(conn, :index, bbox: "intersects:#{geom_only}"))
       |> json_response(:ok)
     end
 
     test "a bad value will 400", %{conn: conn} do
       conn
-      |> get(network_path(conn, :index, bbox: "intersects:western ave"))
+      |> get(project_path(conn, :index, bbox: "intersects:western ave"))
       |> json_response(:bad_request)
     end
   end

@@ -1,8 +1,8 @@
-defmodule Aot.Repo.Migrations.CreateNetworks do
+defmodule Aot.Repo.Migrations.CreateProjects do
   use Ecto.Migration
 
   def change do
-    create table(:networks, primary_key: false) do
+    create table(:projects, primary_key: false) do
       add :name, :text, null: false
       add :slug, :text, primary_key: true
       add :bbox, :geometry, default: nil
@@ -13,10 +13,10 @@ defmodule Aot.Repo.Migrations.CreateNetworks do
       add :latest_observation, :naive_datetime, default: nil
     end
 
-    create unique_index(:networks, :name)
-    create unique_index(:networks, :archive_url)
-    create unique_index(:networks, :recent_url)
-    create index(:networks, :bbox, using: "gist")
-    create index(:networks, :hull, using: "gist")
+    create unique_index(:projects, :name)
+    create unique_index(:projects, :archive_url)
+    create unique_index(:projects, :recent_url)
+    create index(:projects, :bbox, using: "gist")
+    create index(:projects, :hull, using: "gist")
   end
 end

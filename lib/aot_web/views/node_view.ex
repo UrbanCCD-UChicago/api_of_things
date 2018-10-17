@@ -23,7 +23,7 @@ defmodule AotWeb.NodeView do
       commissioned_on: node.commissioned_on,
       decommissioned_on: node.decommissioned_on
     }
-    |> nest_related(:networks, node.networks, AotWeb.NetworkView, "network.json")
+    |> nest_related(:projects, node.projects, AotWeb.ProjectView, "project.json")
     |> nest_related(:sensors, node.sensors, AotWeb.SensorView, "sensor.json")
   end
 
@@ -39,7 +39,7 @@ defmodule AotWeb.NodeView do
         commissioned_on: node.commissioned_on,
         decommissioned_on: node.decommissioned_on
       }
-      |> nest_related(:networks, node.networks, AotWeb.NetworkView, "network.geojson")
+      |> nest_related(:projects, node.projects, AotWeb.ProjectView, "project.geojson")
       |> nest_related(:sensors, node.sensors, AotWeb.SensorView, "sensor.json")
     }
   end

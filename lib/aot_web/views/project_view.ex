@@ -1,19 +1,19 @@
-defmodule AotWeb.NetworkView do
+defmodule AotWeb.ProjectView do
   use AotWeb, :view
 
   import AotWeb.ViewUtils
 
-  alias AotWeb.NetworkView
+  alias AotWeb.ProjectView
 
-  def render("index.json", %{networks: networks, resp_format: fmt}) do
-    %{data: render_many(networks, NetworkView, "network.#{fmt}")}
+  def render("index.json", %{projects: projects, resp_format: fmt}) do
+    %{data: render_many(projects, ProjectView, "project.#{fmt}")}
   end
 
-  def render("show.json", %{network: network, resp_format: fmt}) do
-    %{data: render_one(network, NetworkView, "network.#{fmt}")}
+  def render("show.json", %{project: project, resp_format: fmt}) do
+    %{data: render_one(project, ProjectView, "project.#{fmt}")}
   end
 
-  def render("network.json", %{network: net}) do
+  def render("project.json", %{project: net}) do
     %{
       name: net.name,
       slug: net.slug,
@@ -27,7 +27,7 @@ defmodule AotWeb.NetworkView do
     |> nest_related(:sensors, net.sensors, AotWeb.SensorView, "sensor.json")
   end
 
-  def render("network.geojson", %{network: net}) do
+  def render("project.geojson", %{project: net}) do
     %{
       type: "Feature",
       geometry: encode_geom(net.bbox),

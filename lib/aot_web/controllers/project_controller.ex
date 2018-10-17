@@ -1,4 +1,4 @@
-defmodule AotWeb.NetworkController do
+defmodule AotWeb.ProjectController do
   use AotWeb, :controller
 
   import AotWeb.ControllerUtils, only: [
@@ -7,9 +7,9 @@ defmodule AotWeb.NetworkController do
 
   import AotWeb.GenericPlugs
 
-  import AotWeb.NetworkPlugs
+  import AotWeb.ProjectPlugs
 
-  alias Aot.NetworkActions
+  alias Aot.ProjectActions
 
   action_fallback AotWeb.FallbackController
 
@@ -26,19 +26,19 @@ defmodule AotWeb.NetworkController do
   plug :paginate
 
   def index(conn, _params) do
-    networks = NetworkActions.list(Map.to_list(conn.assigns))
+    projects = ProjectActions.list(Map.to_list(conn.assigns))
     fmt = resp_format(conn)
 
     render conn, "index.json",
-      networks: networks,
+      projects: projects,
       resp_format: fmt
   end
 
   def show(conn, %{"id" => slug}) do
-    with {:ok, network} <- NetworkActions.get(slug, Map.to_list(conn.assigns))
+    with {:ok, project} <- ProjectActions.get(slug, Map.to_list(conn.assigns))
     do
       render conn, "show.json",
-        network: network,
+        project: project,
         resp_format: resp_format(conn)
     end
   end

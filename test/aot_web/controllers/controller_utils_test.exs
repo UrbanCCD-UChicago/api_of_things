@@ -7,7 +7,7 @@ defmodule AotWeb.Testing.ControllerUtilsTest do
     test "if no format is given, the response is regular JSON", %{conn: conn} do
       %{"data" => data} =
         conn
-        |> get(network_path(conn, :index))
+        |> get(project_path(conn, :index))
         |> json_response(:ok)
 
       assert is_list(data)
@@ -19,7 +19,7 @@ defmodule AotWeb.Testing.ControllerUtilsTest do
     test "if `geojson` is given, the response is that", %{conn: conn} do
       %{"data" => data} =
         conn
-        |> get(network_path(conn, :index, format: "geojson"))
+        |> get(project_path(conn, :index, format: "geojson"))
         |> json_response(:ok)
 
       assert is_list(data)

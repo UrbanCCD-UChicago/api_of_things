@@ -1,4 +1,4 @@
-defmodule AotWeb.NetworkPlugs do
+defmodule AotWeb.ProjectPlugs do
 
   import AotWeb.ControllerUtils, only: [
     decode_geojson: 1,

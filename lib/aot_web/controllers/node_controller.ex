@@ -13,13 +13,13 @@ defmodule AotWeb.NodeController do
 
   action_fallback AotWeb.FallbackController
 
-  plug :assign_if_exists, param: "include_networks", value_override: true
+  plug :assign_if_exists, param: "include_projects", value_override: true
   plug :assign_if_exists, param: "include_sensors", value_override: true
   plug :assign_if_exists, param: "assert_alive", value_override: true
   plug :assign_if_exists, param: "assert_dead", value_override: true
-  plug :assign_if_exists, param: "within_network"
-  plug :assign_if_exists, param: "within_networks"
-  plug :assign_if_exists, param: "within_networks_exact"
+  plug :assign_if_exists, param: "within_project"
+  plug :assign_if_exists, param: "within_projects"
+  plug :assign_if_exists, param: "within_projects_exact"
   plug :assign_if_exists, param: "has_sensor"
   plug :assign_if_exists, param: "has_sensors"
   plug :assign_if_exists, param: "has_sensors_exact"

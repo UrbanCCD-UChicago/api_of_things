@@ -13,8 +13,8 @@ defmodule AotWeb.ObservationController do
 
   plug :assign_if_exists, param: "embed_node", value_override: true
   plug :assign_if_exists, param: "embed_sensor", value_override: true
-  plug :assign_if_exists, param: "of_network"
-  plug :assign_if_exists, param: "of_networks"
+  plug :assign_if_exists, param: "of_project"
+  plug :assign_if_exists, param: "of_projects"
   plug :assign_if_exists, param: "from_node"
   plug :assign_if_exists, param: "from_nodes"
   plug :assign_if_exists, param: "by_sensor"

@@ -1,4 +1,4 @@
-defmodule Aot.NetworkQueries do
+defmodule Aot.ProjectQueries do
   @moduledoc """
   """
 
@@ -18,10 +18,10 @@ defmodule Aot.NetworkQueries do
   ]
 
   alias Aot.{
-    Network,
-    NetworkNode,
-    NetworkQueries,
-    NetworkSensor,
+    Project,
+    ProjectNode,
+    ProjectQueries,
+    ProjectSensor,
     Node,
     Sensor
   }
@@ -30,11 +30,11 @@ defmodule Aot.NetworkQueries do
 
   @spec list() :: Ecto.Queryable.t()
   def list,
-    do: from net in Network
+    do: from net in Project
 
   @spec get(Ecto.Queryable.t()) :: Ecto.Queryable.t()
   def get(slug),
-    do: from net in Network,
+    do: from net in Project,
       where: net.slug == ^slug
 
   # BOOLEAN COMPOSE
@@ -42,12 +42,12 @@ defmodule Aot.NetworkQueries do
   @spec include_nodes(Ecto.Queryable.t()) :: Ecto.Queryable.t()
   def include_nodes(query),
     do: from net in query,
-      preload: [nodes: :networks]
+      preload: [nodes: :projects]
 
   @spec include_sensors(Ecto.Queryable.t()) :: Ecto.Queryable.t()
   def include_sensors(query),
     do: from net in query,
-      preload: [sensors: :networks]
+      preload: [sensors: :projects]
 
   # FILTER COMPOSE
 
@@ -70,7 +70,7 @@ defmodule Aot.NetworkQueries do
       end)
 
     from net in query,
-      left_join: nn in NetworkNode, as: :nn, on: nn.network_slug == net.slug,
+      left_join: nn in ProjectNode, as: :nn, on: nn.project_slug == net.slug,
       left_join: node in Node, as: :node, on: node.id == nn.node_id,
       where: node.id in ^ids,
       distinct: true
@@ -88,7 +88,7 @@ defmodule Aot.NetworkQueries do
       end)
 
     from net in query,
-      left_join: nn in NetworkNode, as: :nn, on: nn.network_slug == net.slug,
+      left_join: nn in ProjectNode, as: :nn, on: nn.project_slug == net.slug,
       left_join: node in Node, as: :node, on: node.id == nn.node_id,
       group_by: net.slug,
       having: fragment("array_agg(?) @> ?", node.id, ^ids)
@@ -113,7 +113,7 @@ defmodule Aot.NetworkQueries do
       end)
 
     from net in query,
-      left_join: ns in NetworkSensor, as: :ns, on: ns.network_slug == net.slug,
+      left_join: ns in ProjectSensor, as: :ns, on: ns.project_slug == net.slug,
       left_join: sensor in Sensor, as: :sensor, on: sensor.path == ns.sensor_path,
       where: sensor.path in ^paths,
       distinct: true
@@ -131,7 +131,7 @@ defmodule Aot.NetworkQueries do
       end)
 
     from net in query,
-      left_join: ns in NetworkSensor, as: :ns, on: ns.network_slug == net.slug,
+      left_join: ns in ProjectSensor, as: :ns, on: ns.project_slug == net.slug,
       left_join: sensor in Sensor, as: :sensor, on: sensor.path == ns.sensor_path,
       group_by: net.slug,
       having: fragment("array_agg(?) @> ?", sensor.path, ^paths)
@@ -172,31 +172,31 @@ defmodule Aot.NetworkQueries do
       |> Keyword.merge(opts)
 
     query
-    |> boolean_compose(opts[:include_nodes], NetworkQueries, :include_nodes)
-    |> boolean_compose(opts[:include_sensors], NetworkQueries, :include_sensors)
-    |> filter_compose(opts[:has_node], NetworkQueries, :has_node)
-    |> filter_compose(opts[:has_nodes], NetworkQueries, :has_nodes)
-    |> filter_compose(opts[:has_nodes_exact], NetworkQueries, :has_nodes_exact)
-    |> filter_compose(opts[:has_sensor], NetworkQueries, :has_sensor)
-    |> filter_compose(opts[:has_sensors], NetworkQueries, :has_sensors)
-    |> filter_compose(opts[:has_sensors_exact], NetworkQueries, :has_sensors_exact)
-    |> filter_compose(opts[:bbox_contains], NetworkQueries, :bbox_contains)
-    |> filter_compose(opts[:bbox_intersects], NetworkQueries, :bbox_intersects)
-    |> filter_compose(opts[:order], NetworkQueries, :order)
-    |> filter_compose(opts[:paginate], NetworkQueries, :paginate)
+    |> boolean_compose(opts[:include_nodes], ProjectQueries, :include_nodes)
+    |> boolean_compose(opts[:include_sensors], ProjectQueries, :include_sensors)
+    |> filter_compose(opts[:has_node], ProjectQueries, :has_node)
+    |> filter_compose(opts[:has_nodes], ProjectQueries, :has_nodes)
+    |> filter_compose(opts[:has_nodes_exact], ProjectQueries, :has_nodes_exact)
+    |> filter_compose(opts[:has_sensor], ProjectQueries, :has_sensor)
+    |> filter_compose(opts[:has_sensors], ProjectQueries, :has_sensors)
+    |> filter_compose(opts[:has_sensors_exact], ProjectQueries, :has_sensors_exact)
+    |> filter_compose(opts[:bbox_contains], ProjectQueries, :bbox_contains)
+    |> filter_compose(opts[:bbox_intersects], ProjectQueries, :bbox_intersects)
+    |> filter_compose(opts[:order], ProjectQueries, :order)
+    |> filter_compose(opts[:paginate], ProjectQueries, :paginate)
   end
 
-  def compute_bbox(%Network{slug: slug}), do: compute_bbox(slug)
+  def compute_bbox(%Project{slug: slug}), do: compute_bbox(slug)
   def compute_bbox(slug),
     do: from node in Node,
-      left_join: nn in NetworkNode, as: :nn, on: node.id == nn.node_id,
-      where: nn.network_slug == ^slug,
+      left_join: nn in ProjectNode, as: :nn, on: node.id == nn.node_id,
+      where: nn.project_slug == ^slug,
       select: st_envelope(st_union(node.location))
 
-  def compute_hull(%Network{slug: slug}), do: compute_hull(slug)
+  def compute_hull(%Project{slug: slug}), do: compute_hull(slug)
   def compute_hull(slug),
     do: from node in Node,
-      left_join: nn in NetworkNode, as: :nn, on: node.id == nn.node_id,
-      where: nn.network_slug == ^slug,
+      left_join: nn in ProjectNode, as: :nn, on: node.id == nn.node_id,
+      where: nn.project_slug == ^slug,
       select: st_convex_hull(st_union(node.location))
 end

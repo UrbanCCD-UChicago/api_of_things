@@ -7,8 +7,8 @@ defmodule Aot.Node do
   import Ecto.Changeset
 
   alias Aot.{
-    Network,
-    NetworkNode,
+    Project,
+    ProjectNode,
     NodeSensor,
     Observation,
     RawObservation,
@@ -39,9 +39,9 @@ defmodule Aot.Node do
     has_many :observations, Observation
     has_many :raw_observations, RawObservation
 
-    many_to_many :networks, Network,
-      join_through: NetworkNode,
-      join_keys: [node_id: :id, network_slug: :slug]
+    many_to_many :projects, Project,
+      join_through: ProjectNode,
+      join_keys: [node_id: :id, project_slug: :slug]
 
     many_to_many :sensors, Sensor,
       join_through: NodeSensor,

@@ -4,7 +4,7 @@ defmodule Aot.Testing.DataCase do
   import Mock
 
   alias Aot.{
-    NetworkActions,
+    ProjectActions,
     NodeActions,
     SensorActions
   }
@@ -46,9 +46,9 @@ defmodule Aot.Testing.DataCase do
   end
 
   setup_all do
-    # setup chicago network
+    # setup chicago project
     {:ok, chicago} =
-      NetworkActions.create name: "Chicago",
+      ProjectActions.create name: "Chicago",
         archive_url: "https://example.com/archives/chicago",
         recent_url: "https://example.com/recents/chicago"
 
@@ -56,13 +56,13 @@ defmodule Aot.Testing.DataCase do
       Importer.import(chicago)
     end
 
-    bbox = NetworkActions.compute_bbox(chicago)
-    hull = NetworkActions.compute_hull(chicago)
-    {:ok, _} = NetworkActions.update(chicago, bbox: bbox, hull: hull)
+    bbox = ProjectActions.compute_bbox(chicago)
+    hull = ProjectActions.compute_hull(chicago)
+    {:ok, _} = ProjectActions.update(chicago, bbox: bbox, hull: hull)
 
-    # setup detroit network
+    # setup detroit project
     {:ok, detroit} =
-      NetworkActions.create name: "Detroit",
+      ProjectActions.create name: "Detroit",
         archive_url: "https://example.com/archives/detroit",
         recent_url: "https://example.com/recents/detroit"
 
@@ -70,13 +70,13 @@ defmodule Aot.Testing.DataCase do
       Importer.import(detroit)
     end
 
-    bbox = NetworkActions.compute_bbox(detroit)
-    hull = NetworkActions.compute_hull(detroit)
-    {:ok, _} = NetworkActions.update(detroit, bbox: bbox, hull: hull)
+    bbox = ProjectActions.compute_bbox(detroit)
+    hull = ProjectActions.compute_hull(detroit)
+    {:ok, _} = ProjectActions.update(detroit, bbox: bbox, hull: hull)
 
-    # setup portland network
+    # setup portland project
     {:ok, portland} =
-      NetworkActions.create name: "Portland",
+      ProjectActions.create name: "Portland",
         archive_url: "https://example.com/archives/portland",
         recent_url: "https://example.com/recents/portland"
 
@@ -84,9 +84,9 @@ defmodule Aot.Testing.DataCase do
       Importer.import(portland)
     end
 
-    bbox = NetworkActions.compute_bbox(portland)
-    hull = NetworkActions.compute_hull(portland)
-    {:ok, _} = NetworkActions.update(portland, bbox: bbox, hull: hull)
+    bbox = ProjectActions.compute_bbox(portland)
+    hull = ProjectActions.compute_hull(portland)
+    {:ok, _} = ProjectActions.update(portland, bbox: bbox, hull: hull)
 
     :ok
   end
@@ -100,14 +100,14 @@ defmodule Aot.Testing.DataCase do
         false -> [add2ctx]
       end
 
-    # add networks to context?
+    # add projects to context?
     context =
-      case :networks in add2ctx do
+      case :projects in add2ctx do
         false ->
           context
 
         true ->
-          NetworkActions.list()
+          ProjectActions.list()
           |> Enum.map(& {String.to_atom(String.replace(&1.slug, "-", "_")), &1})
           |> Keyword.merge(context)
       end

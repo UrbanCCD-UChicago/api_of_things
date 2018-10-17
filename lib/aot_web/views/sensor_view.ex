@@ -26,6 +26,6 @@ defmodule AotWeb.SensorView do
       data_sheet: sensor.data_sheet
     }
     |> nest_related(:nodes, sensor.nodes, AotWeb.NodeView, "node.json")
-    |> nest_related(:networks, sensor.networks, AotWeb.NetworkView, "network.json")
+    |> nest_related(:projects, sensor.projects, AotWeb.ProjectView, "project.json")
   end
 end

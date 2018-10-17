@@ -6,39 +6,39 @@ defmodule Aot.M2MActions do
   import Aot.ActionUtils
 
   alias Aot.{
-    NetworkNode,
-    NetworkSensor,
+    ProjectNode,
+    ProjectSensor,
     NodeSensor,
     Repo
   }
 
   @doc """
-  Creates a new M2M record for the relationship between Networks and Nodes.
+  Creates a new M2M record for the relationship between Projects and Nodes.
   """
-  @spec create_network_node(keyword() | map()) :: {:ok, NetworkNode.t()}
-  def create_network_node(params) do
+  @spec create_project_node(keyword() | map()) :: {:ok, ProjectNode.t()}
+  def create_project_node(params) do
     params =
       params
       |> atomize()
-      |> parse_relation(:network, :slug)
+      |> parse_relation(:project, :slug)
       |> parse_relation(:node, :id)
 
-    NetworkNode.changeset(%NetworkNode{}, params)
+    ProjectNode.changeset(%ProjectNode{}, params)
     |> Repo.insert(on_conflict: :nothing)
   end
 
   @doc """
-  Creates a new M2M record for the relationship between Networks and Sensors.
+  Creates a new M2M record for the relationship between Projects and Sensors.
   """
-  @spec create_network_sensor(keyword() | map()) :: {:ok, NetworkSensor.t()}
-  def create_network_sensor(params) do
+  @spec create_project_sensor(keyword() | map()) :: {:ok, ProjectSensor.t()}
+  def create_project_sensor(params) do
     params =
       params
       |> atomize()
-      |> parse_relation(:network, :slug)
+      |> parse_relation(:project, :slug)
       |> parse_relation(:sensor, :path)
 
-    NetworkSensor.changeset(%NetworkSensor{}, params)
+    ProjectSensor.changeset(%ProjectSensor{}, params)
     |> Repo.insert(on_conflict: :nothing)
   end
 

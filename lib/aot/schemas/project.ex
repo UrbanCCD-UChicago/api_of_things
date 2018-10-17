@@ -1,4 +1,4 @@
-defmodule Aot.Network do
+defmodule Aot.Project do
   @moduledoc """
   """
 
@@ -7,8 +7,8 @@ defmodule Aot.Network do
   import Ecto.Changeset
 
   alias Aot.{
-    NetworkNode,
-    NetworkSensor,
+    ProjectNode,
+    ProjectSensor,
     Node,
     Sensor
   }
@@ -17,7 +17,7 @@ defmodule Aot.Network do
 
   @primary_key {:slug, :string, autogenerate: false}
   @derive {Phoenix.Param, key: :slug}
-  schema "networks" do
+  schema "projects" do
     field :name, :string
 
     # source info
@@ -34,20 +34,20 @@ defmodule Aot.Network do
 
     # reverse relationships
     many_to_many :nodes, Node,
-      join_through: NetworkNode,
-      join_keys: [network_slug: :slug, node_id: :id]
+      join_through: ProjectNode,
+      join_keys: [project_slug: :slug, node_id: :id]
 
     many_to_many :sensors, Sensor,
-      join_through: NetworkSensor,
-      join_keys: [network_slug: :slug, sensor_path: :path]
+      join_through: ProjectSensor,
+      join_keys: [project_slug: :slug, sensor_path: :path]
   end
 
   @attrs ~W( name bbox hull archive_url recent_url bbox hull first_observation latest_observation ) |> Enum.map(&String.to_atom/1)
   @reqd ~W( name archive_url recent_url ) |> Enum.map(&String.to_atom/1)
 
   @doc false
-  def changeset(network, attrs) do
-    network
+  def changeset(project, attrs) do
+    project
     |> cast(attrs, @attrs)
     |> validate_required(@reqd)
     |> unique_constraint(:name)

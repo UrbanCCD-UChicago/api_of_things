@@ -9,9 +9,9 @@ defmodule AotJobs.Importer do
   import Ecto.Query
 
   alias Aot.{
-    NetworkActions,
-    NetworkNode,
-    NetworkSensor,
+    ProjectActions,
+    ProjectNode,
+    ProjectSensor,
     Node,
     NodeActions,
     NodeSensor,
@@ -40,20 +40,20 @@ defmodule AotJobs.Importer do
 
   @doc """
   """
-  @spec import(Aot.Network.t()) :: :ok
-  def import(network) do
-    _ = Logger.info("importing data for #{network.name}")
+  @spec import(Aot.Project.t()) :: :ok
+  def import(project) do
+    _ = Logger.info("importing data for #{project.name}")
 
-    tarball = Path.join(@dirname, "#{network.slug}.tar")
+    tarball = Path.join(@dirname, "#{project.slug}.tar")
 
     :ok = ensure_clean_paths!(tarball)
-    :ok = download!(network, tarball)
-    data_dir = decompress!(network, tarball)
-    network = process_provenance_csv!(network, data_dir)
-    :ok = process_nodes_csv!(network, data_dir)
-    :ok = process_sensors_csv!(network, data_dir)
-    :ok = process_data_csv!(network, data_dir)
-    :ok = process_nodes_sensors!(network, data_dir)
+    :ok = download!(project, tarball)
+    data_dir = decompress!(project, tarball)
+    project = process_provenance_csv!(project, data_dir)
+    :ok = process_nodes_csv!(project, data_dir)
+    :ok = process_sensors_csv!(project, data_dir)
+    :ok = process_data_csv!(project, data_dir)
+    :ok = process_nodes_sensors!(project, data_dir)
     :ok
   after
     _ = Logger.info("cleaning up #{@dirname}")
@@ -68,11 +68,11 @@ defmodule AotJobs.Importer do
     :ok
   end
 
-  defp download!(network, tarball) do
-    _ = Logger.info("downloading tarball for #{network.name}")
-    _ = Logger.debug("url: #{network.recent_url}")
+  defp download!(project, tarball) do
+    _ = Logger.info("downloading tarball for #{project.name}")
+    _ = Logger.debug("url: #{project.recent_url}")
     _ = Logger.debug("tarball: #{tarball}")
-    %HTTPoison.Response{body: body} = HTTPoison.get!(network.recent_url)
+    %HTTPoison.Response{body: body} = HTTPoison.get!(project.recent_url)
 
     _ = Logger.debug("download complete")
     _ = Logger.debug("writing to file")
@@ -83,8 +83,8 @@ defmodule AotJobs.Importer do
     :ok
   end
 
-  defp decompress!(network, tarball) do
-    _ = Logger.info("decompressing tarball for #{network.name}")
+  defp decompress!(project, tarball) do
+    _ = Logger.info("decompressing tarball for #{project.name}")
 
     {paths, 0} = System.cmd("tar", ["tf", tarball])
 
@@ -106,8 +106,8 @@ defmodule AotJobs.Importer do
     data_dir
   end
 
-  defp process_provenance_csv!(network, data_dir) do
-    _ = Logger.info("ripping provenance csv for #{network.name}")
+  defp process_provenance_csv!(project, data_dir) do
+    _ = Logger.info("ripping provenance csv for #{project.name}")
 
     raw_params =
       Path.join(data_dir, @prov_csv)
@@ -123,22 +123,22 @@ defmodule AotJobs.Importer do
       archive_url: raw_params["url"]
     }
 
-    {:ok, updated} = NetworkActions.update(network, params)
+    {:ok, updated} = ProjectActions.update(project, params)
     updated
   end
 
-  defp process_nodes_csv!(network, data_dir) do
+  defp process_nodes_csv!(project, data_dir) do
     nodes =
       NodeActions.list()
       |> Enum.map(& {&1.id, &1})
       |> Enum.into(%{})
 
     net_nodes =
-      NodeActions.list(within_network: network)
+      NodeActions.list(within_project: project)
       |> Enum.map(& &1.id)
       |> MapSet.new()
 
-    _ = Logger.info("ripping nodes csv for #{network.name}")
+    _ = Logger.info("ripping nodes csv for #{project.name}")
 
     {:ok, _} =
       Path.join(data_dir, @nodes_csv)
@@ -163,9 +163,9 @@ defmodule AotJobs.Importer do
             multi
 
           false ->
-            name = :"insert network/node #{network.slug} #{node_id}"
-            Ecto.Multi.insert(multi, name, NetworkNode.changeset(%NetworkNode{},
-              %{network_slug: network.slug, node_id: node_id}))
+            name = :"insert project/node #{project.slug} #{node_id}"
+            Ecto.Multi.insert(multi, name, ProjectNode.changeset(%ProjectNode{},
+              %{project_slug: project.slug, node_id: node_id}))
         end
       end)
       |> Repo.transaction()
@@ -173,18 +173,18 @@ defmodule AotJobs.Importer do
     :ok
   end
 
-  defp process_sensors_csv!(network, data_dir) do
+  defp process_sensors_csv!(project, data_dir) do
     sensors =
       SensorActions.list()
       |> Enum.map(& {&1.path, &1})
       |> Enum.into(%{})
 
     net_sensors =
-      SensorActions.list(observes_network: network)
+      SensorActions.list(observes_project: project)
       |> Enum.map(& &1.path)
       |> MapSet.new()
 
-    _ = Logger.info("ripping sensors csv for #{network.name}")
+    _ = Logger.info("ripping sensors csv for #{project.name}")
 
     {:ok, _} =
       Path.join(data_dir, @sensors_csv)
@@ -214,9 +214,9 @@ defmodule AotJobs.Importer do
                 multi
 
               false ->
-                name = :"insert network/sensor #{network.slug} #{path}"
-                Ecto.Multi.insert(multi, name, NetworkSensor.changeset(%NetworkSensor{},
-                  %{network_slug: network.slug, sensor_path: path}))
+                name = :"insert project/sensor #{project.slug} #{path}"
+                Ecto.Multi.insert(multi, name, ProjectSensor.changeset(%ProjectSensor{},
+                  %{project_slug: project.slug, sensor_path: path}))
             end
         end
       end)
@@ -225,16 +225,16 @@ defmodule AotJobs.Importer do
     :ok
   end
 
-  defp process_data_csv!(network, data_dir) do
+  defp process_data_csv!(project, data_dir) do
     # get the exisitng node ids
     nodes =
-      NodeActions.list(in_network: network)
+      NodeActions.list(in_project: project)
       |> Enum.map(& &1.id)
       |> MapSet.new()
 
     # get the existing sensor paths
     sensors =
-      SensorActions.list(observes_network: network)
+      SensorActions.list(observes_project: project)
       |> Enum.map(& &1.path)
       |> MapSet.new()
 
@@ -249,7 +249,7 @@ defmodule AotJobs.Importer do
       |> Repo.one()
 
     # stream the csv file
-    _ = Logger.info("ripping data csv for #{network.name}")
+    _ = Logger.info("ripping data csv for #{project.name}")
 
     async_opts = Application.get_env(:aot, :import_concurrency)
 
@@ -322,15 +322,15 @@ defmodule AotJobs.Importer do
     :ok
   end
 
-  defp process_nodes_sensors!(network, data_dir) do
+  defp process_nodes_sensors!(project, data_dir) do
     # get existing nodes
     nodes =
-      NodeActions.list(within_network: network)
+      NodeActions.list(within_project: project)
       |> Enum.map(& &1.id)
 
     # get existing sensors
     sensors =
-      SensorActions.list(observes_network: network)
+      SensorActions.list(observes_project: project)
       |> Enum.map(& &1.path)
       |> MapSet.new()
 
@@ -343,7 +343,7 @@ defmodule AotJobs.Importer do
     nodes = MapSet.new(nodes)
 
     # stream the csv file
-    _ = Logger.info("ripping data csv for #{network.name} (nodes/sensors run)")
+    _ = Logger.info("ripping data csv for #{project.name} (nodes/sensors run)")
 
     {multi, _} =
       Path.join(data_dir, @data_csv)

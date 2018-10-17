@@ -18,18 +18,18 @@ defmodule Aot.Testing.SensorQueriesTest do
     end
   end
 
-  describe "observes_networks" do
-    @tag add2ctx: :networks
-    test "sensors don't need to be present in every network", %{chicago: chi, portland: pdx} do
-      sensors = SensorActions.list(observes_networks: [chi, pdx])
+  describe "observes_projects" do
+    @tag add2ctx: :projects
+    test "sensors don't need to be present in every project", %{chicago: chi, portland: pdx} do
+      sensors = SensorActions.list(observes_projects: [chi, pdx])
       assert length(sensors) == 107
     end
   end
 
-  describe "observed_networks_exact" do
-    @tag add2ctx: :networks
-    test "sensors must be present in every network", %{chicago: chi, portland: pdx} do
-      sensors = SensorActions.list(observes_networks_exact: [chi, pdx])
+  describe "observed_projects_exact" do
+    @tag add2ctx: :projects
+    test "sensors must be present in every project", %{chicago: chi, portland: pdx} do
+      sensors = SensorActions.list(observes_projects_exact: [chi, pdx])
       assert length(sensors) == 107
     end
   end

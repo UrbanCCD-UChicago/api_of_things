@@ -1,7 +1,7 @@
 defmodule Aot.Testing.QueryUtilsTest do
   use ExUnit.Case
 
-  alias Aot.NetworkActions
+  alias Aot.ProjectActions
 
   setup_all do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(Aot.Repo)
@@ -10,8 +10,8 @@ defmodule Aot.Testing.QueryUtilsTest do
     1..9
     |> Enum.each(fn x ->
       {:ok, _} =
-        NetworkActions.create(
-          name: "Network #{x}",
+        ProjectActions.create(
+          name: "Project #{x}",
           archive_url: "https://example.com/archive-#{x}",
           recent_url: "https://example.com/recent-#{x}",
           first_observation: Timex.shift(NaiveDateTime.utc_now(), minutes: x),
@@ -22,12 +22,12 @@ defmodule Aot.Testing.QueryUtilsTest do
 
   describe "order" do
     test "ascending" do
-      networks = NetworkActions.list(order: {:asc, :first_observation})
+      projects = ProjectActions.list(order: {:asc, :first_observation})
 
-      networks
+      projects
       |> Enum.with_index()
       |> Enum.each(fn {net, idx} ->
-        next = Enum.at(networks, idx + 1)
+        next = Enum.at(projects, idx + 1)
         case next do
           nil -> :ok
           next -> assert Timex.compare(net.first_observation, next.first_observation) == -1
@@ -36,12 +36,12 @@ defmodule Aot.Testing.QueryUtilsTest do
     end
 
     test "descending" do
-      networks = NetworkActions.list(order: {:desc, :first_observation})
+      projects = ProjectActions.list(order: {:desc, :first_observation})
 
-      networks
+      projects
       |> Enum.with_index()
       |> Enum.each(fn {net, idx} ->
-        next = Enum.at(networks, idx + 1)
+        next = Enum.at(projects, idx + 1)
         case next do
           nil -> :ok
           next -> assert Timex.compare(net.first_observation, next.first_observation) == 1
@@ -53,49 +53,49 @@ defmodule Aot.Testing.QueryUtilsTest do
   describe "paginate" do
     test "negative page causes an error" do
       assert_raise RuntimeError, fn ->
-        NetworkActions.list(paginate: {-1, 100})
+        ProjectActions.list(paginate: {-1, 100})
       end
     end
 
     test "negative size causes an error" do
       assert_raise RuntimeError, fn ->
-        NetworkActions.list(paginate: {1, -100})
+        ProjectActions.list(paginate: {1, -100})
       end
     end
 
     test "float page causes an error" do
       assert_raise RuntimeError, fn ->
-        NetworkActions.list(paginate: {1.1, 100})
+        ProjectActions.list(paginate: {1.1, 100})
       end
     end
 
     test "float size causes an error" do
       assert_raise RuntimeError, fn ->
-        NetworkActions.list(paginate: {1, 100.1})
+        ProjectActions.list(paginate: {1, 100.1})
       end
     end
 
     test "string page causes an error" do
       assert_raise RuntimeError, fn ->
-        NetworkActions.list(paginate: {"first", 100})
+        ProjectActions.list(paginate: {"first", 100})
       end
     end
 
     test "string size causes an error" do
       assert_raise RuntimeError, fn ->
-        NetworkActions.list(paginate: {1, "one-hundred"})
+        ProjectActions.list(paginate: {1, "one-hundred"})
       end
     end
 
     test "not trying to be a smart ass gets you what you want" do
-      networks = NetworkActions.list(paginate: {1, 4})
-      assert length(networks) == 4
+      projects = ProjectActions.list(paginate: {1, 4})
+      assert length(projects) == 4
 
-      networks = NetworkActions.list(paginate: {2, 4})
-      assert length(networks) == 4
+      projects = ProjectActions.list(paginate: {2, 4})
+      assert length(projects) == 4
 
-      networks = NetworkActions.list(paginate: {3, 4})
-      assert length(networks) == 1
+      projects = ProjectActions.list(paginate: {3, 4})
+      assert length(projects) == 1
     end
   end
 end

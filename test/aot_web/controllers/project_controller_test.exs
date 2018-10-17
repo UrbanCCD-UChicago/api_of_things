@@ -1,4 +1,4 @@
-defmodule AotWeb.Testing.NetworkControllerTest do
+defmodule AotWeb.Testing.ProjectControllerTest do
   use Aot.Testing.BaseCase
   use Aot.Testing.DataCase
   use AotWeb.Testing.ConnCase
@@ -7,7 +7,7 @@ defmodule AotWeb.Testing.NetworkControllerTest do
     test "response data should be an array of objects", %{conn: conn} do
       %{"data" => data} =
         conn
-        |> get(network_path(conn, :index))
+        |> get(project_path(conn, :index))
         |> json_response(:ok)
 
       assert is_list(data)
@@ -18,11 +18,11 @@ defmodule AotWeb.Testing.NetworkControllerTest do
   end
 
   describe "show" do
-    @tag add2ctx: :networks
+    @tag add2ctx: :projects
     test "response data should be a single object", %{conn: conn, chicago: chicago} do
       %{"data" => data} =
         conn
-        |> get(network_path(conn, :show, chicago))
+        |> get(project_path(conn, :show, chicago))
         |> json_response(:ok)
 
       assert is_map(data)
@@ -30,7 +30,7 @@ defmodule AotWeb.Testing.NetworkControllerTest do
 
     test "using an unknown identifier should 404", %{conn: conn} do
       conn
-      |> get(network_path(conn, :show, "i-dont-exist"))
+      |> get(project_path(conn, :show, "i-dont-exist"))
       |> json_response(:not_found)
     end
   end

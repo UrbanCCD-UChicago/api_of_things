@@ -15,8 +15,8 @@ defmodule Aot.ObservationQueries do
   ]
 
   alias Aot.{
-    Network,
-    NetworkNode,
+    Project,
+    ProjectNode,
     Node,
     Observation,
     ObservationQueries,
@@ -43,27 +43,27 @@ defmodule Aot.ObservationQueries do
 
   # FILTER COMPOSE
 
-  @spec of_network(Ecto.Queryable.t(), binary() | Aot.Network.t()) :: Ecto.Queryable.t()
-  def of_network(query, %Network{slug: slug}),
-    do: of_network(query, slug)
+  @spec of_project(Ecto.Queryable.t(), binary() | Aot.Project.t()) :: Ecto.Queryable.t()
+  def of_project(query, %Project{slug: slug}),
+    do: of_project(query, slug)
 
-  def of_network(query, slug) when is_binary(slug),
-    do: of_networks(query, [slug])
+  def of_project(query, slug) when is_binary(slug),
+    do: of_projects(query, [slug])
 
-  @spec of_networks(Ecto.Queryable.t(), any()) :: Ecto.Queryable.t()
-  def of_networks(query, networks) do
+  @spec of_projects(Ecto.Queryable.t(), any()) :: Ecto.Queryable.t()
+  def of_projects(query, projects) do
     slugs =
-      networks
+      projects
       |> Enum.map(fn net ->
         case net do
-          %Network{} -> net.slug
+          %Project{} -> net.slug
           slug -> slug
         end
       end)
 
     from obs in query,
-      left_join: nn in NetworkNode, as: :nn, on: nn.node_id == obs.node_id,
-      where: nn.network_slug in ^slugs
+      left_join: nn in ProjectNode, as: :nn, on: nn.node_id == obs.node_id,
+      where: nn.project_slug in ^slugs
   end
 
   @spec from_node(Ecto.Queryable.t(), binary() | Aot.Node.t()) :: Ecto.Queryable.t()
@@ -327,8 +327,8 @@ defmodule Aot.ObservationQueries do
       [
         embed_node: false,
         embed_sensor: false,
-        of_network: :empty,
-        of_networks: :empty,
+        of_project: :empty,
+        of_projects: :empty,
         from_node: :empty,
         from_nodes: :empty,
         by_sensor: :empty,
@@ -347,8 +347,8 @@ defmodule Aot.ObservationQueries do
     query
     |> boolean_compose(opts[:embed_node], ObservationQueries, :embed_node)
     |> boolean_compose(opts[:embed_sensor], ObservationQueries, :embed_sensor)
-    |> filter_compose(opts[:of_network], ObservationQueries, :of_network)
-    |> filter_compose(opts[:of_networks], ObservationQueries, :of_networks)
+    |> filter_compose(opts[:of_project], ObservationQueries, :of_project)
+    |> filter_compose(opts[:of_projects], ObservationQueries, :of_projects)
     |> filter_compose(opts[:from_node], ObservationQueries, :from_node)
     |> filter_compose(opts[:from_nodes], ObservationQueries, :from_nodes)
     |> filter_compose(opts[:by_sensor], ObservationQueries, :by_sensor)

@@ -10,8 +10,8 @@ defmodule Aot.SensorQueries do
   import Ecto.Query
 
   alias Aot.{
-    Network,
-    NetworkSensor,
+    Project,
+    ProjectSensor,
     Node,
     NodeSensor,
     Sensor,
@@ -31,10 +31,10 @@ defmodule Aot.SensorQueries do
 
   # BOOLEAN COMPOSE
 
-  @spec include_networks(Ecto.Queryable.t()) :: Ecto.Queryable.t()
-  def include_networks(query),
+  @spec include_projects(Ecto.Queryable.t()) :: Ecto.Queryable.t()
+  def include_projects(query),
     do: from sensor in query,
-      preload: [networks: :sensors]
+      preload: [projects: :sensors]
 
   @spec include_nodes(Ecto.Queryable.t()) :: Ecto.Queryable.t()
   def include_nodes(query),
@@ -51,45 +51,45 @@ defmodule Aot.SensorQueries do
       where: fragment("? like ?", sensor.ontology, ^padded)
   end
 
-  @spec observes_network(Ecto.Queryable.t(), binary() | Aot.Network.t()) :: Ecto.Queryable.t()
-  def observes_network(query, %Network{slug: slug}),
-    do: observes_network(query, slug)
+  @spec observes_project(Ecto.Queryable.t(), binary() | Aot.Project.t()) :: Ecto.Queryable.t()
+  def observes_project(query, %Project{slug: slug}),
+    do: observes_project(query, slug)
 
-  def observes_network(query, slug) when is_binary(slug),
-    do: observes_networks(query, [slug])
+  def observes_project(query, slug) when is_binary(slug),
+    do: observes_projects(query, [slug])
 
-  @spec observes_networks(Ecto.Queryable.t(), maybe_improper_list()) :: Ecto.Queryable.t()
-  def observes_networks(query, networks) when is_list(networks) do
+  @spec observes_projects(Ecto.Queryable.t(), maybe_improper_list()) :: Ecto.Queryable.t()
+  def observes_projects(query, projects) when is_list(projects) do
     slugs =
-      networks
+      projects
       |> Enum.map(fn net ->
         case net do
-          %Network{} -> net.slug
+          %Project{} -> net.slug
           slug -> slug
         end
       end)
 
     from sensor in query,
-      left_join: nes in NetworkSensor, as: :nes, on: nes.sensor_path == sensor.path,
-      left_join: net in Network, as: :net, on: nes.network_slug == net.slug,
+      left_join: nes in ProjectSensor, as: :nes, on: nes.sensor_path == sensor.path,
+      left_join: net in Project, as: :net, on: nes.project_slug == net.slug,
       where: net.slug in ^slugs,
       distinct: true
   end
 
-  @spec observes_networks_exact(Ecto.Queryable.t(), maybe_improper_list()) :: Ecto.Queryable.t()
-  def observes_networks_exact(query, networks) when is_list(networks) do
+  @spec observes_projects_exact(Ecto.Queryable.t(), maybe_improper_list()) :: Ecto.Queryable.t()
+  def observes_projects_exact(query, projects) when is_list(projects) do
     slugs =
-      networks
+      projects
       |> Enum.map(fn net ->
         case net do
-          %Network{} -> net.slug
+          %Project{} -> net.slug
           slug -> slug
         end
       end)
 
     from sensor in query,
-      left_join: nes in NetworkSensor, as: :nes, on: nes.sensor_path == sensor.path,
-      left_join: net in Network, as: :net, on: nes.network_slug == net.slug,
+      left_join: nes in ProjectSensor, as: :nes, on: nes.sensor_path == sensor.path,
+      left_join: net in Project, as: :net, on: nes.project_slug == net.slug,
       group_by: sensor.path,
       having: fragment("array_agg(?) @> ?", net.slug, ^slugs)
   end
@@ -146,12 +146,12 @@ defmodule Aot.SensorQueries do
   def handle_opts(query, opts \\ []) do
     opts =
       [
-        include_networks: false,
+        include_projects: false,
         include_nodes: false,
         ontology: :empty,
-        observes_network: :empty,
-        observes_networks: :empty,
-        observes_networks_exact: :empty,
+        observes_project: :empty,
+        observes_projects: :empty,
+        observes_projects_exact: :empty,
         onboard_node: :empty,
         onboard_nodes: :empty,
         onboard_nodes_exact: :empty,
@@ -161,12 +161,12 @@ defmodule Aot.SensorQueries do
       |> Keyword.merge(opts)
 
     query
-    |> boolean_compose(opts[:include_networks], SensorQueries, :include_networks)
+    |> boolean_compose(opts[:include_projects], SensorQueries, :include_projects)
     |> boolean_compose(opts[:include_nodes], SensorQueries, :include_nodes)
     |> filter_compose(opts[:ontology], SensorQueries, :ontology)
-    |> filter_compose(opts[:observes_network], SensorQueries, :observes_network)
-    |> filter_compose(opts[:observes_networks], SensorQueries, :observes_networks)
-    |> filter_compose(opts[:observes_networks_exact], SensorQueries, :observes_networks_exact)
+    |> filter_compose(opts[:observes_project], SensorQueries, :observes_project)
+    |> filter_compose(opts[:observes_projects], SensorQueries, :observes_projects)
+    |> filter_compose(opts[:observes_projects_exact], SensorQueries, :observes_projects_exact)
     |> filter_compose(opts[:onboard_node], SensorQueries, :onboard_node)
     |> filter_compose(opts[:onboard_nodes], SensorQueries, :onboard_nodes)
     |> filter_compose(opts[:onboard_nodes_exact], SensorQueries, :onboard_nodes_exact)

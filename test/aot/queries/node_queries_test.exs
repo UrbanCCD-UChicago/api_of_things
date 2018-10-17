@@ -4,18 +4,18 @@ defmodule Aot.Testing.NodeQueriesTest do
 
   alias Aot.NodeActions
 
-  describe "within_networks" do
-    @tag add2ctx: :networks
-    test "nodes don't need to be in every networks", %{chicago: chic, portland: pdx} do
-      nodes = NodeActions.list(within_networks: [chic, pdx])
+  describe "within_projects" do
+    @tag add2ctx: :projects
+    test "nodes don't need to be in every projects", %{chicago: chic, portland: pdx} do
+      nodes = NodeActions.list(within_projects: [chic, pdx])
       assert length(nodes) == 94
     end
   end
 
-  describe "within_networks_exact" do
-    @tag add2ctx: :networks
-    test "nodes need to be in every network", %{chicago: chic, portland: pdx} do
-      nodes = NodeActions.list(within_networks_exact: [chic, pdx])
+  describe "within_projects_exact" do
+    @tag add2ctx: :projects
+    test "nodes need to be in every project", %{chicago: chic, portland: pdx} do
+      nodes = NodeActions.list(within_projects_exact: [chic, pdx])
       assert length(nodes) == 0
     end
   end
