@@ -124,7 +124,7 @@ then
   printcyan "skipping upload to S3..."
 else
   printcyan "uploading release archive to S3..."
-  aws s3 cp _build/prod/api_of_things-$TAG.tar.gz s3://api_of_things-releases/
+  aws s3 cp _build/prod/api_of_things-$TAG.tar.gz s3://api-of-things-releases/
 fi
 
 
