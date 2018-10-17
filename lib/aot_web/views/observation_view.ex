@@ -14,7 +14,7 @@ defmodule AotWeb.ObservationView do
   end
 
   def render("observation.json", %{observation: obs}) do
-    case Map.has_key?(obs, :node_id) do
+    case Map.has_key?(obs, :node_vsn) do
       true -> do_render(:obs, obs)
       false -> do_render(:agg, obs)
     end
@@ -22,7 +22,7 @@ defmodule AotWeb.ObservationView do
 
   defp do_render(:obs, obs) do
     %{
-      node_id: obs.node_id,
+      node_vsn: obs.node_vsn,
       sensor_path: obs.sensor_path,
       timestamp: obs.timestamp,
       value: obs.value

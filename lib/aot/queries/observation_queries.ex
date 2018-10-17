@@ -62,30 +62,30 @@ defmodule Aot.ObservationQueries do
       end)
 
     from obs in query,
-      left_join: nn in ProjectNode, as: :nn, on: nn.node_id == obs.node_id,
+      left_join: nn in ProjectNode, as: :nn, on: nn.node_vsn == obs.node_vsn,
       where: nn.project_slug in ^slugs
   end
 
   @spec from_node(Ecto.Queryable.t(), binary() | Aot.Node.t()) :: Ecto.Queryable.t()
-  def from_node(query, %Node{id: id}),
-    do: from_node(query, id)
+  def from_node(query, %Node{vsn: vsn}),
+    do: from_node(query, vsn)
 
-  def from_node(query, id) when is_binary(id),
-    do: from_nodes(query, [id])
+  def from_node(query, vsn) when is_binary(vsn),
+    do: from_nodes(query, [vsn])
 
   @spec from_nodes(Ecto.Queryable.t(), maybe_improper_list()) :: Ecto.Queryable.t()
   def from_nodes(query, nodes) when is_list(nodes) do
-    ids =
+    vsns =
       nodes
       |> Enum.map(fn node ->
         case node do
-          %Node{} -> node.id
-          id -> id
+          %Node{} -> node.vsn
+          vsn -> vsn
         end
       end)
 
     from obs in query,
-      where: obs.node_id in ^ids
+      where: obs.node_vsn in ^vsns
   end
 
   @spec by_sensor(Ecto.Queryable.t(), binary() | Aot.Sensor.t()) :: Ecto.Queryable.t()
@@ -113,13 +113,13 @@ defmodule Aot.ObservationQueries do
   @spec located_within_distance(Ecto.Queryable.t(), {number(), Geo.Point.t()}) :: Ecto.Queryable.t()
   def located_within_distance(query, {meters, geom}),
     do: from obs in query,
-      left_join: node in Node, as: :node, on: node.id == obs.node_id,
+      left_join: node in Node, as: :node, on: node.vsn == obs.node_vsn,
       where: st_dwithin_in_meters(node.location, ^geom, ^meters)
 
   @spec located_within(Ecto.Queryable.t(), Geo.Polygon.t()) :: Ecto.Queryable.t()
   def located_within(query, geom),
     do: from obs in query,
-      left_join: node in Node, as: :node, on: node.id == obs.node_id,
+      left_join: node in Node, as: :node, on: node.vsn == obs.node_vsn,
       where: st_contains(^geom, node.location)
 
   @spec timestamp(Ecto.Queryable.t(), {:eq | :ge | :gt | :le | :lt, NaiveDateTime.t()}) :: Ecto.Queryable.t()

@@ -47,9 +47,9 @@ defmodule Aot.NodeActions do
   Gets a single Node and optionally augments the query.
   """
   @spec get(String.t() | integer(), keyword()) :: {:ok, Aot.Node.t()} | {:error, :not_found}
-  def get(id, opts \\ []) do
+  def get(vsn, opts \\ []) do
     res =
-      NodeQueries.get(id)
+      NodeQueries.get(vsn)
       |> NodeQueries.handle_opts(opts)
       |> Repo.one()
 

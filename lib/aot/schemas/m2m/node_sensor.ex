@@ -4,8 +4,8 @@ defmodule Aot.NodeSensor do
 
   schema "nodes_sensors" do
     belongs_to :node, Aot.Node,
-      foreign_key: :node_id,
-      references: :id,
+      foreign_key: :node_vsn,
+      references: :vsn,
       type: :string
 
     belongs_to :sensor, Aot.Sensor,
@@ -14,13 +14,15 @@ defmodule Aot.NodeSensor do
       type: :string
   end
 
+  @params ~W(node_vsn sensor_path) |> Enum.map(&String.to_atom/1)
+
   @doc false
   def changeset(node_sensor, attrs) do
     node_sensor
-    |> cast(attrs, [:node_id, :sensor_path])
-    |> validate_required([:node_id, :sensor_path])
-    |> foreign_key_constraint(:node_id)
+    |> cast(attrs, @params)
+    |> validate_required(@params)
+    |> foreign_key_constraint(:node_vsn)
     |> foreign_key_constraint(:sensor_path)
-    |> unique_constraint(:node_id, name: :nodes_sensors_uniq)
+    |> unique_constraint(:node_vsn, name: :nodes_sensors_uniq)
   end
 end

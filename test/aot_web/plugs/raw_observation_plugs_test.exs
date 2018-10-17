@@ -34,13 +34,13 @@ defmodule AotWeb.Testing.RawObservationPlugsTest do
   describe "aggregates" do
     test "known function and grouper", %{conn: conn} do
       conn
-      |> get(raw_observation_path(conn, :index, aggregates: "avg:node_id"))
+      |> get(raw_observation_path(conn, :index, aggregates: "avg:node_vsn"))
       |> json_response(:ok)
     end
 
     test "with a bad function will 400", %{conn: conn} do
       conn
-      |> get(raw_observation_path(conn, :index, aggregates: "average:node_id"))
+      |> get(raw_observation_path(conn, :index, aggregates: "average:node_vsn"))
       |> json_response(:bad_request)
     end
 
@@ -54,13 +54,13 @@ defmodule AotWeb.Testing.RawObservationPlugsTest do
   describe "as_histograms" do
     test "with good args", %{conn: conn} do
       conn
-      |> get(raw_observation_path(conn, :index, as_histograms: "1:2:3:4:5:node_id"))
+      |> get(raw_observation_path(conn, :index, as_histograms: "1:2:3:4:5:node_vsn"))
       |> json_response(:ok)
     end
 
     test "with a bad number param will 400", %{conn: conn} do
       conn
-      |> get(raw_observation_path(conn, :index, as_histograms: "one:2:3:4:5:node_id"))
+      |> get(raw_observation_path(conn, :index, as_histograms: "one:2:3:4:5:node_vsn"))
       |> json_response(:bad_request)
     end
 

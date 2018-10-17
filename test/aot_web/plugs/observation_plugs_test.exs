@@ -20,13 +20,13 @@ defmodule AotWeb.Testing.ObservationPlugsTest do
   describe "value=$AGG" do
     test "known function and grouper", %{conn: conn} do
       conn
-      |> get(observation_path(conn, :index, value: "avg:node_id"))
+      |> get(observation_path(conn, :index, value: "avg:node_vsn"))
       |> json_response(:ok)
     end
 
     test "with a bad function", %{conn: conn} do
       conn
-      |> get(observation_path(conn, :index, value: "average:node_id"))
+      |> get(observation_path(conn, :index, value: "average:node_vsn"))
       |> json_response(:bad_request)
     end
 
@@ -40,13 +40,13 @@ defmodule AotWeb.Testing.ObservationPlugsTest do
   describe "as_histogram" do
     test "with good args", %{conn: conn} do
       conn
-      |> get(observation_path(conn, :index, as_histogram: "1:2:3:node_id"))
+      |> get(observation_path(conn, :index, as_histogram: "1:2:3:node_vsn"))
       |> json_response(:ok)
     end
 
     test "with a bad number param", %{conn: conn} do
       conn
-      |> get(observation_path(conn, :index, as_histogram: "1:2:three:node_id"))
+      |> get(observation_path(conn, :index, as_histogram: "1:2:three:node_vsn"))
       |> json_response(:bad_request)
     end
 

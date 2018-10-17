@@ -52,46 +52,46 @@ defmodule Aot.ProjectQueries do
   # FILTER COMPOSE
 
   @spec has_node(Ecto.Queryable.t(), binary() | Aot.Node.t()) :: Ecto.Queryable.t()
-  def has_node(query, %Node{id: id}),
-    do: has_node(query, id)
+  def has_node(query, %Node{vsn: vsn}),
+    do: has_node(query, vsn)
 
-  def has_node(query, id) when is_binary(id),
-    do: has_nodes(query, [id])
+  def has_node(query, vsn) when is_binary(vsn),
+    do: has_nodes(query, [vsn])
 
   @spec has_nodes(Ecto.Queryable.t(), maybe_improper_list()) :: Ecto.Queryable.t()
   def has_nodes(query, nodes) when is_list(nodes) do
-    ids =
+    vsns =
       nodes
       |> Enum.map(fn node ->
         case node do
-          %Node{} -> node.id
-          id -> id
+          %Node{} -> node.vsn
+          vsn -> vsn
         end
       end)
 
     from net in query,
       left_join: nn in ProjectNode, as: :nn, on: nn.project_slug == net.slug,
-      left_join: node in Node, as: :node, on: node.id == nn.node_id,
-      where: node.id in ^ids,
+      left_join: node in Node, as: :node, on: node.vsn == nn.node_vsn,
+      where: node.vsn in ^vsns,
       distinct: true
   end
 
   @spec has_nodes_exact(Ecto.Queryable.t(), maybe_improper_list()) :: Ecto.Queryable.t()
   def has_nodes_exact(query, nodes) when is_list(nodes) do
-    ids =
+    vsns =
       nodes
       |> Enum.map(fn node ->
         case node do
-          %Node{} -> node.id
-          id -> id
+          %Node{} -> node.vsn
+          vsn -> vsn
         end
       end)
 
     from net in query,
       left_join: nn in ProjectNode, as: :nn, on: nn.project_slug == net.slug,
-      left_join: node in Node, as: :node, on: node.id == nn.node_id,
+      left_join: node in Node, as: :node, on: node.vsn == nn.node_vsn,
       group_by: net.slug,
-      having: fragment("array_agg(?) @> ?", node.id, ^ids)
+      having: fragment("array_agg(?) @> ?", node.vsn, ^vsns)
   end
 
   @spec has_sensor(Ecto.Queryable.t(), binary() | Aot.Sensor.t()) :: Ecto.Queryable.t()
@@ -189,14 +189,14 @@ defmodule Aot.ProjectQueries do
   def compute_bbox(%Project{slug: slug}), do: compute_bbox(slug)
   def compute_bbox(slug),
     do: from node in Node,
-      left_join: nn in ProjectNode, as: :nn, on: node.id == nn.node_id,
+      left_join: nn in ProjectNode, as: :nn, on: node.vsn == nn.node_vsn,
       where: nn.project_slug == ^slug,
       select: st_envelope(st_union(node.location))
 
   def compute_hull(%Project{slug: slug}), do: compute_hull(slug)
   def compute_hull(slug),
     do: from node in Node,
-      left_join: nn in ProjectNode, as: :nn, on: node.id == nn.node_id,
+      left_join: nn in ProjectNode, as: :nn, on: node.vsn == nn.node_vsn,
       where: nn.project_slug == ^slug,
       select: st_convex_hull(st_union(node.location))
 end

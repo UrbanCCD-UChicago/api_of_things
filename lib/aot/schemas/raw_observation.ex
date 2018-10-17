@@ -18,8 +18,8 @@ defmodule Aot.RawObservation do
     field :raw, :float
 
     belongs_to :node, Node,
-      foreign_key: :node_id,
-      references: :id,
+      foreign_key: :node_vsn,
+      references: :vsn,
       type: :string
 
     belongs_to :sensor, Sensor,
@@ -28,8 +28,8 @@ defmodule Aot.RawObservation do
       type: :string
   end
 
-  @attrs ~W( node_id sensor_path timestamp hrf raw ) |> Enum.map(&String.to_atom/1)
-  @reqd ~W( node_id sensor_path timestamp raw ) |> Enum.map(&String.to_atom/1)
+  @attrs ~W( node_vsn sensor_path timestamp hrf raw ) |> Enum.map(&String.to_atom/1)
+  @reqd ~W( node_vsn sensor_path timestamp raw ) |> Enum.map(&String.to_atom/1)
 
   @doc false
   def changeset(observation, attrs) do
@@ -38,6 +38,6 @@ defmodule Aot.RawObservation do
     |> validate_required(@reqd)
     |> foreign_key_constraint(:node)
     |> foreign_key_constraint(:sensor)
-    |> unique_constraint(:timestamp, name: :raw_obs_unique_id)
+    |> unique_constraint(:timestamp, name: :raw_obs_uniq)
   end
 end

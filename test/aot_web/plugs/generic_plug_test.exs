@@ -18,7 +18,7 @@ defmodule AotWeb.GenericPlugsTest do
     test "when param is found its value is assigned", %{conn: conn, n004: n004, n006: n006} do
       %{"data" => data} =
         conn
-        |> get(project_path(conn, :index, has_nodes_exact: [n004.id, n006.id]))
+        |> get(project_path(conn, :index, has_nodes_exact: [n004.vsn, n006.vsn]))
         |> json_response(:ok)
 
       assert length(data) == 1

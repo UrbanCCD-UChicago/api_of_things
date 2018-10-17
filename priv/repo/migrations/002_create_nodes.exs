@@ -3,8 +3,8 @@ defmodule Aot.Repo.Migrations.CreateNodes do
 
   def change do
     create table(:nodes, primary_key: false) do
-      add :id, :text, primary_key: true
-      add :vsn, :text, null: false
+      add :vsn, :text, primary_key: true
+      add :id, :text, null: false
       add :location, :geometry, null: false
       add :address, :text, default: nil
       add :description, :text, default: nil

@@ -17,10 +17,11 @@ defmodule Aot.Node do
 
   alias Geo.PostGIS.Geometry
 
-  @primary_key {:id, :string, autogenerate: false}
+  @primary_key {:vsn, :string, autogenerate: false}
+  @derive {Phoenix.Param, key: :vsn}
   schema "nodes" do
     # alternate key
-    field :vsn, :string
+    field :id, :string
 
     # location metadata
     field :location, Geometry
@@ -41,11 +42,11 @@ defmodule Aot.Node do
 
     many_to_many :projects, Project,
       join_through: ProjectNode,
-      join_keys: [node_id: :id, project_slug: :slug]
+      join_keys: [node_vsn: :vsn, project_slug: :slug]
 
     many_to_many :sensors, Sensor,
       join_through: NodeSensor,
-      join_keys: [node_id: :id, sensor_path: :path]
+      join_keys: [node_vsn: :vsn, sensor_path: :path]
   end
 
   @attrs ~W( id vsn latitude longitude description address commissioned_on decommissioned_on ) |> Enum.map(&String.to_atom/1)
@@ -56,8 +57,8 @@ defmodule Aot.Node do
     node
     |> cast(attrs, @attrs)
     |> validate_required(@reqd)
-    |> unique_constraint(:id, name: :nodes_pkey)
-    |> unique_constraint(:vsn)
+    |> unique_constraint(:vsn, name: :nodes_pkey)
+    |> unique_constraint(:id)
     |> put_location()
   end
 

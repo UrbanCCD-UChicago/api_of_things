@@ -47,9 +47,9 @@ defmodule Aot.SensorActions do
   Gets a single Sensor and optionally augments the query.
   """
   @spec get(String.t() | integer(), keyword()) :: {:ok, Sensor.t()} | {:error, :not_found}
-  def get(id, opts \\ []) do
+  def get(path, opts \\ []) do
     res =
-      SensorQueries.get(id)
+      SensorQueries.get(path)
       |> SensorQueries.handle_opts(opts)
       |> Repo.one()
 

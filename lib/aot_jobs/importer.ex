@@ -130,12 +130,12 @@ defmodule AotJobs.Importer do
   defp process_nodes_csv!(project, data_dir) do
     nodes =
       NodeActions.list()
-      |> Enum.map(& {&1.id, &1})
+      |> Enum.map(& {&1.vsn, &1})
       |> Enum.into(%{})
 
     net_nodes =
       NodeActions.list(within_project: project)
-      |> Enum.map(& &1.id)
+      |> Enum.map(& &1.vsn)
       |> MapSet.new()
 
     _ = Logger.info("ripping nodes csv for #{project.name}")
@@ -145,27 +145,27 @@ defmodule AotJobs.Importer do
       |> File.stream!()
       |> CSV.decode!(headers: true)
       |> Enum.reduce(Ecto.Multi.new(), fn row, multi ->
-        node_id = row["node_id"]
+        vsn = row["vsn"]
 
         multi =
-          case Map.get(nodes, node_id) do
+          case Map.get(nodes, vsn) do
             nil ->
-              name = :"insert node #{node_id}"
+              name = :"insert node #{vsn}"
               Ecto.Multi.insert(multi, name, Node.changeset(%Node{}, node_params(row)))
 
             node ->
-              name = :"update node #{node_id}"
+              name = :"update node #{vsn}"
               Ecto.Multi.update(multi, name, Node.changeset(node, node_params(row)))
           end
 
-        case MapSet.member?(net_nodes, node_id) do
+        case MapSet.member?(net_nodes, vsn) do
           true ->
             multi
 
           false ->
-            name = :"insert project/node #{project.slug} #{node_id}"
+            name = :"insert project/node #{project.slug} #{vsn}"
             Ecto.Multi.insert(multi, name, ProjectNode.changeset(%ProjectNode{},
-              %{project_slug: project.slug, node_id: node_id}))
+              %{project_slug: project.slug, node_vsn: vsn}))
         end
       end)
       |> Repo.transaction()
@@ -229,8 +229,8 @@ defmodule AotJobs.Importer do
     # get the exisitng node ids
     nodes =
       NodeActions.list(in_project: project)
-      |> Enum.map(& &1.id)
-      |> MapSet.new()
+      |> Enum.map(& {&1.id, &1.vsn})
+      |> Enum.into(%{})
 
     # get the existing sensor paths
     sensors =
@@ -290,9 +290,10 @@ defmodule AotJobs.Importer do
                         multi
 
                       _ ->
-                        name = :"insert observation #{node_id} #{sensor_path} #{timestamp}"
+                        vsn = Map.get(nodes, node_id)
+                        name = :"insert observation #{vsn} #{sensor_path} #{timestamp}"
                         Ecto.Multi.insert(multi, name, Observation.changeset(%Observation{},
-                          %{node_id: node_id, sensor_path: sensor_path, timestamp: timestamp, value: hrf}))
+                          %{node_vsn: vsn, sensor_path: sensor_path, timestamp: timestamp, value: hrf}))
                     end
                 end
 
@@ -307,9 +308,10 @@ defmodule AotJobs.Importer do
                       multi
 
                     _ ->
-                      name = :"insert raw observation #{node_id} #{sensor_path} #{timestamp}"
+                      vsn = Map.get(nodes, node_id)
+                      name = :"insert raw observation #{vsn} #{sensor_path} #{timestamp}"
                       Ecto.Multi.insert(multi, name, RawObservation.changeset(%RawObservation{},
-                        %{node_id: node_id, sensor_path: sensor_path, timestamp: timestamp, hrf: hrf, raw: raw}))
+                        %{node_vsn: vsn, sensor_path: sensor_path, timestamp: timestamp, hrf: hrf, raw: raw}))
                   end
               end
 
@@ -324,9 +326,19 @@ defmodule AotJobs.Importer do
 
   defp process_nodes_sensors!(project, data_dir) do
     # get existing nodes
+    vsns =
+      NodeActions.list(within_project: project)
+      |> Enum.map(& &1.vsn)
+
     nodes =
       NodeActions.list(within_project: project)
-      |> Enum.map(& &1.id)
+      |> Enum.map(& {&1.id, &1.vsn})
+      |> Enum.into(%{})
+
+    vsn2id =
+      nodes
+      |> Enum.map(fn {id, vsn} -> {vsn, id} end)
+      |> Enum.into(%{})
 
     # get existing sensors
     sensors =
@@ -336,11 +348,9 @@ defmodule AotJobs.Importer do
 
     # get the existing node/sensors
     nodes_sensors =
-      Repo.all(from ns in NodeSensor, where: ns.node_id in ^nodes)
-      |> Enum.map(& {&1.node_id, &1.sensor_path})
+      Repo.all(from ns in NodeSensor, where: ns.node_vsn in ^vsns)
+      |> Enum.map(& {Map.get(vsn2id, &1.node_vsn), &1.sensor_path})
       |> MapSet.new()
-
-    nodes = MapSet.new(nodes)
 
     # stream the csv file
     _ = Logger.info("ripping data csv for #{project.name} (nodes/sensors run)")
@@ -355,7 +365,7 @@ defmodule AotJobs.Importer do
 
         case (row["parameter"] == "id" or
           row["hrf_unit"] == "bool" or
-          not MapSet.member?(nodes, node_id) or
+          not Map.has_key?(nodes, node_id) or
           not MapSet.member?(sensors, sensor_path) or
           MapSet.member?(nodes_sensors, {node_id, sensor_path}))
         do
@@ -363,10 +373,11 @@ defmodule AotJobs.Importer do
             {multi, nodes_sensors}
 
           false ->
+            vsn = Map.get(nodes, node_id)
             nodes_sensors = MapSet.put(nodes_sensors, {node_id, sensor_path})
-            name = :"insert node/sensor #{node_id} #{sensor_path}"
+            name = :"insert node/sensor #{vsn} #{sensor_path}"
             multi =Ecto.Multi.insert(multi, name, NodeSensor.changeset(%NodeSensor{},
-              %{node_id: node_id, sensor_path: sensor_path}))
+              %{node_vsn: vsn, sensor_path: sensor_path}))
             {multi, nodes_sensors}
         end
       end)
@@ -386,7 +397,7 @@ defmodule AotJobs.Importer do
   defp skip_timestamp?(_, nil), do: false
   defp skip_timestamp?(ts, latest), do: NaiveDateTime.compare(ts, latest) != :gt
 
-  defp skip_node_id?(node_id, nodes), do: not MapSet.member?(nodes, node_id)
+  defp skip_node_id?(node_id, nodes), do: not Map.has_key?(nodes, node_id)
 
   defp skip_sensor_path?(path, sensors), do: not MapSet.member?(sensors, path)
 

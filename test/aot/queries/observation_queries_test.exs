@@ -43,49 +43,49 @@ defmodule Aot.Testing.ObservationQueriesTest do
     end
 
     test "count" do
-      ObservationActions.list(value: {:count, :node_id})
+      ObservationActions.list(value: {:count, :node_vsn})
       |> Enum.each(fn %{group: _, count: count} -> assert count >= 0 end)
     end
 
     test "min" do
-      ObservationActions.list(value: {:min, :node_id})
+      ObservationActions.list(value: {:min, :node_vsn})
       |> Enum.each(fn %{group: _, min: min} -> assert is_float(min) end)
     end
 
     test "max" do
-      ObservationActions.list(value: {:max, :node_id})
+      ObservationActions.list(value: {:max, :node_vsn})
       |> Enum.each(fn %{group: _, max: max} -> assert is_float(max) end)
     end
 
     test "avg" do
-      ObservationActions.list(value: {:avg, :node_id})
+      ObservationActions.list(value: {:avg, :node_vsn})
       |> Enum.each(fn %{group: _, avg: avg} -> assert is_float(avg) end)
     end
 
     test "sum" do
-      ObservationActions.list(value: {:sum, :node_id})
+      ObservationActions.list(value: {:sum, :node_vsn})
       |> Enum.each(fn %{group: _, sum: sum} -> assert is_float(sum) end)
     end
 
     test "stddev" do
-      ObservationActions.list(value: {:stddev, :node_id})
+      ObservationActions.list(value: {:stddev, :node_vsn})
       |> Enum.each(fn %{group: _, stddev: stddev} -> assert is_float(stddev) end)
     end
 
     test "variance" do
-      ObservationActions.list(value: {:variance, :node_id})
+      ObservationActions.list(value: {:variance, :node_vsn})
       |> Enum.each(fn %{group: _, variance: variance} -> assert is_float(variance) end)
     end
 
     test "percentile (.5 ~ median)" do
-      ObservationActions.list(value: {:percentile, 0.5, :node_id})
+      ObservationActions.list(value: {:percentile, 0.5, :node_vsn})
       |> Enum.each(fn %{group: _, value: median} -> assert is_float(median) end)
     end
   end
 
   describe "as_histogram" do
     test "should return a map with keys 'group' and 'histogram'" do
-      ObservationActions.list(as_histogram: {0, 100, 10, :node_id})
+      ObservationActions.list(as_histogram: {0, 100, 10, :node_vsn})
       |> Enum.each(fn obj ->
         assert is_map(obj)
         assert Map.has_key?(obj, :group)
@@ -94,7 +94,7 @@ defmodule Aot.Testing.ObservationQueriesTest do
     end
 
     test "histogram should be a list of numbers" do
-      ObservationActions.list(as_histogram: {0, 100, 10, :node_id})
+      ObservationActions.list(as_histogram: {0, 100, 10, :node_vsn})
       |> Enum.each(fn hist ->
         assert is_list(hist[:histogram])
       end)

@@ -30,9 +30,9 @@ defmodule Aot.NodeQueries do
     do: from node in Node
 
   @spec get(Ecto.Queryable.t()) :: Ecto.Queryable.t()
-  def get(id),
+  def get(vsn),
     do: from node in Node,
-      where: node.id == ^id
+      where: node.vsn == ^vsn
 
   # BOOLEAN COMPOSE
 
@@ -78,7 +78,7 @@ defmodule Aot.NodeQueries do
       end)
 
     from node in query,
-      left_join: nn in ProjectNode, as: :nn, on: nn.node_id == node.id,
+      left_join: nn in ProjectNode, as: :nn, on: nn.node_vsn == node.vsn,
       left_join: net in Project, as: :net, on: nn.project_slug == net.slug,
       where: net.slug in ^slugs,
       distinct: true
@@ -96,9 +96,9 @@ defmodule Aot.NodeQueries do
       end)
 
     from node in query,
-      left_join: nn in ProjectNode, as: :nn, on: nn.node_id == node.id,
+      left_join: nn in ProjectNode, as: :nn, on: nn.node_vsn == node.vsn,
       left_join: net in Project, as: :net, on: nn.project_slug == net.slug,
-      group_by: node.id,
+      group_by: node.vsn,
       having: fragment("array_agg(?) @> ?", net.slug, ^slugs)
   end
 
@@ -121,7 +121,7 @@ defmodule Aot.NodeQueries do
       end)
 
     from node in query,
-      left_join: ns in NodeSensor, as: :ns, on: ns.node_id == node.id,
+      left_join: ns in NodeSensor, as: :ns, on: ns.node_vsn == node.vsn,
       left_join: sensor in Sensor, as: :sensor, on: ns.sensor_path == sensor.path,
       where: sensor.path in ^paths,
       distinct: true
@@ -139,9 +139,9 @@ defmodule Aot.NodeQueries do
       end)
 
     from node in query,
-      left_join: ns in NodeSensor, as: :ns, on: ns.node_id == node.id,
+      left_join: ns in NodeSensor, as: :ns, on: ns.node_vsn == node.vsn,
       left_join: sensor in Sensor, as: :sensor, on: ns.sensor_path == sensor.path,
-      group_by: node.id,
+      group_by: node.vsn,
       having: fragment("array_agg(?) @> ?", sensor.path, ^paths)
   end
 

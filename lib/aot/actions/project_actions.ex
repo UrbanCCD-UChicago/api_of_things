@@ -51,9 +51,9 @@ defmodule Aot.ProjectActions do
   Gets a single Project and optionally augments the query.
   """
   @spec get(String.t() | integer(), keyword()) :: {:ok, Project.t()} | {:error, :not_found}
-  def get(id, opts \\ []) do
+  def get(slug, opts \\ []) do
     res =
-      ProjectQueries.get(id)
+      ProjectQueries.get(slug)
       |> ProjectQueries.handle_opts(opts)
       |> Repo.one()
 

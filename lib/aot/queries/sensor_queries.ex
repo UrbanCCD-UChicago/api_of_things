@@ -95,46 +95,46 @@ defmodule Aot.SensorQueries do
   end
 
   @spec onboard_node(Ecto.Queryable.t(), binary() | Aot.Node.t()) :: Ecto.Queryable.t()
-  def onboard_node(query, %Node{id: id}),
-    do: onboard_node(query, id)
+  def onboard_node(query, %Node{vsn: vsn}),
+    do: onboard_node(query, vsn)
 
-  def onboard_node(query, id) when is_binary(id),
-    do: onboard_nodes(query, [id])
+  def onboard_node(query, vsn) when is_binary(vsn),
+    do: onboard_nodes(query, [vsn])
 
   @spec onboard_nodes(Ecto.Queryable.t(), maybe_improper_list()) :: Ecto.Queryable.t()
   def onboard_nodes(query, nodes) when is_list(nodes) do
-    ids =
+    vsns =
       nodes
       |> Enum.map(fn node ->
         case node do
-          %Node{} -> node.id
-          id -> id
+          %Node{} -> node.vsn
+          vsn -> vsn
         end
       end)
 
     from sensor in query,
       left_join: nos in NodeSensor, as: :nos, on: nos.sensor_path == sensor.path,
-      left_join: node in Node, as: :node, on: nos.node_id == node.id,
-      where: node.id in ^ids,
+      left_join: node in Node, as: :node, on: nos.node_vsn == node.vsn,
+      where: node.vsn in ^vsns,
       distinct: true
   end
 
   @spec onboard_nodes_exact(Ecto.Queryable.t(), maybe_improper_list()) :: Ecto.Queryable.t()
   def onboard_nodes_exact(query, nodes) when is_list(nodes) do
-    ids =
+    vsns =
       nodes
       |> Enum.map(fn node ->
         case node do
-          %Node{} -> node.id
-          id -> id
+          %Node{} -> node.vsn
+          vsn -> vsn
         end
       end)
 
     from sensor in query,
       left_join: nos in NodeSensor, as: :nos, on: nos.sensor_path == sensor.path,
-      left_join: node in Node, as: :node, on: nos.node_id == node.id,
+      left_join: node in Node, as: :node, on: nos.node_vsn == node.vsn,
       group_by: sensor.path,
-      having: fragment("array_agg(?) @> ?", node.id, ^ids)
+      having: fragment("array_agg(?) @> ?", node.vsn, ^vsns)
   end
 
   defdelegate order(query, args), to: Aot.QueryUtils

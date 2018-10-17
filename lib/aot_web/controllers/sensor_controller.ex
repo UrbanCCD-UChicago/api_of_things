@@ -26,8 +26,8 @@ defmodule AotWeb.SensorController do
       sensors: sensors
   end
 
-  def show(conn, %{"id" => id}) do
-    with {:ok, sensor} <- SensorActions.get(id, Map.to_list(conn.assigns))
+  def show(conn, %{"id" => path}) do
+    with {:ok, sensor} <- SensorActions.get(path, Map.to_list(conn.assigns))
     do
       render conn, "show.json",
         sensor: sensor

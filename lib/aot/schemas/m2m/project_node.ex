@@ -9,18 +9,20 @@ defmodule Aot.ProjectNode do
       type: :string
 
     belongs_to :node, Aot.Node,
-      foreign_key: :node_id,
-      references: :id,
+      foreign_key: :node_vsn,
+      references: :vsn,
       type: :string
   end
+
+  @params [:project_slug, :node_vsn]
 
   @doc false
   def changeset(project_node, attrs) do
     project_node
-    |> cast(attrs, [:project_slug, :node_id])
-    |> validate_required([:project_slug, :node_id])
+    |> cast(attrs, @params)
+    |> validate_required(@params)
     |> foreign_key_constraint(:project_slug)
-    |> foreign_key_constraint(:node_id)
+    |> foreign_key_constraint(:node_vsn)
     |> unique_constraint(:project_slug, name: :projects_nodes_uniq)
   end
 end

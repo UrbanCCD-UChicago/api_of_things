@@ -15,7 +15,6 @@ defmodule AotWeb.NodeView do
 
   def render("node.json", %{node: node}) do
     %{
-      id: node.id,
       vsn: node.vsn,
       location: encode_geom(node.location),
       description: node.description,
@@ -32,7 +31,6 @@ defmodule AotWeb.NodeView do
       type: "Feature",
       geometry: encode_geom(node.location),
       properties: %{
-        id: node.id,
         vsn: node.vsn,
         description: node.description,
         address: node.address,

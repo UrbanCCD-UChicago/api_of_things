@@ -76,7 +76,7 @@ defmodule Aot.Testing.RawObservationQueriesTest do
     end
 
     test "count" do
-      RawObservationActions.list(compute_aggs: {:count, :node_id})
+      RawObservationActions.list(compute_aggs: {:count, :node_vsn})
       |> Enum.each(fn %{group: _, raw_count: raw, hrf_count: hrf} ->
         assert raw >= 0
         assert hrf >= 0
@@ -84,7 +84,7 @@ defmodule Aot.Testing.RawObservationQueriesTest do
     end
 
     test "min" do
-      RawObservationActions.list(compute_aggs: {:min, :node_id})
+      RawObservationActions.list(compute_aggs: {:min, :node_vsn})
       |> Enum.each(fn %{group: _, raw_min: raw, hrf_min: hrf} ->
         assert is_float(raw)
         assert is_float(hrf)
@@ -92,7 +92,7 @@ defmodule Aot.Testing.RawObservationQueriesTest do
     end
 
     test "max" do
-      RawObservationActions.list(compute_aggs: {:max, :node_id})
+      RawObservationActions.list(compute_aggs: {:max, :node_vsn})
       |> Enum.each(fn %{group: _, raw_max: raw, hrf_max: hrf} ->
         assert is_float(raw)
         assert is_float(hrf)
@@ -100,7 +100,7 @@ defmodule Aot.Testing.RawObservationQueriesTest do
     end
 
     test "avg" do
-      RawObservationActions.list(compute_aggs: {:avg, :node_id})
+      RawObservationActions.list(compute_aggs: {:avg, :node_vsn})
       |> Enum.each(fn %{group: _, raw_avg: raw, hrf_avg: hrf} ->
         assert is_float(raw)
         assert is_float(hrf)
@@ -108,7 +108,7 @@ defmodule Aot.Testing.RawObservationQueriesTest do
     end
 
     test "sum" do
-      RawObservationActions.list(compute_aggs: {:sum, :node_id})
+      RawObservationActions.list(compute_aggs: {:sum, :node_vsn})
       |> Enum.each(fn %{group: _, raw_sum: raw, hrf_sum: hrf} ->
         assert is_float(raw)
         assert is_float(hrf)
@@ -116,7 +116,7 @@ defmodule Aot.Testing.RawObservationQueriesTest do
     end
 
     test "stddev" do
-      RawObservationActions.list(compute_aggs: {:stddev, :node_id})
+      RawObservationActions.list(compute_aggs: {:stddev, :node_vsn})
       |> Enum.each(fn %{group: _, raw_stddev: raw, hrf_stddev: hrf} ->
         assert is_float(raw)
         assert is_float(hrf)
@@ -124,7 +124,7 @@ defmodule Aot.Testing.RawObservationQueriesTest do
     end
 
     test "variance" do
-      RawObservationActions.list(compute_aggs: {:variance, :node_id})
+      RawObservationActions.list(compute_aggs: {:variance, :node_vsn})
       |> Enum.each(fn %{group: _, raw_variance: raw, hrf_variance: hrf} ->
         assert is_float(raw)
         assert is_float(hrf)
@@ -132,7 +132,7 @@ defmodule Aot.Testing.RawObservationQueriesTest do
     end
 
     test "percentile (.5 ~ median)" do
-      RawObservationActions.list(compute_aggs: {:percentile, 0.5, :node_id})
+      RawObservationActions.list(compute_aggs: {:percentile, 0.5, :node_vsn})
       |> Enum.each(fn %{group: _, raw_value: raw, hrf_value: hrf} ->
         assert is_float(raw)
         assert is_float(hrf)
@@ -142,7 +142,7 @@ defmodule Aot.Testing.RawObservationQueriesTest do
 
   describe "as_histograms" do
     test "should return a map with keys 'group' and 'X_histogram'" do
-      RawObservationActions.list(as_histograms: {0, 100, 0, 100, 10, :node_id})
+      RawObservationActions.list(as_histograms: {0, 100, 0, 100, 10, :node_vsn})
       |> Enum.each(fn obj ->
         assert is_map(obj)
         assert Map.has_key?(obj, :group)
@@ -152,7 +152,7 @@ defmodule Aot.Testing.RawObservationQueriesTest do
     end
 
     test "histograms should be a list of numbers" do
-      RawObservationActions.list(as_histograms: {0, 100, 0, 100, 10, :node_id})
+      RawObservationActions.list(as_histograms: {0, 100, 0, 100, 10, :node_vsn})
       |> Enum.each(fn hist ->
         assert is_list(hist[:raw_histogram])
         assert is_list(hist[:hrf_histogram])

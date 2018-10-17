@@ -35,7 +35,7 @@ defmodule Aot.Project do
     # reverse relationships
     many_to_many :nodes, Node,
       join_through: ProjectNode,
-      join_keys: [project_slug: :slug, node_id: :id]
+      join_keys: [project_slug: :slug, node_vsn: :vsn]
 
     many_to_many :sensors, Sensor,
       join_through: ProjectSensor,

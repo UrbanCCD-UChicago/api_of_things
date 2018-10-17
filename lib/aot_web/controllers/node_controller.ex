@@ -38,8 +38,8 @@ defmodule AotWeb.NodeController do
       resp_format: fmt
   end
 
-  def show(conn, %{"id" => id}) do
-    with {:ok, node} <- NodeActions.get(id, Map.to_list(conn.assigns))
+  def show(conn, %{"id" => vsn}) do
+    with {:ok, node} <- NodeActions.get(vsn, Map.to_list(conn.assigns))
     do
       render conn, "show.json",
         node: node,

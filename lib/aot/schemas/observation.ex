@@ -17,8 +17,8 @@ defmodule Aot.Observation do
     field :value, :float
 
     belongs_to :node, Node,
-      foreign_key: :node_id,
-      references: :id,
+      foreign_key: :node_vsn,
+      references: :vsn,
       type: :string
 
     belongs_to :sensor, Sensor,
@@ -27,7 +27,7 @@ defmodule Aot.Observation do
       type: :string
   end
 
-  @attrs ~W( node_id sensor_path timestamp value ) |> Enum.map(&String.to_atom/1)
+  @attrs ~W( node_vsn sensor_path timestamp value ) |> Enum.map(&String.to_atom/1)
 
   @doc false
   def changeset(observation, attrs) do
@@ -36,6 +36,6 @@ defmodule Aot.Observation do
     |> validate_required(@attrs)
     |> foreign_key_constraint(:node)
     |> foreign_key_constraint(:sensor)
-    |> unique_constraint(:timestamp, name: :obs_unique_id)
+    |> unique_constraint(:timestamp, name: :obs_uniq)
   end
 end

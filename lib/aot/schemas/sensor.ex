@@ -44,7 +44,7 @@ defmodule Aot.Sensor do
 
     many_to_many :nodes, Node,
       join_through: NodeSensor,
-      join_keys: [sensor_path: :path, node_id: :id]
+      join_keys: [sensor_path: :path, node_vsn: :vsn]
   end
 
   @attrs ~W( ontology subsystem sensor parameter uom min max data_sheet ) |> Enum.map(&String.to_atom/1)

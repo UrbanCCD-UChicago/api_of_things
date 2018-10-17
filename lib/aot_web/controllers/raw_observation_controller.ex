@@ -27,10 +27,10 @@ defmodule AotWeb.RawObservationController do
   plug :timestamp, param: "timestamp"
   plug :compare, param: "raw"
   plug :compare, param: "hrf"
-  plug :aggregates, groupers: ~W(node_id sensor_path)
-  plug :as_histograms, groupers: ~W(node_id sensor_path)
-  plug :as_time_buckets, groupers: ~W(node_id sensor_path)
-  plug :order, default: "desc:timestamp", fields: ~W(timestamp node_id sensor_path)
+  plug :aggregates, groupers: ~W(node_vsn sensor_path)
+  plug :as_histograms, groupers: ~W(node_vsn sensor_path)
+  plug :as_time_buckets, groupers: ~W(node_vsn sensor_path)
+  plug :order, default: "desc:timestamp", fields: ~W(timestamp node_vsn sensor_path)
   plug :paginate
 
   def index(conn, _params) do
