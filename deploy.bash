@@ -106,7 +106,7 @@ printcyan "decompressing archive on $HOST..."
 ssh $HOST "cd releases && tar xzf api_of_things-$TAG.tar.gz"
 
 printcyan "stopping current version of app on $HOST..."
- ssh $HOST "if [[ -d \"api_of_things/bin/\" ]]; then ./api_of_things/bin/api_of_things stop; fi"
+ ssh $HOST "if [[ -d \"api_of_things/bin/\" ]]; then ./api_of_things/bin/aot stop; fi"
 
 printcyan "unlinking current version on $HOST..."
 ssh $HOST "if [[ -L \"api_of_things\" ]]; then rm api_of_things; fi"
@@ -120,14 +120,14 @@ ssh $HOST "ln -s releases/$TAG/ api_of_things"
 if [ "$RUN_MIGRATIONS" = true ];
 then
   printcyan "running migrations on $HOST..."
-  ssh $HOST "./api_of_things/bin/api_of_things migrate"
+  ssh $HOST "./api_of_things/bin/aot migrate"
 fi
 
 
 # restart server with new link
 
 printcyan "starting application back up on $HOST..."
-ssh $HOST "./api_of_things/bin/api_of_things start"
+ssh $HOST "./api_of_things/bin/aot start"
 
 
 # remove archive

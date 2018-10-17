@@ -1,3 +1,3 @@
 #!/bin/sh
 
-$RELEASE_ROOT_DIR/bin/api_of_things command Elixir.Aot.ReleaseTasks migrate
+$RELEASE_ROOT_DIR/bin/aot command Elixir.Aot.ReleaseTasks migrate

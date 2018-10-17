@@ -92,7 +92,7 @@ if [ -d "_build/prod" ];
 then
   mkdir -p _build/prod;
 fi
-docker exec -it $CONTAINER_ID tar czf api_of_things-$TAG.tar.gz /api_of_things/_build/prod/rel/api_of_things
+docker exec -it $CONTAINER_ID tar czf api_of_things-$TAG.tar.gz /api_of_things/_build/prod/rel/aot
 
 printcyan "copying the release archive to your host machine..."
 docker cp $CONTAINER_ID:/api_of_things/api_of_things-$TAG.tar.gz _build/prod/
@@ -109,7 +109,7 @@ docker stop $CONTAINER_ID
 printcyan "extracting archive and retagging it..."
 cd _build/prod
 tar xzf api_of_things-$TAG.tar.gz
-mv ./api_of_things/_build/prod/rel/api_of_things ./$TAG
+mv ./api_of_things/_build/prod/rel/aot ./$TAG
 rm -r ./api_of_things
 rm api_of_things-$TAG.tar.gz
 tar czf api_of_things-$TAG.tar.gz $TAG
