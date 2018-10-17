@@ -1,10 +1,12 @@
 defmodule Aot.Mixfile do
   use Mix.Project
 
+  @version "0.1.0"
+
   def project do
     [
       app: :aot,
-      version: "0.0.1",
+      version: @version,
       elixir: "~> 1.7",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
@@ -48,7 +50,10 @@ defmodule Aot.Mixfile do
       {:quantum, "~> 2.3"},
 
       # testing
-      {:mock, "~> 0.3.2", only: :test}
+      {:mock, "~> 0.3.2", only: :test},
+
+      # releases
+      {:distillery, "~> 1.5"}
     ]
   end
 

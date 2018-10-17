@@ -1,0 +1,10 @@
+_build/
+.elixir_ls/
+.git/
+deps/
+test/
+.formatter.exs
+.gitignore
+build.bash
+deploy.bash
+README.md
