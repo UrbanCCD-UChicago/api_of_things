@@ -28,7 +28,7 @@ config :logger, :console,
 config :aot, AotJobs.Scheduler,
   jobs: [
     # every 5 minutes, pull in recent data from aot archives
-    {"*/5 * * * *", {AotJobs, :import_networks, []}},
+    {"*/5 * * * *", {AotJobs, :import_projects, []}},
 
     # every day at 12:03 am, delete data older than 1 week
     {"3 0 * * *", {AotJobs, :delete_old_data, []}}
