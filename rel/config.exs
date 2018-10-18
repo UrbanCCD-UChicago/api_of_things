@@ -47,9 +47,12 @@ end
 release :aot do
   set version: current_version(:aot)
   set applications: [
-    :runtime_tools
+    :runtime_tools,
+    aot: :permanent
   ]
   set commands: [
-    "migrate": "rel/commands/migrate.sh"
+    migrate: "rel/commands/migrate.sh",
+    seed: "rel/commands/seed.sh",
+    rollback: "rel/commands/rollback.sh"
   ]
 end
