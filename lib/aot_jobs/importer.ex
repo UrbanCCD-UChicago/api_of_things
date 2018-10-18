@@ -404,9 +404,15 @@ defmodule AotJobs.Importer do
   defp parse_value(""), do: nil
   defp parse_value(nil), do: nil
   defp parse_value(value) do
-    case Float.parse(value) do
-      :error -> nil
-      {parsed, _} -> parsed
+    case Regex.match?(~r/^\d+$/, value) do
+      false ->
+        nil
+
+      true ->
+        case Float.parse(value) do
+          :error -> nil
+          {parsed, _} -> parsed
+        end
     end
   end
 
