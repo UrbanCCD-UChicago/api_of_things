@@ -1,91 +1,64 @@
 defmodule Aot.ReleaseTasks do
+  @moduledoc """
+  This module defines functions that can be wrapped using the
+  Shell Script API so that certain operations can be executed
+  from a release.
+  For example, to run migrations from a release:
+    $ /path/to/release/bin/aot migrate
+  Based on https://github.com/bitwalker/distillery/blob/master/docs/Running%20Migrations.md
+  """
+
   @start_apps [
+    :crypto,
+    :ssl,
     :postgrex,
     :ecto
   ]
-  @app :aot
 
-  def repos, do: Application.get_env(@app, :ecto_repos, [])
-
-  def seed do
-    prepare()
-    # Run seed script
-    Enum.each(repos(), &run_seeds_for/1)
-
-    # Signal shutdown
-    IO.puts("Success!")
-  end
-
-  defp run_seeds_for(repo) do
-    # Run the seed script if it exists
-    seed_script = seeds_path(repo)
-
-    if File.exists?(seed_script) do
-      IO.puts("Running seed script..")
-      Code.eval_file(seed_script)
-    end
-  end
+  defp myapp, do: :aot
 
   def migrate do
     prepare()
     Enum.each(repos(), &run_migrations_for/1)
-    IO.puts("Migrations successful!")
   end
 
-  defp run_migrations_for(repo) do
-    app = Keyword.get(repo.config, :otp_app)
-    IO.puts("Running migrations for #{app}")
-    Ecto.Migrator.run(repo, migrations_path(repo), :up, all: true)
-  end
+  defp repos, do: Application.get_env(myapp(), :ecto_repos, [])
 
-  def rollback do
-    prepare()
+  defp migrations_path(repo), do: priv_path_for(repo, "migrations")
 
-    get_step =
-      IO.gets("Enter the number of steps: ")
-      |> String.trim()
-      |> Integer.parse()
-
-    case get_step do
-      {int, _trailing} ->
-        Enum.each(repos(), fn repo -> run_rollbacks_for(repo, int) end)
-        IO.puts("Rollback successful!")
-
-      :error ->
-        IO.puts("Invalid integer")
-    end
-  end
-
-  defp run_rollbacks_for(repo, step) do
-    app = Keyword.get(repo.config, :otp_app)
-    IO.puts("Running rollbacks for #{app} (STEP=#{step})")
-    Ecto.Migrator.run(repo, migrations_path(repo), :down, all: false, step: step)
-  end
+  defp priv_dir(app), do: "#{:code.priv_dir(app)}"
 
   defp prepare do
-    IO.puts("Loading #{@app}..")
-    # Load the code for myapp, but don't start it
-    :ok = Application.load(@app)
+    me = myapp()
 
-    IO.puts("Starting dependencies..")
+    IO.puts "Loading #{me}.."
+    # Load the code for myapp, but don't start it
+    :ok = Application.load(me)
+
+    IO.puts "Starting dependencies.."
     # Start apps necessary for executing migrations
     Enum.each(@start_apps, &Application.ensure_all_started/1)
 
     # Start the Repo(s) for myapp
-    IO.puts("Starting repos..")
-    Enum.each(repos(), & &1.start_link(pool_size: 1))
+    IO.puts "Starting repos.."
+    Enum.each(repos(), &(&1.start_link(pool_size: 1)))
   end
 
-  defp migrations_path(repo), do: priv_path_for(repo, "migrations")
+  defp run_migrations_for(repo) do
+    app = Keyword.get(repo.config, :otp_app)
+    IO.puts "Running migrations for #{app}"
 
-  defp seeds_path(repo), do: priv_path_for(repo, "seeds.exs")
+    Ecto.Migrator.run(repo, migrations_path(repo), :up, all: true)
+  end
 
   defp priv_path_for(repo, filename) do
     app = Keyword.get(repo.config, :otp_app)
-    IO.puts("App: #{app}")
-    repo_underscore = repo |> Module.split() |> List.last() |> Macro.underscore()
+    repo_underscore =
+      repo
+      |> Module.split()
+      |> List.last()
+      |> Macro.underscore()
+
     Path.join([priv_dir(app), repo_underscore, filename])
   end
-
-  defp priv_dir(app), do: "#{:code.priv_dir(app)}"
 end
