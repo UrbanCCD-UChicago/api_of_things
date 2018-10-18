@@ -14,4 +14,12 @@ defmodule AotWeb.Router do
     resources "/observations", ObservationController, only: [:index]
     resources "/raw-data", RawObservationController, only: [:index]
   end
+
+  scope "/graphql" do
+    forward "/i", Absinthe.Plug.GraphiQL,
+      schema: AotWeb.Schema
+
+    forward "/", Absinthe.Plug,
+      schema: AotWeb.Schema
+  end
 end

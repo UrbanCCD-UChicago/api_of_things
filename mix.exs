@@ -53,7 +53,11 @@ defmodule Aot.Mixfile do
       {:mock, "~> 0.3.2", only: :test},
 
       # releases
-      {:distillery, "~> 1.5"}
+      {:distillery, "~> 1.5"},
+
+      # graphql
+      {:absinthe, "~> 1.4"},
+      {:absinthe_plug, "~> 1.4"}
     ]
   end
 
