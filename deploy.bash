@@ -106,7 +106,7 @@ printcyan "decompressing archive on $HOST..."
 ssh $HOST "cd releases && tar xzf api_of_things-$TAG.tar.gz"
 
 printcyan "stopping current version of app on $HOST..."
- ssh $HOST "if [[ -d \"api_of_things/bin/\" ]]; then ./api_of_things/bin/aot stop; fi"
+ ssh $HOST "if [[ -d \"api_of_things/bin/\" ]]; then ./api_of_things/bin/aot stop || echo \"not running\"; fi"
 
 printcyan "unlinking current version on $HOST..."
 ssh $HOST "if [[ -L \"api_of_things\" ]]; then rm api_of_things; fi"
