@@ -12,6 +12,6 @@ defmodule AotWeb.Router do
     resources "/nodes", NodeController, only: [:index, :show]
     resources "/sensors", SensorController, only: [:index, :show]
     resources "/observations", ObservationController, only: [:index]
-    resources "/raw-data", RawObservationController, only: [:index]
+    resources "/raw-observations", RawObservationController, only: [:index]
   end
 end

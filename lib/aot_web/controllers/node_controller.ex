@@ -26,7 +26,7 @@ defmodule AotWeb.NodeController do
   plug :timestamp, params: "commissioned_on"
   plug :timestamp, params: "decommissioned_on"
   plug :location
-  plug :order, default: "asc:id", fields: ~W(id vsn commissioned_on decommissioned_on)
+  plug :order, default: "asc:vsn", fields: ~W(vsn commissioned_on decommissioned_on)
   plug :paginate
 
   def index(conn, _params) do
