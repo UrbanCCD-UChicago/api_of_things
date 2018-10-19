@@ -54,6 +54,11 @@ defmodule AotJobs.Importer do
     :ok = process_sensors_csv!(project, data_dir)
     :ok = process_data_csv!(project, data_dir)
     :ok = process_nodes_sensors!(project, data_dir)
+
+    bbox = ProjectActions.compute_bbox(project)
+    hull = ProjectActions.compute_hull(project)
+    {:ok, _} = ProjectActions.update(project, bbox: bbox, hull: hull)
+
     :ok
   after
     _ = Logger.info("cleaning up #{@dirname}")
