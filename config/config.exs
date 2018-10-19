@@ -37,6 +37,9 @@ config :aot, AotJobs.Scheduler,
 # Configures concurrency when loading data csv
 config :aot, import_concurrency: [max_concurrency: 8, ordered: false]
 
+# Configures the redirect link to the apiary docs
+config :aot, docs_url: "https://arrayofthings.docs.apiary.io/"
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"

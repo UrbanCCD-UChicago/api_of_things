@@ -5,6 +5,13 @@ defmodule AotWeb.Router do
     plug(:accepts, ["json"])
   end
 
+  scope "/", AotWeb do
+    get "/", DocsController, :show
+    get "/docs", DocsController, :show
+    get "/api", DocsController, :show
+    get "/api/docs", DocsController, :show
+  end
+
   scope "/api", AotWeb do
     pipe_through :api
 
