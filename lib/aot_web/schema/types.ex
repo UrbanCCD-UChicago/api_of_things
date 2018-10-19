@@ -21,4 +21,20 @@ defmodule AotWeb.Schema.Types do
     field :commissioned_on, :string
     field :decommissioned_on, :string
   end
+
+  object :sensor do
+    field :ontology, :string
+    field :subsystem, :string
+    field :sensor, :string
+    field :parameter, :string
+    field :uom, :string
+    field :min, :float
+    field :max, :float
+    field :data_sheet, :string
+  end
+
+  object :observation do
+    field :timestamp, :string
+    field :value, :float
+  end
 end

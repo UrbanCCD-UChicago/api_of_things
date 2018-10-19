@@ -13,5 +13,15 @@ defmodule AotWeb.Schema do
     field :nodes, list_of(:node) do
       resolve &Resolvers.list_nodes/3
     end
+
+    @desc "Get all sensors"
+    field :sensors, list_of(:sensor) do
+      resolve &Resolvers.list_sensors/3
+    end
+
+    @desc "Get all observations"
+    field :observations, list_of(:observation) do
+      resolve &Resolvers.list_observations/3
+    end
   end
 end
