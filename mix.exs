@@ -1,7 +1,7 @@
 defmodule Aot.Mixfile do
   use Mix.Project
 
-  @version "0.3.0"
+  @version "0.3.1"
 
   def project do
     [
@@ -19,7 +19,7 @@ defmodule Aot.Mixfile do
   def application do
     [
       mod: {Aot.Application, []},
-      extra_applications: [:logger, :runtime_tools, :briefly]
+      extra_applications: [:logger, :runtime_tools, :briefly, :sentry]
     ]
   end
 
@@ -53,7 +53,8 @@ defmodule Aot.Mixfile do
       {:mock, "~> 0.3.2", only: :test},
 
       # releases
-      {:distillery, "~> 1.5"}
+      {:distillery, "~> 1.5"},
+      {:sentry, "~> 6.4"}
     ]
   end
 

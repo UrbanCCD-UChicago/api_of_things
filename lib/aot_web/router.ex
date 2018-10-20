@@ -1,6 +1,11 @@
 defmodule AotWeb.Router do
   use AotWeb, :router
 
+  # send errors to sentry
+  use Plug.ErrorHandler
+  use Sentry.Plug
+
+
   pipeline :api do
     plug(:accepts, ["json"])
   end

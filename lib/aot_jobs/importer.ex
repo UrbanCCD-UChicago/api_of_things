@@ -409,7 +409,7 @@ defmodule AotJobs.Importer do
   defp parse_value(""), do: nil
   defp parse_value(nil), do: nil
   defp parse_value(value) do
-    case Regex.match?(~r/^\d+$/, value) do
+    case Regex.match?(~r/^\-?[\d\.]+$/, value) do
       false ->
         nil
 
