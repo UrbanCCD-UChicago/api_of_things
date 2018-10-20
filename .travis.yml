@@ -1,0 +1,19 @@
+sudo: required
+
+language: elixir
+elixir: "1.7.3"
+otp_release: "21.1.1"
+
+services: 
+  - docker
+
+before_install:
+  - docker pull timescale/timescaledb-postgis
+  - docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=password timescale/timescaledb-postgis
+  - docker ps -a
+
+env:
+  - MIX_ENV=test
+
+script:
+  - mix test --trace
