@@ -34,6 +34,12 @@ config :aot, AotJobs.Scheduler,
     {"3 0 * * *", {AotJobs, :delete_old_data, []}}
   ]
 
+# Configures error reporting through Sentry
+config :sentry,
+  dsn: "https://public_key@app.getsentry.com/1",
+  environment_name: Mix.env(),
+  included_environments: [:prod]
+
 # Configures concurrency when loading data csv
 config :aot, import_concurrency: [max_concurrency: 8, ordered: false]
 
