@@ -8,12 +8,12 @@ services:
   - docker
 
 before_install:
+  - sudo /etc/init.d/postgresql stop
   - docker pull timescale/timescaledb-postgis
-  - docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=password timescale/timescaledb-postgis
-  - docker ps -a
+  - docker run -d -p 9876:5432 -e POSTGRES_PASSWORD=password timescale/timescaledb-postgis
 
 env:
-  - MIX_ENV=test
+  - MIX_ENV=travis
 
 script:
   - mix test --trace
