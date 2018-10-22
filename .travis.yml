@@ -13,7 +13,7 @@ before_install:
   - docker run -d -p 9876:5432 -e POSTGRES_PASSWORD=password timescale/timescaledb-postgis
 
 env:
-  MIX_ENV=travis
+  - MIX_ENV=travis
 
 script:
   - mix test --trace
