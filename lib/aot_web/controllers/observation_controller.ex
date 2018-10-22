@@ -1,6 +1,10 @@
 defmodule AotWeb.ObservationController do
   use AotWeb, :controller
 
+  import AotWeb.ControllerUtils, only: [
+    meta: 3
+  ]
+
   import AotWeb.GenericPlugs
 
   import AotWeb.ObservationPlugs
@@ -29,6 +33,9 @@ defmodule AotWeb.ObservationController do
 
   def index(conn, _params) do
     observations = ObservationActions.list(Map.to_list(conn.assigns))
-    render(conn, "index.json", observations: observations)
+
+    render conn, "index.json",
+      observations: observations,
+      meta: meta(&observation_url/3, :index, conn)
   end
 end

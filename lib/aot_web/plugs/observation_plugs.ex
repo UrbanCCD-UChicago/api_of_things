@@ -69,7 +69,10 @@ defmodule AotWeb.ObservationPlugs do
   Parses and validates use of the `as_histogram` parameter.
   """
   @spec as_histogram(Conn.t(), keyword()) :: Conn.t()
-  def as_histogram(%Conn{params: %{"as_histogram" => hist}} = conn, opts) do
+  def as_histogram(%Conn{params: %{"as_histogram" => nil}} = conn, _opts),
+    do: halt_with(conn, :bad_request, @hist_error)
+
+    def as_histogram(%Conn{params: %{"as_histogram" => hist}} = conn, opts) do
     case Regex.match?(@hist_regex, hist) do
       false ->
         halt_with(conn, :bad_request, @hist_error)

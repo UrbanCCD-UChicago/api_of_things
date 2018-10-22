@@ -5,8 +5,8 @@ defmodule AotWeb.ProjectView do
 
   alias AotWeb.ProjectView
 
-  def render("index.json", %{projects: projects, resp_format: fmt}) do
-    %{data: render_many(projects, ProjectView, "project.#{fmt}")}
+  def render("index.json", %{projects: projects, resp_format: fmt, meta: meta}) do
+    %{meta: meta, data: render_many(projects, ProjectView, "project.#{fmt}")}
   end
 
   def render("show.json", %{project: project, resp_format: fmt}) do

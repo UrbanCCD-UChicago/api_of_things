@@ -71,4 +71,47 @@ defmodule AotWeb.ControllerUtils do
     do: Geo.JSON.decode(geom)
 
   def decode_geojson(_), do: {:error, nil}
+
+  @doc """
+  """
+  @spec meta(fun(), atom(), Plug.Conn.t()) :: map()
+  def meta(url_func, controller_func, %Conn{assigns: assigns} = conn) do
+    query =
+      assigns
+      |> Enum.map(fn {key, value} ->
+        value = encode_value(value)
+        {key, value}
+      end)
+      |> Enum.into(%{})
+
+    links = %{
+      previous: prev_link(url_func, controller_func, conn),
+      current: url_func.(conn, controller_func, conn.params),
+      next: next_link(url_func, controller_func, conn)
+    }
+
+    %{query: query, links: links}
+  end
+
+  defp encode_value(value) do
+    cond do
+      is_tuple(value) ->
+        Tuple.to_list(value)
+        |> Enum.map(&encode_value/1)
+
+      is_map(value) and Map.has_key?(value, :coordinates) ->
+        Geo.JSON.encode!(value)
+
+      true ->
+        value
+    end
+  end
+
+  defp prev_link(_, _, %Conn{params: %{"page" => 1}}), do: nil
+
+  defp prev_link(url_func, controller_func, %Conn{params: %{"page" => page} = params} = conn),
+    do: url_func.(conn, controller_func, Map.put(params, "page", page - 1))
+
+  defp next_link(url_func, controller_func, %Conn{params: %{"page" => page} = params} = conn),
+    do: url_func.(conn, controller_func, Map.put(params, "page", page + 1))
 end

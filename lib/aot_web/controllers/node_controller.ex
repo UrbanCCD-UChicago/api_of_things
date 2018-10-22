@@ -2,6 +2,7 @@ defmodule AotWeb.NodeController do
   use AotWeb, :controller
 
   import AotWeb.ControllerUtils, only: [
+    meta: 3,
     resp_format: 1
   ]
 
@@ -35,7 +36,8 @@ defmodule AotWeb.NodeController do
 
     render conn, "index.json",
       nodes: nodes,
-      resp_format: fmt
+      resp_format: fmt,
+      meta: meta(&node_url/3, :index, conn)
   end
 
   def show(conn, %{"id" => vsn}) do
