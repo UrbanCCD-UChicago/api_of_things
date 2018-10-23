@@ -1,7 +1,7 @@
 defmodule Aot.Mixfile do
   use Mix.Project
 
-  @version "0.3.1"
+  @version "0.3.2"
 
   def project do
     [
@@ -23,7 +23,7 @@ defmodule Aot.Mixfile do
     ]
   end
 
-  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(env) when env in [:test, :travis], do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
   defp deps do
@@ -50,7 +50,7 @@ defmodule Aot.Mixfile do
       {:quantum, "~> 2.3"},
 
       # testing
-      {:mock, "~> 0.3.2", only: :test},
+      {:mock, "~> 0.3.2", only: [:test, :travis]},
 
       # releases
       {:distillery, "~> 1.5"},

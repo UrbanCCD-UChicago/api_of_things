@@ -5,8 +5,8 @@ defmodule AotWeb.RawObservationView do
 
   alias AotWeb.RawObservationView
 
-  def render("index.json", %{raw_observations: obs}) do
-    %{data: render_many(obs, RawObservationView, "raw_observation.json")}
+  def render("index.json", %{raw_observations: obs, meta: meta}) do
+    %{meta: meta, data: render_many(obs, RawObservationView, "raw_observation.json")}
   end
 
   def render("show.json", %{raw_observation: obs}) do

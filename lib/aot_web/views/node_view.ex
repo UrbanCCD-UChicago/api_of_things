@@ -5,8 +5,8 @@ defmodule AotWeb.NodeView do
 
   alias AotWeb.NodeView
 
-  def render("index.json", %{nodes: nodes, resp_format: fmt}) do
-    %{data: render_many(nodes, NodeView, "node.#{fmt}")}
+  def render("index.json", %{nodes: nodes, resp_format: fmt, meta: meta}) do
+    %{meta: meta, data: render_many(nodes, NodeView, "node.#{fmt}")}
   end
 
   def render("show.json", %{node: node, resp_format: fmt}) do

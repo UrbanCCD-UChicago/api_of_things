@@ -2,6 +2,7 @@ defmodule AotWeb.ProjectController do
   use AotWeb, :controller
 
   import AotWeb.ControllerUtils, only: [
+    meta: 3,
     resp_format: 1
   ]
 
@@ -31,7 +32,8 @@ defmodule AotWeb.ProjectController do
 
     render conn, "index.json",
       projects: projects,
-      resp_format: fmt
+      resp_format: fmt,
+      meta: meta(&project_url/3, :index, conn)
   end
 
   def show(conn, %{"id" => slug}) do

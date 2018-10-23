@@ -1,6 +1,10 @@
 defmodule AotWeb.SensorController do
   use AotWeb, :controller
 
+  import AotWeb.ControllerUtils, only: [
+    meta: 3
+  ]
+
   import AotWeb.GenericPlugs
 
   alias Aot.SensorActions
@@ -23,7 +27,8 @@ defmodule AotWeb.SensorController do
     sensors = SensorActions.list(Map.to_list(conn.assigns))
 
     render conn, "index.json",
-      sensors: sensors
+      sensors: sensors,
+      meta: meta(&sensor_url/3, :index, conn)
   end
 
   def show(conn, %{"id" => path}) do

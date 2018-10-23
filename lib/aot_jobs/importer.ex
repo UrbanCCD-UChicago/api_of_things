@@ -67,7 +67,7 @@ defmodule AotJobs.Importer do
   end
 
   defp ensure_clean_paths!(tarball) do
-    _ = System.cmd("rm", ["-r", @dirname])
+    if File.exists?(@dirname), do: _ = System.cmd("rm", ["-r", @dirname])
     _ = System.cmd("mkdir", ["-p", @dirname])
     _ = System.cmd("touch", [tarball])
     :ok
