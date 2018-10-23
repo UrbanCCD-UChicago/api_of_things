@@ -1,5 +1,7 @@
 defmodule AotWeb.Schema.Types do
   use Absinthe.Schema.Notation
+  import Absinthe.Resolution.Helpers
+  alias Aot.{Project, Repo}
 
   object :project do
     field :name, :string
@@ -20,6 +22,9 @@ defmodule AotWeb.Schema.Types do
     field :address, :string
     field :commissioned_on, :string
     field :decommissioned_on, :string
+    field :projects, list_of(:project), resolve: dataloader(Repo, :projects, [])
+    field :sensors, list_of(:sensor)
+    field :observations, list_of(:observation)
   end
 
   object :sensor do
