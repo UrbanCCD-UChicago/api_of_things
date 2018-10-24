@@ -23,12 +23,12 @@
     add: :*,
     remove: :*,
     modify: :*,
-    execute: :*
+    execute: :*,
     # Phoenix
     ## routes
-    resources: :*
+    resources: :*,
     ## controllers
-    plug: :*
+    plug: :*,
     action_fallback: :*
   ]
 ]
