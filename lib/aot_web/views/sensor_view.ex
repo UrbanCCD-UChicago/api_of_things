@@ -5,8 +5,8 @@ defmodule AotWeb.SensorView do
 
   alias AotWeb.SensorView
 
-  def render("index.json", %{sensors: sensors}) do
-    %{data: render_many(sensors, SensorView, "sensor.json")}
+  def render("index.json", %{sensors: sensors, meta: meta}) do
+    %{meta: meta, data: render_many(sensors, SensorView, "sensor.json")}
   end
 
   def render("show.json", %{sensor: sensor}) do

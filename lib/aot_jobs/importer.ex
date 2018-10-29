@@ -54,6 +54,11 @@ defmodule AotJobs.Importer do
     :ok = process_sensors_csv!(project, data_dir)
     :ok = process_data_csv!(project, data_dir)
     :ok = process_nodes_sensors!(project, data_dir)
+
+    bbox = ProjectActions.compute_bbox(project)
+    hull = ProjectActions.compute_hull(project)
+    {:ok, _} = ProjectActions.update(project, bbox: bbox, hull: hull)
+
     :ok
   after
     _ = Logger.info("cleaning up #{@dirname}")
@@ -62,7 +67,7 @@ defmodule AotJobs.Importer do
   end
 
   defp ensure_clean_paths!(tarball) do
-    _ = System.cmd("rm", ["-r", @dirname])
+    if File.exists?(@dirname), do: _ = System.cmd("rm", ["-r", @dirname])
     _ = System.cmd("mkdir", ["-p", @dirname])
     _ = System.cmd("touch", [tarball])
     :ok
@@ -150,11 +155,11 @@ defmodule AotJobs.Importer do
         multi =
           case Map.get(nodes, vsn) do
             nil ->
-              name = :"insert node #{vsn}"
+              name = "insert node #{vsn}"
               Ecto.Multi.insert(multi, name, Node.changeset(%Node{}, node_params(row)))
 
             node ->
-              name = :"update node #{vsn}"
+              name = "update node #{vsn}"
               Ecto.Multi.update(multi, name, Node.changeset(node, node_params(row)))
           end
 
@@ -163,7 +168,7 @@ defmodule AotJobs.Importer do
             multi
 
           false ->
-            name = :"insert project/node #{project.slug} #{vsn}"
+            name = "insert project/node #{project.slug} #{vsn}"
             Ecto.Multi.insert(multi, name, ProjectNode.changeset(%ProjectNode{},
               %{project_slug: project.slug, node_vsn: vsn}))
         end
@@ -201,11 +206,11 @@ defmodule AotJobs.Importer do
             multi =
               case Map.get(sensors, path) do
                 nil ->
-                  name = :"insert sensor #{path}"
+                  name = "insert sensor #{path}"
                   Ecto.Multi.insert(multi, name, Sensor.changeset(%Sensor{}, sensor_params(row)))
 
                 sensor ->
-                  name = :"update sensor #{path}"
+                  name = "update sensor #{path}"
                   Ecto.Multi.update(multi, name, Sensor.changeset(sensor, sensor_params(row)))
               end
 
@@ -214,7 +219,7 @@ defmodule AotJobs.Importer do
                 multi
 
               false ->
-                name = :"insert project/sensor #{project.slug} #{path}"
+                name = "insert project/sensor #{project.slug} #{path}"
                 Ecto.Multi.insert(multi, name, ProjectSensor.changeset(%ProjectSensor{},
                   %{project_slug: project.slug, sensor_path: path}))
             end
@@ -291,7 +296,7 @@ defmodule AotJobs.Importer do
 
                       _ ->
                         vsn = Map.get(nodes, node_id)
-                        name = :"insert observation #{vsn} #{sensor_path} #{timestamp}"
+                        name = "insert observation #{vsn} #{sensor_path} #{timestamp}"
                         Ecto.Multi.insert(multi, name, Observation.changeset(%Observation{},
                           %{node_vsn: vsn, sensor_path: sensor_path, timestamp: timestamp, value: hrf}))
                     end
@@ -309,7 +314,7 @@ defmodule AotJobs.Importer do
 
                     _ ->
                       vsn = Map.get(nodes, node_id)
-                      name = :"insert raw observation #{vsn} #{sensor_path} #{timestamp}"
+                      name = "insert raw observation #{vsn} #{sensor_path} #{timestamp}"
                       Ecto.Multi.insert(multi, name, RawObservation.changeset(%RawObservation{},
                         %{node_vsn: vsn, sensor_path: sensor_path, timestamp: timestamp, hrf: hrf, raw: raw}))
                   end
@@ -375,7 +380,7 @@ defmodule AotJobs.Importer do
           false ->
             vsn = Map.get(nodes, node_id)
             nodes_sensors = MapSet.put(nodes_sensors, {node_id, sensor_path})
-            name = :"insert node/sensor #{vsn} #{sensor_path}"
+            name = "insert node/sensor #{vsn} #{sensor_path}"
             multi =Ecto.Multi.insert(multi, name, NodeSensor.changeset(%NodeSensor{},
               %{node_vsn: vsn, sensor_path: sensor_path}))
             {multi, nodes_sensors}
@@ -404,9 +409,15 @@ defmodule AotJobs.Importer do
   defp parse_value(""), do: nil
   defp parse_value(nil), do: nil
   defp parse_value(value) do
-    case Float.parse(value) do
-      :error -> nil
-      {parsed, _} -> parsed
+    case Regex.match?(~r/^\-?[\d\.]+$/, value) do
+      false ->
+        nil
+
+      true ->
+        case Float.parse(value) do
+          :error -> nil
+          {parsed, _} -> parsed
+        end
     end
   end
 

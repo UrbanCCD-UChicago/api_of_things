@@ -2,6 +2,7 @@ defmodule AotWeb.NodeController do
   use AotWeb, :controller
 
   import AotWeb.ControllerUtils, only: [
+    meta: 3,
     resp_format: 1
   ]
 
@@ -26,7 +27,7 @@ defmodule AotWeb.NodeController do
   plug :timestamp, params: "commissioned_on"
   plug :timestamp, params: "decommissioned_on"
   plug :location
-  plug :order, default: "asc:id", fields: ~W(id vsn commissioned_on decommissioned_on)
+  plug :order, default: "asc:vsn", fields: ~W(vsn commissioned_on decommissioned_on)
   plug :paginate
 
   def index(conn, _params) do
@@ -35,7 +36,8 @@ defmodule AotWeb.NodeController do
 
     render conn, "index.json",
       nodes: nodes,
-      resp_format: fmt
+      resp_format: fmt,
+      meta: meta(&node_url/3, :index, conn)
   end
 
   def show(conn, %{"id" => vsn}) do

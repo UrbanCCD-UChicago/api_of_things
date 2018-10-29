@@ -28,14 +28,23 @@ config :logger, :console,
 config :aot, AotJobs.Scheduler,
   jobs: [
     # every 5 minutes, pull in recent data from aot archives
-    {"*/5 * * * *", {AotJobs, :import_networks, []}},
+    {"*/5 * * * *", {AotJobs, :import_projects, []}},
 
     # every day at 12:03 am, delete data older than 1 week
     {"3 0 * * *", {AotJobs, :delete_old_data, []}}
   ]
 
+# Configures error reporting through Sentry
+config :sentry,
+  dsn: "https://public_key@app.getsentry.com/1",
+  environment_name: Mix.env(),
+  included_environments: [:prod]
+
 # Configures concurrency when loading data csv
 config :aot, import_concurrency: [max_concurrency: 8, ordered: false]
+
+# Configures the redirect link to the apiary docs
+config :aot, docs_url: "https://arrayofthings.docs.apiary.io/"
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

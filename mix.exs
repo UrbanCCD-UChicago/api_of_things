@@ -1,7 +1,7 @@
 defmodule Aot.Mixfile do
   use Mix.Project
 
-  @version "0.2.1"
+  @version "0.3.2"
 
   def project do
     [
@@ -19,11 +19,11 @@ defmodule Aot.Mixfile do
   def application do
     [
       mod: {Aot.Application, []},
-      extra_applications: [:logger, :runtime_tools, :briefly]
+      extra_applications: [:logger, :runtime_tools, :briefly, :sentry]
     ]
   end
 
-  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(env) when env in [:test, :travis], do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
   defp deps do
@@ -50,7 +50,7 @@ defmodule Aot.Mixfile do
       {:quantum, "~> 2.3"},
 
       # testing
-      {:mock, "~> 0.3.2", only: :test},
+      {:mock, "~> 0.3.2", only: [:test, :travis]},
 
       # releases
       {:distillery, "~> 1.5"},
@@ -58,7 +58,9 @@ defmodule Aot.Mixfile do
       # graphql
       {:absinthe, "~> 1.4"},
       {:absinthe_plug, "~> 1.4"},
-      {:dataloader, "~> 1.0.0"}
+      {:dataloader, "~> 1.0.0"},
+
+      {:sentry, "~> 6.4"}
     ]
   end
 
