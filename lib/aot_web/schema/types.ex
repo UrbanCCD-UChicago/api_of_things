@@ -7,8 +7,8 @@ defmodule AotWeb.Schema.Types do
     field :name, :string
     field :archive_url, :string
     field :recent_url, :string
-    field :first_observation, :datetime
-    field :latest_observation, :datetime
+    field :first_observation, :naive_datetime
+    field :latest_observation, :naive_datetime
     field :bbox, :string
     field :hull, :string
     field :nodes, list_of(:node), resolve: dataloader(Repo)
@@ -22,8 +22,8 @@ defmodule AotWeb.Schema.Types do
     field :longitude, :float
     field :description, :string
     field :address, :string
-    field :commissioned_on, :datetime
-    field :decommissioned_on, :datetime
+    field :commissioned_on, :naive_datetime
+    field :decommissioned_on, :naive_datetime
     field :projects, list_of(:project), resolve: dataloader(Repo)
     field :sensors, list_of(:sensor), resolve: dataloader(Repo)
     field :observations, list_of(:observation), resolve: dataloader(Repo)
@@ -44,7 +44,7 @@ defmodule AotWeb.Schema.Types do
   end
 
   object :observation do
-    field :timestamp, :datetime
+    field :timestamp, :naive_datetime
     field :value, :float
     field :node, :node, resolve: dataloader(Repo)
     field :sensor, :sensor, resolve: dataloader(Repo)
@@ -66,11 +66,11 @@ defmodule AotWeb.Schema.Types do
     field :eq, :string
   end
 
-  input_object :datetime_query do
-    field :lt, :datetime
-    field :le, :datetime
-    field :gt, :datetime
-    field :ge, :datetime
-    field :eq, :datetime
+  input_object :naive_datetime_query do
+    field :lt, :naive_datetime
+    field :le, :naive_datetime
+    field :gt, :naive_datetime
+    field :ge, :naive_datetime
+    field :eq, :naive_datetime
   end
 end

@@ -11,8 +11,8 @@ defmodule AotWeb.Schema do
       arg(:name, :string_query)
       arg(:archive_url, :string_query)
       arg(:recent_url, :string_query)
-      arg(:first_observation, :datetime_query)
-      arg(:latest_observation, :datetime_query)
+      arg(:first_observation, :naive_datetime_query)
+      arg(:latest_observation, :naive_datetime_query)
       arg(:bbox, :string_query)
       arg(:hull, :string_query)
       resolve(&Resolvers.list_projects/3)
@@ -26,8 +26,8 @@ defmodule AotWeb.Schema do
       arg(:longitude, :float_query)
       arg(:description, :string_query)
       arg(:address, :string_query)
-      arg(:commissioned_on, :datetime_query)
-      arg(:decommissioned_on, :datetime_query)
+      arg(:commissioned_on, :naive_datetime_query)
+      arg(:decommissioned_on, :naive_datetime_query)
       resolve(&Resolvers.list_nodes/3)
     end
 
@@ -46,7 +46,7 @@ defmodule AotWeb.Schema do
 
     @desc "Get all observations"
     field :observations, list_of(:observation) do
-      arg(:timestamp, :datetime_query)
+      arg(:timestamp, :naive_datetime_query)
       arg(:value, :float_query)
       resolve(&Resolvers.list_observations/3)
     end
