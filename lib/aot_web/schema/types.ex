@@ -73,4 +73,14 @@ defmodule AotWeb.Schema.Types do
     field :ge, :naive_datetime
     field :eq, :naive_datetime
   end
+
+  input_object :geojson_polygon do
+    field :srid, :integer
+    field :coordinates, list_of(list_of(list_of(:float)))
+  end
+
+  input_object :geojson_point do
+    field :srid, :integer
+    field :coordinates, list_of(:float)
+  end
 end

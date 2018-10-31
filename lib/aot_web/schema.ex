@@ -8,13 +8,8 @@ defmodule AotWeb.Schema do
   query do
     @desc "Get all projects"
     field :projects, list_of(:project) do
-      arg(:name, :string_query)
-      arg(:archive_url, :string_query)
-      arg(:recent_url, :string_query)
-      arg(:first_observation, :naive_datetime_query)
-      arg(:latest_observation, :naive_datetime_query)
-      arg(:bbox, :string_query)
-      arg(:hull, :string_query)
+      arg(:intersects, :geojson_polygon)
+      arg(:contains, :geojson_point)
       resolve(&Resolvers.list_projects/3)
     end
 
