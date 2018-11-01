@@ -81,10 +81,7 @@ defmodule AotWeb.Testing.GraphqlTest do
       |> get("/graphql?query=#{query}")
       |> json_response(:ok)
 
-    [node | _] = response["data"]["nodes"]
-
     assert(length(response["data"]["nodes"]) == 91)
-    assert(node["id"] == "001e0610ba46")
   end
 
   test "filter nodes within crazy polygon query", %{conn: conn} do
