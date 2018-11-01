@@ -15,12 +15,8 @@ defmodule AotWeb.Schema do
 
     @desc "Get all nodes"
     field :nodes, list_of(:node) do
-      arg(:id, :string_query)
-      arg(:location, :string_query)
-      arg(:latitude, :float_query)
-      arg(:longitude, :float_query)
-      arg(:description, :string_query)
-      arg(:address, :string_query)
+      arg(:within, :geojson_polygon)
+      arg(:alive, :boolean)
       arg(:commissioned_on, :naive_datetime_query)
       arg(:decommissioned_on, :naive_datetime_query)
       resolve(&Resolvers.list_nodes/3)
@@ -43,6 +39,7 @@ defmodule AotWeb.Schema do
     field :observations, list_of(:observation) do
       arg(:timestamp, :naive_datetime_query)
       arg(:value, :float_query)
+      arg(:within, :geojson_polygon)
       resolve(&Resolvers.list_observations/3)
     end
   end

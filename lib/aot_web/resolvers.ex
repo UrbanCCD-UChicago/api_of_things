@@ -54,7 +54,19 @@ defmodule AotWeb.Resolvers do
   end
 
   defp format_arg({:within, geojson}) do
-    {:within, struct!(Geo.Polygon, geojson)}
+    coordinates = 
+      geojson.coordinates
+      |> List.first()
+      |> Enum.map(&List.to_tuple/1)
+    {:located_within, struct!(Geo.Polygon, %{geojson | coordinates: [coordinates]})}
+  end
+
+  defp format_arg({:alive, true}) do
+    {:assert_dead, true}
+  end
+
+  defp format_arg({:alive, false}) do
+    {:assert_dead, true}
   end
 
   defp format_arg({column, comparison}) do
