@@ -1,15 +1,4 @@
 defmodule AotWeb.Resolvers do
-
-  @doc """
-  Example of possible `args` value:
-
-      iex> %{
-      ...>   name: %{
-      ...>     eq: "Chicago"
-      ...>   }
-      ...> }
-
-  """
   def list_projects(_, args, _) do
     {:ok, args
       |> format_args()
@@ -67,6 +56,10 @@ defmodule AotWeb.Resolvers do
 
   defp format_arg({:alive, false}) do
     {:assert_dead, true}
+  end
+
+  defp format_arg({column, %{like: string}}) do
+    {column, string}
   end
 
   defp format_arg({column, comparison}) do

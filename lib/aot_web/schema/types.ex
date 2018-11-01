@@ -59,11 +59,7 @@ defmodule AotWeb.Schema.Types do
   end
 
   input_object :string_query do
-    field :lt, :string
-    field :le, :string
-    field :gt, :string
-    field :ge, :string
-    field :eq, :string
+    field :like, :string
   end
 
   input_object :naive_datetime_query do

@@ -209,20 +209,39 @@ defmodule AotWeb.Testing.GraphqlTest do
     query = 
       """
       {
-        nodes (within: {
-          srid: 4326
-          coordinates: [[
-            [-99.14, 35.74],
-            [-73.47, 35.74],
-            [-73.47, 49.61],
-            [-99.14, 49.61],
-            [-99.14, 35.74]
-          ]]
-        }) {
-          id
+        sensors (ontology: {like: "light"}) {
+          ontology
         }
       }
       """
+
+    response = 
+      conn
+      |> get("/graphql?query=#{query}")
+      |> json_response(:ok)
+
+    [sensor | _] = response["data"]["sensors"]
+
+    assert(length(response["data"]["sensors"]) == 5)
+    assert(sensor["ontology"] == "/sensing/physical/light")
+  end
+  
+  test "filter sensor by crazy string query of ontology", %{conn: conn} do
+    query = 
+      """
+      {
+        sensors (ontology: {like: "asdfasdf"}) {
+          ontology
+        }
+      }
+      """
+
+    response = 
+      conn
+      |> get("/graphql?query=#{query}")
+      |> json_response(:ok)
+
+    assert(length(response["data"]["sensors"]) == 0)
   end
 
   test "filter observations within polygon query", %{conn: conn} do
@@ -250,5 +269,32 @@ defmodule AotWeb.Testing.GraphqlTest do
       |> json_response(:ok)
 
     assert(length(response["data"]["observations"]) == 1491)
+  end
+
+  test "filter observations within crazy polygon query", %{conn: conn} do
+    query = 
+      """
+      {
+        observations (within: {
+          srid: 4326
+          coordinates: [[
+            [0, 35.74],
+            [1, 35.74],
+            [1, 49.61],
+            [0, 49.61],
+            [0, 35.74]
+          ]]
+        }) {
+          value
+        }
+      }
+      """
+
+    response = 
+      conn
+      |> get("/graphql?query=#{query}")
+      |> json_response(:ok)
+
+    assert(length(response["data"]["observations"]) == 0)
   end
 end

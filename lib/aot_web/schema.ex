@@ -25,13 +25,6 @@ defmodule AotWeb.Schema do
     @desc "Get all sensors"
     field :sensors, list_of(:sensor) do
       arg(:ontology, :string_query)
-      arg(:subsystem, :string_query)
-      arg(:sensor, :string_query)
-      arg(:parameter, :string_query)
-      arg(:uom, :string_query)
-      arg(:min, :float_query)
-      arg(:max, :float_query)
-      arg(:data_sheet, :string_query)
       resolve(&Resolvers.list_sensors/3)
     end
 
