@@ -14,8 +14,7 @@ config :logger, :console,
   level: :debug
 
 # Configures regularly scheduled jobs
-config :aot, AotJobs.Scheduler,
-  jobs: []
+config :aot, AotJobs.Scheduler, jobs: []
 
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.

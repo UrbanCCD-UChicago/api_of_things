@@ -1,7 +1,7 @@
 defmodule Aot.Mixfile do
   use Mix.Project
 
-  @version "0.3.3"
+  @version "0.4.0"
 
   def project do
     [
@@ -54,6 +54,12 @@ defmodule Aot.Mixfile do
 
       # releases
       {:distillery, "~> 1.5"},
+
+      # graphql
+      {:absinthe, "~> 1.4"},
+      {:absinthe_plug, "~> 1.4"},
+      {:dataloader, "~> 1.0.0"},
+
       {:sentry, "~> 6.4"}
     ]
   end
