@@ -16,7 +16,7 @@ defmodule AotWeb.Schema.Types do
   end
 
   object :node do
-    field :id, :string
+    field :vsn, :string
     field :location, :string
     field :latitude, :float
     field :longitude, :float
