@@ -71,7 +71,7 @@ defmodule AotWeb.Testing.GraphqlTest do
             [-99.14, 35.74]
           ]]
         }) {
-          id
+          vsn
         }
       }
       """
@@ -98,7 +98,7 @@ defmodule AotWeb.Testing.GraphqlTest do
             [0, 35.74]
           ]]
         }) {
-          id
+          vsn
         }
       }
       """
@@ -116,7 +116,7 @@ defmodule AotWeb.Testing.GraphqlTest do
       """
       {
         nodes (commissioned_on: {lt: "2000-01-01 00:00:00"}) {
-          id
+          vsn
         }
       }
       """
@@ -134,7 +134,7 @@ defmodule AotWeb.Testing.GraphqlTest do
       """
       {
         nodes (decommissioned_on: {lt: "2000-01-01 00:00:00"}) {
-          id
+          vsn
         }
       }
       """
@@ -152,7 +152,7 @@ defmodule AotWeb.Testing.GraphqlTest do
       """
       {
         nodes {
-          id
+          vsn
         }
       }
       """
@@ -170,7 +170,7 @@ defmodule AotWeb.Testing.GraphqlTest do
       """
       {
         nodes (alive: true) {
-          id
+          vsn
         }
       }
       """
@@ -189,7 +189,7 @@ defmodule AotWeb.Testing.GraphqlTest do
       """
       {
         nodes (alive: false) {
-          id
+          vsn
         }
       }
       """
