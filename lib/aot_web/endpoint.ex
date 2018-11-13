@@ -35,6 +35,7 @@ defmodule AotWeb.Endpoint do
     key: "_aot_key",
     signing_salt: "+Ibz0hT+"
 
+  plug CORSPlug
   plug AotWeb.Router
 
   @doc """

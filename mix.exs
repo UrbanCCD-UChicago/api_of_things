@@ -1,7 +1,7 @@
 defmodule Aot.Mixfile do
   use Mix.Project
 
-  @version "0.4.0"
+  @version "0.4.1"
 
   def project do
     [
@@ -48,6 +48,7 @@ defmodule Aot.Mixfile do
       {:briefly, "~> 0.3.0"},
       {:nimble_csv, "~> 0.4.0"},
       {:quantum, "~> 2.3"},
+      {:cors_plug, "~> 2.0"},
 
       # testing
       {:mock, "~> 0.3.2", only: [:test, :travis]},

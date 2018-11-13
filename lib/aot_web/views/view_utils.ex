@@ -9,7 +9,7 @@ defmodule AotWeb.ViewUtils do
   """
   @spec encode_geom(Geo.Point.t() | Geo.Polygon.t() | nil) :: map() | nil
   def encode_geom(nil), do: nil
-  def encode_geom(geom), do: %{type: "Feature", geometry: Geo.JSON.encode!(geom)}
+  def encode_geom(geom), do: Geo.JSON.encode!(geom)
 
   @doc """
   """
