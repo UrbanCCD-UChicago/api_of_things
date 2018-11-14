@@ -160,15 +160,13 @@ defmodule Aot.ObservationQueries do
 
   def value(query, :first),
     do: from obs in query,
-      select: %{
-        first: fragment("first(value, timestamp)")
-      }
+      order_by: [desc: obs.timestamp],
+      limit: 1
 
   def value(query, :last),
     do: from obs in query,
-      select: %{
-        last: fragment("last(value, timestamp)")
-      }
+      order_by: [asc: obs.timestamp],
+      limit: 1
 
   def value(query, {:count, grouper}),
     do: from obs in query,

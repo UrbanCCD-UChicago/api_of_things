@@ -33,13 +33,13 @@ defmodule Aot.Testing.ObservationQueriesTest do
     end
 
     test "first" do
-      [%{first: first_obs}] = ObservationActions.list(value: :first)
-      assert is_float(first_obs)
+      obs = ObservationActions.list(value: :first)
+      assert length(obs) == 1
     end
 
     test "last" do
-      [%{last: last_obs}] = ObservationActions.list(value: :last)
-      assert is_float(last_obs)
+      obs = ObservationActions.list(value: :last)
+      assert length(obs) == 1
     end
 
     test "count" do

@@ -112,6 +112,10 @@ defmodule AotWeb.ControllerUtils do
   defp prev_link(url_func, controller_func, %Conn{params: %{"page" => page} = params} = conn),
     do: url_func.(conn, controller_func, Map.put(params, "page", page - 1))
 
+  defp prev_link(_, _, _), do: nil
+
   defp next_link(url_func, controller_func, %Conn{params: %{"page" => page} = params} = conn),
     do: url_func.(conn, controller_func, Map.put(params, "page", page + 1))
+
+  defp next_link(_, _, _), do: nil
 end

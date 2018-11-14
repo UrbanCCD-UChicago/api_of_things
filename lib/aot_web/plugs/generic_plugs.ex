@@ -44,22 +44,48 @@ defmodule AotWeb.GenericPlugs do
     end
   end
 
+  @skip_default_pagination [
+    value: :first,
+    value: :last
+  ]
+
   @doc """
   Validates page number and size parameters and then applies
   them to the connection for use as pagination markers when
   building a query.
   """
   @spec paginate(Conn.t(), any()) :: Conn.t()
-  def paginate(conn, opts) do
-    conn =
-      conn
-      |> validate_page(opts)
-      |> validate_size(opts)
+  def paginate(%Conn{assigns: assigns} = conn, opts) do
+    skip? =
+      @skip_default_pagination
+      |> Enum.reduce(false, fn {key, value}, acc ->
+        case Map.get(assigns, key, :empty) do
+          :empty ->
+            acc
 
-    page = Map.get(conn.params, "page")
-    size = Map.get(conn.params, "size")
+          assignment ->
+            case assignment == value do
+              true -> true
+              false -> acc
+            end
+        end
+      end)
 
-    assign(conn, :paginate, {page, size})
+    case skip? do
+      true ->
+        conn
+
+      false ->
+        conn =
+          conn
+          |> validate_page(opts)
+          |> validate_size(opts)
+
+        page = Map.get(conn.params, "page")
+        size = Map.get(conn.params, "size")
+
+        assign(conn, :paginate, {page, size})
+    end
   end
 
   @page_default 1
@@ -121,6 +147,11 @@ defmodule AotWeb.GenericPlugs do
   @order_error "order must follow `dir:field` format where `dir` is either 'asc' or 'desc'"
   @order_field_error "invalid field for ordering"
 
+  @skip_default_order [
+    value: :first,
+    value: :last
+  ]
+
   @doc """
   Validates the format of a given ordering parameter and applies
   it to the connection. If an order is not specified, it will
@@ -148,9 +179,30 @@ defmodule AotWeb.GenericPlugs do
     end
   end
 
-  def order(conn, opts) do
-    %Conn{conn | params: Map.put(conn.params, "order", opts[:default])}
-    |> order(opts)
+  def order(%Conn{assigns: assigns} = conn, opts) do
+    skip? =
+      @skip_default_order
+      |> Enum.reduce(false, fn {key, value}, acc ->
+        case Map.get(assigns, key, :empty) do
+          :empty ->
+            acc
+
+          assignment ->
+            case assignment == value do
+              true -> true
+              false -> acc
+            end
+        end
+      end)
+
+    case skip? do
+      true ->
+        conn
+
+      false ->
+        %Conn{conn | params: Map.put(conn.params, "order", opts[:default])}
+        |> order(opts)
+    end
   end
 
   @ts_regex ~r/^lt|le|eq|ge|gt\:.+/i
