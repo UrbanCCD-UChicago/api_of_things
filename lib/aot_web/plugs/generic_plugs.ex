@@ -13,6 +13,45 @@ defmodule AotWeb.GenericPlugs do
   alias Plug.Conn
 
   @doc """
+  Ensures that passed parameters that should be formatted as
+  lists are in fact formatted as lists. This guards against
+  errors that would arrise from passing something like
+
+      /nodes?within_networks_exact=chicago
+
+  which would produce the parameters
+
+      %{"within_networks_exact" => "chicago"}
+
+  and corrects it to be
+
+      %{"within_networks_exact" => ["chicago"]}
+
+  ## Example
+
+      plug :ensure_list, params: ["within_networks", "within_networks_exact"]
+  """
+  @spec ensure_list(Conn.t(), keyword()) :: Conn.t()
+  def ensure_list(%Conn{params: params} = conn, opts) do
+    params =
+      opts[:params]
+      |> Enum.reduce(%{}, fn key, acc ->
+        value = Map.get(params, key)
+        cond do
+          is_nil(value)   -> acc
+          is_list(value)  -> acc
+          true            -> Map.put(acc, key, [value])
+        end
+      end)
+      |> Enum.reduce(params, fn {key, value}, acc ->
+        Map.delete(acc, key)
+        |> Map.put(key, value)
+      end)
+
+    %Conn{conn | params: params}
+  end
+
+  @doc """
   A generic little catch all that let's you configure an arbitrary
   plug to check for the existance of a parameter. If it is in the
   query params, the value is plucked out and assigned to the atomized
