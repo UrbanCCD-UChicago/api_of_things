@@ -3,6 +3,37 @@ defmodule AotWeb.GenericPlugsTest do
   use Aot.Testing.DataCase
   use AotWeb.Testing.ConnCase
 
+  describe "ensure_list" do
+    test "when no param is found, nothing is updated", %{conn: conn} do
+      %{"meta" => %{"query" => query}} =
+        conn
+        |> get(node_path(conn, :index))
+        |> json_response(:ok)
+
+      refute Map.has_key?(query, "within_projects")
+    end
+
+    test "updates single value params to lists", %{conn: conn} do
+      %{"meta" => %{"query" => query}} =
+        conn
+        |> get(node_path(conn, :index, within_projects: "chicago"))
+        |> json_response(:ok)
+
+      assert Map.has_key?(query, "within_projects")
+      assert is_list(query["within_projects"])
+    end
+
+    test "passes through good list values", %{conn: conn} do
+      %{"meta" => %{"query" => query}} =
+        conn
+        |> get(node_path(conn, :index, within_projects: ["chicago"]))
+        |> json_response(:ok)
+
+      assert Map.has_key?(query, "within_projects")
+      assert is_list(query["within_projects"])
+    end
+  end
+
   describe "apply_if_exists" do
     test "when no param is found, nothing is assigned", %{conn: conn} do
       %{"data" => data} =

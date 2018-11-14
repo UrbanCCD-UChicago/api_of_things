@@ -14,6 +14,7 @@ defmodule AotWeb.NodeController do
 
   action_fallback AotWeb.FallbackController
 
+  plug :ensure_list, params: ~w(within_projects within_projects_exact has_sensors has_sensors_exact)
   plug :assign_if_exists, param: "include_projects", value_override: true
   plug :assign_if_exists, param: "include_sensors", value_override: true
   plug :assign_if_exists, param: "assert_alive", value_override: true
