@@ -19,6 +19,7 @@ defmodule AotWeb.RawObservationController do
 
   alias Aot.RawObservationActions
 
+  plug :ensure_list, params: ~w(of_projects from_nodes by_sensors)
   plug :assign_if_exists, param: "embed_node", value_override: true
   plug :assign_if_exists, param: "embed_sensor", value_override: true
   plug :assign_if_exists, param: "of_project"
