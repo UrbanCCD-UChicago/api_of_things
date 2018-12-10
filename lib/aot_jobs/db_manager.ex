@@ -13,7 +13,7 @@ defmodule AotJobs.DBManager do
     _ = Logger.info("dropping observations older than #{interval}")
 
     sql = """
-    SELECT drop_chunks('#{interval}', table_name => 'observations');
+    SELECT drop_chunks(interval '#{interval}', table_name => 'observations');
     """
 
     _ = Repo.query!(sql)
@@ -27,7 +27,7 @@ defmodule AotJobs.DBManager do
     _ = Logger.info("dropping raw_observations older than #{interval}")
 
     sql = """
-    SELECT drop_chunks('#{interval}', table_name => 'raw_observations');
+    SELECT drop_chunks(interval '#{interval}', table_name => 'raw_observations');
     """
 
     _ = Repo.query!(sql)
