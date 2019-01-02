@@ -136,6 +136,15 @@ The following table lists query parameters that can be applied to every endpoint
 | page          | A positive integer                    | `1` or `200`      | Used with the _size_ parameter to page through list endpoint results; default is `1`                              |
 | size          | A positive integer not exceeding 5,00 | `20` or `1000`    | Used with the _page_ parameter to page through list endpoint results; default is `200`                            |
 
+**NOTE:** there are some specific params that perform aggregates and _do not_ allow
+for `order`, `size` and `page` query params. These params are:
+
+- `as_histogram`
+- `as_time_buckets`
+
+These parameters default to ordering the results by time group in ascending order, with
+the full result set provided in one page. All other parameters can be applied.
+
 # API Details and Examples
 
 ## Project Endpoint [/projects{?order,page,size,format,include_nodes,include_sensors,has_node,has_nodes,has_nodes_exact,has_sensor,has_sensors,has_sensors_exact,bbox}]
