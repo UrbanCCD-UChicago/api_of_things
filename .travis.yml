@@ -1,7 +1,7 @@
 sudo: required
 
 language: elixir
-elixir: "1.8.0"
+elixir: "1.8.1"
 otp_release: "21.2.4"
 
 services:
