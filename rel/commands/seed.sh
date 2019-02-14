@@ -1,3 +1,2 @@
 #!/bin/sh
-
-$RELEASE_ROOT_DIR/bin/aot command Elixir.Aot.ReleaseTasks seed
+release_ctl eval --mfa "Aot.ReleaseTasks.seed/1" --argv -- "$@"

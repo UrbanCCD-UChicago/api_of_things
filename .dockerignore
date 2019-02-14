@@ -9,7 +9,9 @@ Dockerfile
 Makefile
 README.md
 _build
+build.sh
 apiary.md
 assets/node_modules/
+deploy.sh
 deps
 test

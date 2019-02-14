@@ -50,8 +50,6 @@ release :aot do
     :runtime_tools
   ]
   set commands: [
-    migrate: "rel/commands/migrate.sh",
-    seed: "rel/commands/seed.sh",
-    rollback: "rel/commands/rollback.sh"
+    "migrate": "rel/commands/migrate.sh"
   ]
 end

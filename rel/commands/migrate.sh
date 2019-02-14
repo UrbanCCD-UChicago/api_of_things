@@ -1,3 +1,2 @@
 #!/bin/sh
-
-$RELEASE_ROOT_DIR/bin/aot command Elixir.Aot.ReleaseTasks migrate
+release_ctl eval --mfa "Aot.ReleaseTasks.migrate/1" --argv -- "$@"

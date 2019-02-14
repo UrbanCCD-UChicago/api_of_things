@@ -74,7 +74,7 @@ defmodule Aot.MixProject do
       {:sentry, "~> 6.4"},
 
       # releases
-      {:distillery, "~> 1.5"}
+      {:distillery, "~> 2.0"}
     ]
   end
 
