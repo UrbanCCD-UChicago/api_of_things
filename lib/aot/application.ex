@@ -1,4 +1,6 @@
 defmodule Aot.Application do
+  @moduledoc false
+
   use Application
 
   def start(_type, _args) do
@@ -11,7 +13,6 @@ defmodule Aot.Application do
       # Start the endpoint when the application starts
       supervisor(AotWeb.Endpoint, []),
 
-      # Stat the job scheduler
       worker(AotJobs.Scheduler, [])
     ]
 

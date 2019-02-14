@@ -1,32 +1,35 @@
 defmodule AotWeb.Router do
   use AotWeb, :router
 
-  # send errors to sentry
-  use Plug.ErrorHandler
-  use Sentry.Plug
-
+  pipeline :browser do
+    plug :accepts, ["html"]
+    plug :fetch_session
+    plug :fetch_flash
+    plug :protect_from_forgery
+    plug :put_secure_browser_headers
+  end
 
   pipeline :api do
-    plug(:accepts, ["json"])
+    plug :accepts, ["json"]
+    plug Hammer.Plug, rate_limit: {"api", 300_000, 500}, by: :ip
   end
 
   scope "/", AotWeb do
-    get "/", DocsController, :apiary
-    get "/docs", DocsController, :apiary
+    pipe_through :browser
+
+    get "/", PageController, :index
+    get "/docs", PageController, :apiary
+    get "/ws-demo", PageController, :ws_demo
   end
 
   scope "/api", AotWeb do
     pipe_through :api
 
-    # docs paths
-    get "/", DocsController, :json_links
-    get "/docs", DocsController, :json_links
-
+    get "/", PageController, :api_root
     resources "/projects", ProjectController, only: [:index, :show]
     resources "/nodes", NodeController, only: [:index, :show]
     resources "/sensors", SensorController, only: [:index, :show]
     resources "/observations", ObservationController, only: [:index]
-    resources "/raw-observations", RawObservationController, only: [:index]
   end
 
   scope "/graphql" do

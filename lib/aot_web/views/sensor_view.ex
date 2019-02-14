@@ -1,12 +1,9 @@
 defmodule AotWeb.SensorView do
   use AotWeb, :view
-
-  import AotWeb.ViewUtils
-
   alias AotWeb.SensorView
 
   def render("index.json", %{sensors: sensors, meta: meta}) do
-    %{meta: meta, data: render_many(sensors, SensorView, "sensor.json")}
+    %{data: render_many(sensors, SensorView, "sensor.json"), meta: meta}
   end
 
   def render("show.json", %{sensor: sensor}) do
@@ -16,16 +13,10 @@ defmodule AotWeb.SensorView do
   def render("sensor.json", %{sensor: sensor}) do
     %{
       path: sensor.path,
-      ontology: sensor.ontology,
-      subsystem: sensor.subsystem,
-      sensor: sensor.sensor,
-      parameter: sensor.parameter,
       uom: sensor.uom,
       min: sensor.min,
       max: sensor.max,
       data_sheet: sensor.data_sheet
     }
-    |> nest_related(:nodes, sensor.nodes, AotWeb.NodeView, "node.json")
-    |> nest_related(:projects, sensor.projects, AotWeb.ProjectView, "project.json")
   end
 end

@@ -1,69 +1,22 @@
-defmodule AotWeb.Testing.NodePlugsTest do
-  use Aot.Testing.BaseCase
-  use Aot.Testing.DataCase
-  use AotWeb.Testing.ConnCase
+defmodule AotWeb.NodePlugsTest do
+  use AotWeb.ConnCase, async: true
 
-  describe "location=within:" do
-    test "a polygon", %{conn: conn} do
-      poly =
-        %Geo.Polygon{
-          srid: 4326,
-          coordinates: [[
-            {-88, 42},
-            {-88, 40},
-            {-86, 40},
-            {-86, 42},
-            {-88, 42}
-          ]]
-        }
-        |> Geo.JSON.encode!()
-        |> Jason.encode!()
-
+  @tag add2ctx: :nodes
+  test "with sensors", %{conn: conn, n004: node} do
+    %{"data" => data} =
       conn
-      |> get(node_path(conn, :index, location: "within:#{poly}"))
+      |> get(Routes.node_path(conn, :show, node, with_sensors: "true"))
       |> json_response(:ok)
-    end
 
-    test "a bad value will 400", %{conn: conn} do
-      conn
-      |> get(node_path(conn, :index, location: "within:chicago"))
-      |> json_response(:bad_request)
-    end
-  end
+    assert is_map(data)
+    assert Map.has_key?(data, "vsn")
+    assert Map.has_key?(data, "location")
+    assert Map.has_key?(data, "address")
+    assert Map.has_key?(data, "description")
+    assert Map.has_key?(data, "sensors")
 
-  describe "location=distance:" do
-    test "meters and point", %{conn: conn} do
-      pt =
-        %Geo.Point{srid: 4326, coordinates: {-87, 41}}
-        |> Geo.JSON.encode!()
-        |> Jason.encode!()
-
-      conn
-      |> get(node_path(conn, :index, location: "distance:1000:#{pt}"))
-      |> json_response(:ok)
-    end
-
-    test "missing meters will 400", %{conn: conn} do
-      pt =
-        %Geo.Point{srid: 4326, coordinates: {-87, 41}}
-        |> Geo.JSON.encode!()
-        |> Jason.encode!()
-
-      conn
-      |> get(node_path(conn, :index, location: "distance:#{pt}"))
-      |> json_response(:bad_request)
-    end
-
-    test "missing point will 400", %{conn: conn} do
-      conn
-      |> get(node_path(conn, :index, location: "distance:1000"))
-      |> json_response(:bad_request)
-    end
-
-    test "bad point will 400", %{conn: conn} do
-      conn
-      |> get(node_path(conn, :index, location: "distance:1000:here"))
-      |> json_response(:bad_request)
-    end
+    sensors = data["sensors"]
+    assert is_list(sensors)
+    assert length(sensors) == 24
   end
 end

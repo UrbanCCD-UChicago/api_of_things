@@ -8,23 +8,18 @@ defmodule AotWeb.Schema do
   query do
     @desc "Get all projects"
     field :projects, list_of(:project) do
-      arg(:intersects, :geojson_polygon)
-      arg(:contains, :geojson_point)
       resolve(&Resolvers.list_projects/3)
     end
 
     @desc "Get all nodes"
     field :nodes, list_of(:node) do
       arg(:within, :geojson_polygon)
-      arg(:alive, :boolean)
-      arg(:commissioned_on, :naive_datetime_query)
-      arg(:decommissioned_on, :naive_datetime_query)
+      arg(:dwithin, :geojson_polygon)
       resolve(&Resolvers.list_nodes/3)
     end
 
     @desc "Get all sensors"
     field :sensors, list_of(:sensor) do
-      arg(:ontology, :string_query)
       resolve(&Resolvers.list_sensors/3)
     end
 
@@ -33,6 +28,7 @@ defmodule AotWeb.Schema do
       arg(:timestamp, :naive_datetime_query)
       arg(:value, :float_query)
       arg(:within, :geojson_polygon)
+      arg(:dwithin, :geojson_polygon)
       resolve(&Resolvers.list_observations/3)
     end
   end

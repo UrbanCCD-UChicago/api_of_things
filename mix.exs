@@ -1,13 +1,11 @@
-defmodule Aot.Mixfile do
+defmodule Aot.MixProject do
   use Mix.Project
-
-  @version "0.4.3"
 
   def project do
     [
       app: :aot,
-      version: @version,
-      elixir: "~> 1.7",
+      version: "2.0.0",
+      elixir: "~> 1.8",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
@@ -16,60 +14,81 @@ defmodule Aot.Mixfile do
     ]
   end
 
+  # Configuration for the OTP application.
+  #
+  # Type `mix help compile.app` for more information.
   def application do
     [
       mod: {Aot.Application, []},
-      extra_applications: [:logger, :runtime_tools, :briefly, :sentry]
+      extra_applications: [:logger, :runtime_tools]
     ]
   end
 
-  defp elixirc_paths(env) when env in [:test, :travis], do: ["lib", "test/support"]
+  # Specifies which paths to compile per environment.
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
+  # Specifies your project dependencies.
+  #
+  # Type `mix help deps` for examples and options.
   defp deps do
     [
-      # phoenix deps
-      {:phoenix, "~> 1.3.4"},
-      {:phoenix_pubsub, "~> 1.0"},
+      {:phoenix, "~> 1.4.0"},
+      {:phoenix_pubsub, "~> 1.1"},
+      {:phoenix_ecto, "~> 4.0"},
+      {:ecto_sql, "~> 3.0"},
+      {:postgrex, ">= 0.0.0"},
+      {:phoenix_html, "~> 2.11"},
+      {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:gettext, "~> 0.11"},
-      {:cowboy, "~> 1.0"},
+      {:jason, "~> 1.0"},
+      {:plug_cowboy, "~> 2.0"},
 
-      # database deps
-      {:ecto_sql, github: "elixir-ecto/ecto_sql", branch: "master"},
-      {:postgrex, github: "elixir-ecto/postgrex", branch: "master", override: true},
+      # database
       {:geo_postgis, "~> 2.1"},
 
       # utils
-      {:slugify, "~> 1.1"},
+      {:simple_slug, "~> 0.1.1"},
       {:csv, "~> 2.1"},
       {:timex, "~> 3.4"},
-      {:jason, "~> 1.1"},
       {:httpoison, "~> 1.3"},
       {:briefly, "~> 0.3.0"},
       {:nimble_csv, "~> 0.4.0"},
       {:quantum, "~> 2.3"},
       {:cors_plug, "~> 2.0"},
 
-      # testing
-      {:mock, "~> 0.3.2", only: [:test, :travis]},
-
-      # releases
-      {:distillery, "~> 1.5"},
+      # rate limiting
+      {:hammer, "~> 6.0"},
+      {:hammer_plug, "~> 2.0"},
 
       # graphql
       {:absinthe, "~> 1.4"},
       {:absinthe_plug, "~> 1.4"},
       {:dataloader, "~> 1.0.0"},
 
-      {:sentry, "~> 6.4"}
+      # testing
+      {:meck, "~> 0.8.13", override: true},
+      {:mock, "~> 0.3.2", only: [:test, :travis]},
+
+      # error reporting
+      {:sentry, "~> 6.4"},
+
+      # releases
+      {:distillery, "~> 1.5"}
     ]
   end
 
+  # Aliases are shortcuts or tasks specific to the current project.
+  # For example, to create, migrate and run the seeds file at once:
+  #
+  #     $ mix ecto.setup
+  #
+  # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.drop --quiet", "ecto.create --quiet", "ecto.migrate", "test"]
+      test: ["ecto.reset", "test"]
     ]
   end
 end

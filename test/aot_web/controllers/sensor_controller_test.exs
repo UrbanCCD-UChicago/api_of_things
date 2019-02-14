@@ -1,36 +1,11 @@
-defmodule AotWeb.Testing.SensorControllerTest do
-  use Aot.Testing.BaseCase
-  use Aot.Testing.DataCase
-  use AotWeb.Testing.ConnCase
-
-  describe "index" do
-    test "response data should be an array of objects", %{conn: conn} do
-      %{"data" => data} =
-        conn
-        |> get(sensor_path(conn, :index))
-        |> json_response(:ok)
-
-      assert is_list(data)
-
-      data
-      |> Enum.each(& assert is_map(&1))
-    end
-  end
+defmodule AotWeb.SensorControllerTest do
+  use AotWeb.ConnCase, async: true
 
   describe "show" do
-    @tag add2ctx: :sensors
-    test "response data should be a single object", %{conn: conn, h2s_concentration: sensor} do
-      %{"data" => data} =
-        conn
-        |> get(sensor_path(conn, :show, sensor))
-        |> json_response(:ok)
-
-      assert is_map(data)
-    end
-
-    test "using an unknown path should 404", %{conn: conn} do
+    @tag add2ctx: [:projects, :sensors]
+    test "an unknown slug will 404", %{conn: conn} do
       conn
-      |> get(sensor_path(conn, :show, "alphasense.atm_concentration.co"))
+      |> get(Routes.sensor_path(conn, :show, "dunno"))
       |> json_response(:not_found)
     end
   end

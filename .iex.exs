@@ -1,5 +1,4 @@
-alias Aot.{Repo, ProjectActions}
-alias AotJobs.{DBManager, Importer}
-import Ecto.Query
+alias Aot.Projects
+alias AotJobs.Importer
 
-{:ok, chi} = ProjectActions.get("chicago")
+{:ok, chi} = Projects.get_project "chicago"

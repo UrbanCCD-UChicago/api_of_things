@@ -1,10 +1,10 @@
 sudo: required
 
 language: elixir
-elixir: "1.7.3"
-otp_release: "21.1.1"
+elixir: "1.8.0"
+otp_release: "21.2.4"
 
-services: 
+services:
   - docker
 
 before_install:

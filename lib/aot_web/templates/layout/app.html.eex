@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>API of Things: The official API of the Array of Things project</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <link rel="stylesheet" href="<%= Routes.static_path(@conn, "/css/app.css") %>"/>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container">
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="<%= Routes.page_path(@conn, :index) %>">Home <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="<%= Routes.page_path(@conn, :apiary) %>">API Docs</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="<%= Routes.page_path(@conn, :api_root) %>">API Root</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/graphql/i">GraphQL Workspace</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="<%= Routes.page_path(@conn, :ws_demo) %>">Web Socket Example</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <main role="main" class="container">
+      <%= unless is_nil(get_flash(@conn, :info)) do %>
+        <p class="alert alert-success" role="alert"><%= get_flash(@conn, :info) %></p>
+      <% end %>
+      <%= unless is_nil(get_flash(@conn, :error)) do %>
+        <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
+      <% end %>
+      <%= render @view_module, @view_template, assigns %>
+    </main>
+
+    <footer class="navbar-light bg-light">
+      <div class="container">
+        <div class="row">
+          <div class="col">
+            <h4>API Endpoints</h4>
+            <a href="<%= Routes.project_path(@conn, :index) %>"><i class="fas fa-city"></i> Projects</a><br>
+            <a href="<%= Routes.sensor_path(@conn, :index) %>"><i class="fas fa-thermometer-three-quarters"></i> Sensors</a><br>
+            <a href="<%= Routes.node_path(@conn, :index) %>"><i class="fas fa-map-marker-alt"></i> Nodes</a><br>
+            <a href="<%= Routes.observation_path(@conn, :index) %>"><i class="fas fa-database"></i> Observations</a>
+          </div>
+
+          <div class="col">
+            <h4>Links</h4>
+            <a href="https://github.com/UrbanCCD-UChicago/api_of_things"><i class="fab fa-github"></i> GitHub</a><br>
+            <a href="https://arrayofthings.docs.apiary.io/#"><i class="fas fa-book"></i> API Documentation</a>
+          </div>
+
+          <div class="col">
+            <h4>Contact Info</h4>
+            <a href="mailto:plenario@uchicago.edu"><i class="fas fa-at"></i> Email</a><br>
+            <a href="https://twitter.com/arrayofthings"><i class="fab fa-twitter"></i> Twitter</a><br>
+            <a href="https://medium.com/array-of-things"><i class="fab fa-medium-m"></i> Medium</a><br>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.js") %>"></script>
+  </body>
+</html>

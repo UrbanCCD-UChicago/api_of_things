@@ -5,16 +5,16 @@ defmodule AotWeb.FallbackController do
   See `Phoenix.Controller.action_fallback/1` for more details.
   """
   use AotWeb, :controller
+  import AotWeb.ControllerUtils
 
   def call(conn, {:error, %Ecto.Changeset{} = changeset}) do
     conn
     |> put_status(:unprocessable_entity)
-    |> render(AotWeb.ChangesetView, "error.json", changeset: changeset)
+    |> put_view(AotWeb.ChangesetView)
+    |> render("error.json", changeset: changeset)
   end
 
   def call(conn, {:error, :not_found}) do
-    conn
-    |> put_status(:not_found)
-    |> render(AotWeb.ErrorView, :"404", [])
+    halt_with(conn, :not_found)
   end
 end

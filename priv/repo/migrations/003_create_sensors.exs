@@ -3,20 +3,13 @@ defmodule Aot.Repo.Migrations.CreateSensors do
 
   def change do
     create table(:sensors, primary_key: false) do
-      add :path, :text, primary_key: true
-      add :ontology, :text, null: false
-      add :subsystem, :text, null: false
-      add :sensor, :text, null: false
-      add :parameter, :text, null: false
-      add :uom, :text, default: nil
+      add :path, :string, primary_key: true
+      add :uom, :string, default: nil
       add :min, :float, default: nil
       add :max, :float, default: nil
-      add :data_sheet, :text, default: nil
+      add :data_sheet, :string, default: nil
     end
 
-    create index(:sensors, :ontology)
-    create index(:sensors, :subsystem)
-    create index(:sensors, :sensor)
-    create index(:sensors, :parameter)
+    create unique_index :sensors, :path
   end
 end

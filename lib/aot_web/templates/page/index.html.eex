@@ -1,0 +1,92 @@
+<header>
+  <div class="header-img">
+    <img class="img-responsive" src='<%= Routes.static_path(@conn, "/images/logo.png") %>' />
+  </div>
+</header>
+
+<section class="row">
+  <h2>What is the Array of Things?</h2>
+  <p>
+    What if a light pole told you to watch out for an icy patch of sidewalk ahead? What if an app told you the most
+    populated route for a late-night walk to the El station by yourself? What if you could get weather and air quality
+    information block-by-block, instead of city-by-city?
+  </p>
+  <p>
+    The Array of Things project, AoT, is an urban sensing network of programmable, modular nodes that is being installed around
+    cities to collect real-time data on the cities’ environment, infrastructure, and activity for research and public use.
+    AoT will essentially serve as a “fitness tracker” for the communities where nodes have been deployed, measuring factors
+    that impact livability in cities such as climate, air quality, and noise.
+  </p>
+</section>
+
+<section class="row">
+  <h2>What types of data are collected, what's made available, and how often is it refreshed?</h2>
+
+  <div class="container">
+    <div class="row">
+      <div class="col">
+        <h4>Environmental Data</h4>
+        <p>
+          There is a wide range of environmental data points that are collected by the nodes. These observations are present
+          in almost all nodes, and they are considered stable. The observations that are captured in this group include:
+        </p>
+        <ul>
+          <li>Temperature, ambient and inside the node</li>
+          <li>Humidity, ambient and inside the node</li>
+          <li>Barometric pressure</li>
+          <li>Ambient, ultraviolet and infrared light</li>
+          <li>Sound pressure</li>
+          <li>Vibration</li>
+          <li>Magnetic field</li>
+        </ul>
+      </div>
+
+      <div class="col">
+        <h4>Air Quality Data</h4>
+        <p>
+          Air qu​ality data is concerned with measuring gas and particulate matter concentrations in the air. Some of the
+          observations have been thoroughly calibrated and are mostly stable, while some others in this category are still
+          under active development. The observations that are captured in this group include:
+        </p>
+        <ul>
+          <li>Carbon monoxide</li>
+          <li>Ozone</li>
+          <li>Sulfur dioxide</li>
+          <li>Nitrogen dioxide</li>
+          <li>Hydrogen sulfide</li>
+          <li>Total reducing gases</li>
+          <li>Total oxidizing gases</li>
+          <li>PM2.5 </li>
+          <li>PM10</li>
+        </ul>
+      </div>
+
+      <div class="col">
+        <h4>Image Processing</h4>
+        <p>
+          In add​ition to the sensors onboard the nodes, there are two cameras on each node. The cameras are used exclusively
+          by software that runs on a special board within the node, the edge processor. The software use the image data to make
+          aggregate and statistical computations: the raw images are never sent to any non-ephemeral storage and never leave
+          the node. The information gathered by the cameras include:
+        </p>
+        <ul>
+          <li>Vehicle count</li>
+          <li>Pedestrian count</li>
+          <li>Flooding d​etection</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <p>
+    The data held by the API is truncated after one week: each observation has only a 7 day shelf life. If you need data
+    that reaches further back then please use our archival site: <a href="https://afb.plenar.io/" target="_blank">https://afb.plenar.io/</a>.
+  </p>
+
+  <p>
+    It's also important to note that data is refreshed/ingested every 5 minutes. While observations are recorded typically
+    in 30 second intervals we only flugh those in 5 minute chunks. As a result, we rate limit the API so that you can only
+    perform <strong>1,000 calls every 5 minutes</strong>.
+  </p>
+</section>
+

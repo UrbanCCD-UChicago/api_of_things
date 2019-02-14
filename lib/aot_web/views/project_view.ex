@@ -1,45 +1,34 @@
 defmodule AotWeb.ProjectView do
   use AotWeb, :view
-
   import AotWeb.ViewUtils
-
   alias AotWeb.ProjectView
 
-  def render("index.json", %{projects: projects, resp_format: fmt, meta: meta}) do
-    %{meta: meta, data: render_many(projects, ProjectView, "project.#{fmt}")}
+  def render("index.json", %{projects: projects, format: format, meta: meta}) do
+    %{data: render_many(projects, ProjectView, "project.#{format}"), meta: meta}
   end
 
-  def render("show.json", %{project: project, resp_format: fmt}) do
-    %{data: render_one(project, ProjectView, "project.#{fmt}")}
+  def render("show.json", %{project: project, format: format}) do
+    %{data: render_one(project, ProjectView, "project.#{format}")}
   end
 
-  def render("project.json", %{project: net}) do
+  def render("project.json", %{project: project}) do
     %{
-      name: net.name,
-      slug: net.slug,
-      archive_url: net.archive_url,
-      first_observation: net.first_observation,
-      latest_observation: net.latest_observation,
-      bbox: encode_geom(net.bbox),
-      hull: encode_geom(net.hull)
+      name: project.name,
+      slug: project.slug,
+      archive_url: project.archive_url,
+      hull: encode_geom(project.hull)
     }
-    |> nest_related(:nodes, net.nodes, AotWeb.NodeView, "node.json")
-    |> nest_related(:sensors, net.sensors, AotWeb.SensorView, "sensor.json")
   end
 
-  def render("project.geojson", %{project: net}) do
+  def render("project.geojson", %{project: project}) do
     %{
       type: "Feature",
-      geometry: encode_geom(net.bbox),
+      geometry: encode_geom(project.hull)[:geometry],
       properties: %{
-        name: net.name,
-        slug: net.slug,
-        archive_url: net.archive_url,
-        first_observation: net.first_observation,
-        latest_observation: net.latest_observation
+        name: project.name,
+        slug: project.slug,
+        archive_url: project.archive_url
       }
-      |> nest_related(:nodes, net.nodes, AotWeb.NodeView, "node.geojson")
-      |> nest_related(:sensors, net.sensors, AotWeb.SensorView, "sensor.json")
     }
   end
 end

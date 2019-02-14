@@ -1,48 +1,29 @@
 defmodule AotWeb.ProjectController do
+  @moduledoc ""
+
   use AotWeb, :controller
-
-  import AotWeb.ControllerUtils, only: [
-    meta: 3,
-    resp_format: 1
-  ]
-
-  import AotWeb.GenericPlugs
-
-  import AotWeb.ProjectPlugs
-
-  alias Aot.ProjectActions
+  import AotWeb.SharedPlugs
+  import AotWeb.ControllerUtils, only: [build_meta: 3]
+  alias Aot.Projects
 
   action_fallback AotWeb.FallbackController
 
-  plug :ensure_list, params: ~w(has_nodes has_nodes_exact has_sensors has_sensors_exact)
-  plug :assign_if_exists, param: "include_nodes", value_override: true
-  plug :assign_if_exists, param: "include_sensors", value_override: true
-  plug :assign_if_exists, param: "has_node"
-  plug :assign_if_exists, param: "has_nodes"
-  plug :assign_if_exists, param: "has_nodes_exact"
-  plug :assign_if_exists, param: "has_sensor"
-  plug :assign_if_exists, param: "has_sensors"
-  plug :assign_if_exists, param: "has_sensors_exact"
-  plug :bbox
-  plug :order, default: "asc:name", fields: ~W(name slug)
+  plug :order, default: "asc:name", fields: ~w(name)
   plug :paginate
+  plug :format
 
   def index(conn, _params) do
-    projects = ProjectActions.list(Map.to_list(conn.assigns))
-    fmt = resp_format(conn)
-
+    projects = Projects.list_projects()
     render conn, "index.json",
-      projects: projects,
-      resp_format: fmt,
-      meta: meta(&project_url/3, :index, conn)
+    projects: projects,
+    format: conn.assigns[:format],
+    meta: build_meta(&Routes.project_url/3, :index, conn)
   end
 
-  def show(conn, %{"id" => slug}) do
-    with {:ok, project} <- ProjectActions.get(slug, Map.to_list(conn.assigns))
+  def show(conn, %{"id" => id}) do
+    with {:ok, project} <- Projects.get_project(id)
     do
-      render conn, "show.json",
-        project: project,
-        resp_format: resp_format(conn)
+      render(conn, "show.json", project: project, format: conn.assigns[:format])
     end
   end
 end

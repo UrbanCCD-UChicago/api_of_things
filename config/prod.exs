@@ -3,7 +3,7 @@ use Mix.Config
 # configures the web endpoint
 config :aot, AotWeb.Endpoint,
   http: [
-    port: 8888
+    port: 4000
   ],
   url: [
     host: "api-of-things.plenar.io",

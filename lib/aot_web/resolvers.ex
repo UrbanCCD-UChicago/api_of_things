@@ -2,25 +2,25 @@ defmodule AotWeb.Resolvers do
   def list_projects(_, args, _) do
     {:ok, args
       |> format_args()
-      |> Aot.ProjectActions.list()}
+      |> Aot.Projects.list_projects()}
   end
 
   def list_nodes(_, args, _) do
     {:ok, args
       |> format_args()
-      |> Aot.NodeActions.list()}
+      |> Aot.Nodes.list_nodes()}
   end
 
   def list_sensors(_, args, _) do
     {:ok, args
       |> format_args()
-      |> Aot.SensorActions.list()}
+      |> Aot.Sensors.list_sensors()}
   end
 
   def list_observations(_, args, _) do
     {:ok, args
       |> format_args()
-      |> Aot.ObservationActions.list()}
+      |> Aot.Observations.list_observations()}
   end
 
   defp format_args(args) do
@@ -30,7 +30,7 @@ defmodule AotWeb.Resolvers do
   end
 
   defp format_arg({:intersects, geojson}) do
-    coordinates = 
+    coordinates =
       geojson.coordinates
       |> List.first()
       |> Enum.map(&List.to_tuple/1)
@@ -43,7 +43,7 @@ defmodule AotWeb.Resolvers do
   end
 
   defp format_arg({:within, geojson}) do
-    coordinates = 
+    coordinates =
       geojson.coordinates
       |> List.first()
       |> Enum.map(&List.to_tuple/1)

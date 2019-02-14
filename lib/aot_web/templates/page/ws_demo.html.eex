@@ -1,0 +1,86 @@
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css" integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA==" crossorigin=""/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-javascript.js"></script>
+<script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js" integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg==" crossorigin=""></script>
+
+<style>
+.latest-box { padding:10px; background: rgba(255, 255, 255, 0.9); color: #000; font-size: 1.1em; border-radius: 5px; height: 400px; width: 350px; overflow: scroll; }
+</style>
+
+<section class="row">
+<h1>Websockets Example</h1>
+</section>
+
+<section class="row">
+    <p>
+        The map below displays the locations of nodes in Chicago. For each of the nodes, we setup a
+        websocket that connects to the API and listens for new observation data to be pushed. The data
+        is refreshed every 5 minutes from the source -- it's a slower process than what most people
+        use websockets for, but if you want to passively consume observation data as it's made available
+        then this is a great way to do it.
+    </p>
+</section>
+
+<section class="row">
+    <div id='map' style="height:650px;width:100%;"></div>
+</section>
+
+<section class="row">
+    <table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Sensor</th>
+            <th>Value</th>
+            <th>UOM</th>
+        </tr>
+    </thead>
+    <tbody id="tbody">
+    <tr><td colspan=3>Click on a node marker to track its latest observaiton data.</td></tr>
+    </tbody>
+    </table>
+</section>
+
+<section class="row">
+<h2>Example Details</h2>
+</section>
+
+<section class="row">
+    <p>
+        The <strong>Latest Observations</strong> websocket is available at <code>/socket/websocket</code>.
+        The socket then can subscribe to node topics following the pattern <code>nodes:${vsn}</code> -- latest
+        observations are tracked <em>per node</em>.
+    </p>
+
+    <p>
+        There are two responses that you can anticipate when connecting: <code>'ok'</code> or
+        <code>'error'</code>. Both will include a JSON payload. In the case of a good connection, the
+        payload will be the stored latest for the node you're watching. In the case of an error response,
+        it will be some details about why the connection failed.
+    </p>
+
+    <p>
+        The event that notifies the client of new observation data is called <code>latest</code> and
+        its JSON payload consists of a sing <code>observations</code> key. The value is an array
+        of objects that are exactly the same as the observations API data without the node VSN (because
+        that would be redundant and wasteful).
+    </p>
+
+    <p>
+        As a really basic example of connecting to the socket and listening for changes:
+    <p>
+
+<pre><code class="language-js">import socket from 'phoenix-socket'
+
+let topic = 'nodes:004';
+let channel = socket.channel(topic, {});
+
+channel.join()
+  .receive('ok', resp => { console.log('successfully joined channel', resp); })
+  .receive('error', resp => { console.log('error joining channel', resp); });
+
+channel.on('latest', observations => {
+  console.log('new observations', observations);
+});
+</code></pre>
+</section>

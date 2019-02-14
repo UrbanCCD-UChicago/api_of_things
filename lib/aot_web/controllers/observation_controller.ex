@@ -1,42 +1,29 @@
 defmodule AotWeb.ObservationController do
   use AotWeb, :controller
+  import AotWeb.{ObservationPlugs, SharedPlugs}
+  import AotWeb.ControllerUtils, only: [build_meta: 3]
+  alias Aot.Observations
 
-  import AotWeb.ControllerUtils, only: [
-    meta: 3
-  ]
+  action_fallback AotWeb.FallbackController
 
-  import AotWeb.GenericPlugs
-
-  import AotWeb.ObservationPlugs
-
-  import AotWeb.NodePlugs, only: [
-    location: 2
-  ]
-
-  alias Aot.ObservationActions
-
-  plug :ensure_list, params: ~w(of_projects from_nodes by_sensors)
-  plug :assign_if_exists, param: "embed_node", value_override: true
-  plug :assign_if_exists, param: "embed_sensor", value_override: true
-  plug :assign_if_exists, param: "of_project"
-  plug :assign_if_exists, param: "of_projects"
-  plug :assign_if_exists, param: "from_node"
-  plug :assign_if_exists, param: "from_nodes"
-  plug :assign_if_exists, param: "by_sensor"
-  plug :assign_if_exists, param: "by_sensors"
-  plug :location
-  plug :timestamp, param: "timestamp"
-  plug :value_funcs, groupers: ~W(node_vsn sensor_path)
-  plug :as_histogram, groupers: ~W(node_vsn sensor_path)
-  plug :as_time_buckets, groupers: ~W(node_vsn sensor_path)
-  plug :order, default: "desc:timestamp", fields: ~W(timestamp node_vsn sensor_path)
+  plug :for_node
+  plug :for_sensor
+  plug :for_project
+  plug :located_within
+  plug :located_dwithin
+  plug :timestamp
+  plug :value
+  plug :histogram
+  plug :time_bucket
+  plug :order, default: "desc:timestamp", fields: ~w(node_vsn sensor_path timestamp value)
   plug :paginate
+  plug :format
 
   def index(conn, _params) do
-    observations = ObservationActions.list(Map.to_list(conn.assigns))
-
+    observations = Observations.list_observations(Map.to_list(conn.assigns))
     render conn, "index.json",
       observations: observations,
-      meta: meta(&observation_url/3, :index, conn)
+      format: conn.assigns[:format],
+      meta: build_meta(&Routes.observation_url/3, :index, conn)
   end
 end

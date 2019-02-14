@@ -2,7 +2,7 @@ defmodule AotJobs do
   @moduledoc """
   """
 
-  alias Aot.ProjectActions
+  alias Aot.Projects
 
   alias AotJobs.{DBManager, Importer}
 
@@ -10,7 +10,7 @@ defmodule AotJobs do
   """
   @spec import_projects() :: :ok
   def import_projects do
-    ProjectActions.list()
+    Projects.list_projects()
     |> Enum.each(&Importer.import/1)
   end
 
@@ -19,6 +19,5 @@ defmodule AotJobs do
   @spec delete_old_data(binary()) :: :ok
   def delete_old_data(interval \\ "7 days") do
     DBManager.delete_old_observations(interval)
-    DBManager.delete_old_raw_observations(interval)
   end
 end

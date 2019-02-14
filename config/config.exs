@@ -41,10 +41,16 @@ config :sentry,
   included_environments: [:prod]
 
 # Configures concurrency when loading data csv
-config :aot, import_concurrency: [max_concurrency: 8, ordered: false]
+config :aot, import_concurrency: [max_concurrency: 8, ordered: false, timeout: :infinity]
 
 # Configures the redirect link to the apiary docs
 config :aot, docs_url: "https://arrayofthings.docs.apiary.io/"
+
+# Configures the rate limiting plug
+config :hammer,
+  backend: {Hammer.Backend.ETS,
+            [expiry_ms: 60_000 * 60 * 4,
+             cleanup_interval_ms: 60_000 * 10]}
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
