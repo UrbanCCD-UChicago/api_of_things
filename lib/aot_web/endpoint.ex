@@ -42,5 +42,7 @@ defmodule AotWeb.Endpoint do
     key: "_aot_key",
     signing_salt: "eWEefCMk"
 
+  plug CORSPlug
+
   plug AotWeb.Router
 end
