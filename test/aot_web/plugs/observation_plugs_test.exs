@@ -19,7 +19,7 @@ defmodule AotWeb.ObservationPlugsTest do
         |> json_response(:ok)
 
       assert is_list(data)
-      assert length(data) == 2952
+      assert length(data) == 1879
     end
 
     test "between", %{conn: conn} do
@@ -51,7 +51,7 @@ defmodule AotWeb.ObservationPlugsTest do
         |> json_response(:ok)
 
       assert is_list(data)
-      assert length(data) == 2952
+      assert length(data) == 1879
     end
 
     test "between", %{conn: conn} do

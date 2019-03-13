@@ -142,16 +142,22 @@ defmodule AotJobs.Importer do
       |> File.stream!()
       |> CSV.decode!(headers: true)
       |> Enum.reduce(Ecto.Multi.new(), fn row, multi ->
-        path = make_sensor_path(row)
+        case String.starts_with?(row["ontology"], "/sensing/") do
+          false ->
+            multi
 
-        case Map.get(paths2sensors, path) do
-          nil ->
-            name = "insert sensor #{path}"
-            Ecto.Multi.insert(multi, name, Sensor.changeset(%Sensor{}, sensor_params(row, path)))
+          true ->
+            path = make_sensor_path(row)
 
-          sensor ->
-            name = "updating sensor #{path}"
-            Ecto.Multi.update(multi, name, Sensor.changeset(sensor, sensor_params(row, path)))
+            case Map.get(paths2sensors, path) do
+              nil ->
+                name = "insert sensor #{path}"
+                Ecto.Multi.insert(multi, name, Sensor.changeset(%Sensor{}, sensor_params(row, path)))
+
+              sensor ->
+                name = "updating sensor #{path}"
+                Ecto.Multi.update(multi, name, Sensor.changeset(sensor, sensor_params(row, path)))
+            end
         end
       end)
       |> Repo.transaction()

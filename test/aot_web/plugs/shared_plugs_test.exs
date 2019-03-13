@@ -20,7 +20,7 @@ defmodule AotWeb.SharedPlugsTest do
       |> json_response(:ok)
 
     assert is_list(data)
-    assert length(data) == 24
+    assert length(data) == 20
   end
 
   @tag add2ctx: :sensors
@@ -97,7 +97,7 @@ defmodule AotWeb.SharedPlugsTest do
       |> json_response(:ok)
 
     assert is_list(data)
-    assert length(data) == 24
+    assert length(data) == 20
   end
 
   test "located dwithin no results should return empty list", %{conn: conn} do

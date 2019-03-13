@@ -12,7 +12,7 @@ defmodule AotWeb.SensorController do
   plug :paginate
 
   def index(conn, _params) do
-    sensors = Sensors.list_sensors()
+    sensors = Sensors.list_sensors(Map.to_list(conn.asigns))
     render conn, "index.json",
       sensors: sensors,
       meta: build_meta(&Routes.sensor_url/3, :index, conn)

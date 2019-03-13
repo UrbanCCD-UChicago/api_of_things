@@ -97,7 +97,7 @@ defmodule AotWeb.GraphqlTest do
       |> get("/graphql?query=#{query}")
       |> json_response(:ok)
 
-    assert(length(response["data"]["observations"]) == 1494)
+    assert(length(response["data"]["observations"]) == 1002)
   end
 
   test "filter observations within crazy polygon query", %{conn: conn} do

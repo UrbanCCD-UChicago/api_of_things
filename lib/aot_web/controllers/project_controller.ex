@@ -13,11 +13,11 @@ defmodule AotWeb.ProjectController do
   plug :format
 
   def index(conn, _params) do
-    projects = Projects.list_projects()
+    projects = Projects.list_projects(Map.to_list(conn.assigns))
     render conn, "index.json",
-    projects: projects,
-    format: conn.assigns[:format],
-    meta: build_meta(&Routes.project_url/3, :index, conn)
+      projects: projects,
+      format: conn.assigns[:format],
+      meta: build_meta(&Routes.project_url/3, :index, conn)
   end
 
   def show(conn, %{"id" => id}) do

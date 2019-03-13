@@ -17,6 +17,6 @@ defmodule AotWeb.NodePlugsTest do
 
     sensors = data["sensors"]
     assert is_list(sensors)
-    assert length(sensors) == 24
+    assert length(sensors) == 20
   end
 end
