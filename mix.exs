@@ -4,7 +4,7 @@ defmodule Aot.MixProject do
   def project do
     [
       app: :aot,
-      version: "2.1.1",
+      version: "2.1.2",
       elixir: "~> 1.8",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
