@@ -184,7 +184,7 @@ defmodule AotJobs.Importer do
       |> Enum.into(%{})
 
     latest_observation =
-      (from o in Observation, select: max(o.timestamp))
+      (from o in Observation, left_join: p in Aot.M2m.ProjectNode, on: o.node_vsn == p.node_vsn, where: p.project_slug == ^project.slug, select: max(o.timestamp))
       |> Repo.one()
 
     async_opts = Application.get_env(:aot, :import_concurrency)
