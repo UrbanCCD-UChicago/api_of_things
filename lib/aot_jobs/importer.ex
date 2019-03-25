@@ -7,28 +7,33 @@ defmodule AotJobs.Importer do
   alias Aot.Nodes
   alias Aot.Nodes.Node
   alias Aot.Observations.Observation
+  alias Aot.Projects
   alias Aot.Repo
   alias Aot.Sensors
   alias Aot.Sensors.Sensor
 
   @dirname "/tmp/aot-tarballs/"
 
-  def import(project) do
-    Logger.info("importing data for #{project.name}")
+  def import_projects() do
+    Projects.list_projects()
+    |> Enum.each(fn project ->
+      Logger.info("importing data for #{project.name}")
 
-    tarfilename = String.split(project.recent_url, "/") |> List.last()
-    tarball = Path.join(@dirname, tarfilename)
-    Logger.debug("tarball=#{inspect(tarball)}")
+      tarfilename = String.split(project.recent_url, "/") |> List.last()
+      tarball = Path.join(@dirname, tarfilename)
+      Logger.debug("tarball=#{inspect(tarball)}")
 
-    :ok = ensure_clean_paths!(tarball)
-    :ok = download!(project, tarball)
+      :ok = ensure_clean_paths!(tarball)
+      :ok = download!(project, tarball)
 
-    data_dir = decompress!(project, tarball)
-    Logger.debug("data_dir=#{inspect(data_dir)}")
+      data_dir = decompress!(project, tarball)
+      Logger.debug("data_dir=#{inspect(data_dir)}")
 
-    :ok = process_nodes_csv!(project, data_dir)
-    :ok = process_sensors_csv!(project, data_dir)
-    :ok = process_data_csv!(project, data_dir)
+      :ok = process_nodes_csv!(project, data_dir)
+      :ok = process_sensors_csv!(project, data_dir)
+      :ok = process_data_csv!(project, data_dir)
+    end)
+
     :ok = refresh_latest_observations!()
     :ok = refresh_node_sensors!()
     :ok = broadcast_latest!()
@@ -226,7 +231,7 @@ defmodule AotJobs.Importer do
   def refresh_latest_observations!() do
     Logger.info("refreshing latest observations")
 
-    Repo.query!("REFRESH MATERIALIZED VIEW latest_observations")
+    Ecto.Adapters.SQL.query!(Repo, "REFRESH MATERIALIZED VIEW latest_observations", [], [timeout: :infinity])
 
     :ok
   end
@@ -234,7 +239,7 @@ defmodule AotJobs.Importer do
   def refresh_node_sensors!() do
     Logger.info("refreshing node sensors")
 
-    Repo.query!("REFRESH MATERIALIZED VIEW node_sensors")
+    Ecto.Adapters.SQL.query!(Repo, "REFRESH MATERIALIZED VIEW node_sensors", [], [timeout: :infinity])
 
     :ok
   end
