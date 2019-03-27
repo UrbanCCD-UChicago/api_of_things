@@ -253,7 +253,7 @@ defmodule AotJobs.Importer do
         node_vsn,
         json_agg(json_build_object(
           'sensor_path', sensor_path,
-          'timestmap', timestamp,
+          'timestamp', timestamp,
           'value', value,
           'uom', uom)) AS observations
       FROM latest_observations
