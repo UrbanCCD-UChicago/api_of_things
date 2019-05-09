@@ -65,6 +65,10 @@ alias Aot.Projects
   archive_url: "http://www.mcs.anl.gov/research/projects/waggle/downloads/datasets/AoT_GA_Tech.complete.latest.tar",
   recent_url: "http://www.mcs.anl.gov/research/projects/waggle/downloads/datasets/AoT_GA_Tech.complete.recent.tar"})
 
+{:ok, _} = Projects.create_project(%{name: "Vanderbilt",
+  archive_url: "http://www.mcs.anl.gov/research/projects/waggle/downloads/datasets/AoT_Vanderbilt.complete.latest.tar",
+  recent_url: "http://www.mcs.anl.gov/research/projects/waggle/downloads/datasets/AoT_Vanderbilt.complete.recent.tar"})
+
 # Seeds.import(chicago)
 # Seeds.import(detroit)
 # Seeds.import(portland)
