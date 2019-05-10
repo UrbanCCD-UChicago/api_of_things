@@ -250,7 +250,7 @@ defmodule AotJobs.Importer do
         end
       end)
 
-      Repo.transaction(multi)
+      Repo.transaction(multi, timeout: :infinity)
     end, async_opts)
     |> Stream.run()
 
