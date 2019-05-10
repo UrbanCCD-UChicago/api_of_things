@@ -31,6 +31,15 @@ defmodule AotWeb.Schema do
       arg(:dwithin, :geojson_polygon)
       resolve(&Resolvers.list_observations/3)
     end
+
+    @desc "Get all metrics"
+    field :metrics, list_of(:metric) do
+      arg(:timestamp, :naive_datetime_query)
+      arg(:value, :float_query)
+      arg(:within, :geojson_polygon)
+      arg(:dwithin, :geojson_polygon)
+      resolve(&Resolvers.list_observations/3)
+    end
   end
 
   @doc """

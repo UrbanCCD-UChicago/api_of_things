@@ -20,6 +20,8 @@ defmodule Aot.Nodes.Node do
     # relationships
     has_many :observations, Aot.Observations.Observation
 
+    has_many :metrics, Aot.Metrics.Metric
+
     many_to_many :projects, Aot.Projects.Project,
       join_through: "project_nodes",
       join_keys: [node_vsn: :vsn, project_slug: :slug]

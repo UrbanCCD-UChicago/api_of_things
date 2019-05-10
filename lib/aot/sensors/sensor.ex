@@ -16,6 +16,8 @@ defmodule Aot.Sensors.Sensor do
     # relationships
     has_many :observations, Aot.Observations.Observation
 
+    has_many :metrics, Aot.Metrics.Metric
+
     many_to_many :nodes, Aot.Nodes.Node,
       join_through: "node_sensors",
       join_keys: [sensor_path: :path, node_vsn: :vsn]

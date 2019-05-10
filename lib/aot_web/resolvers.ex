@@ -23,6 +23,12 @@ defmodule AotWeb.Resolvers do
       |> Aot.Observations.list_observations()}
   end
 
+  def list_metrics(_, args, _) do
+    {:ok, args
+      |> format_args()
+      |> Aot.Metrics.list_metrics()}
+  end
+
   defp format_args(args) do
     args
     |> Map.to_list()

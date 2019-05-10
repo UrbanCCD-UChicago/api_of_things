@@ -50,6 +50,13 @@ defmodule AotWeb.Schema.Types do
     field :sensor, :sensor, resolve: dataloader(Repo)
   end
 
+  object :metric do
+    field :timestamp, :naive_datetime
+    field :value, :float
+    field :node, :node, resolve: dataloader(Repo)
+    field :sensor, :sensor, resolve: dataloader(Repo)
+  end
+
   input_object :float_query do
     field :lt, :float
     field :le, :float

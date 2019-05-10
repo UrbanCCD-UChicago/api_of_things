@@ -30,6 +30,7 @@ defmodule AotWeb.Router do
     resources "/nodes", NodeController, only: [:index, :show]
     resources "/sensors", SensorController, only: [:index, :show]
     resources "/observations", ObservationController, only: [:index]
+    resources "/metrics", MetricController, only: [:index]
   end
 
   scope "/graphql" do
