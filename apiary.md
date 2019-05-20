@@ -232,6 +232,6 @@ using the same filtering scheme listed for nodes.
   + value (string, optional)
       Filters the results to only those whose `value` attribute satisfies the query.
   + histogram (string, optional)
-      Computes a histogram for the observations.
+      Computes a histogram for the observations. This requires several fields in the format `histogram=min:max:count` where `min` is the floor, `max` is the ceiling and `count` is the number of buckets.
   + time_bucket (string, optional)
-      Computes aggregates for the observations partitioned by equally sized time frames.
+      Computes aggregates for the observations partitioned by equally sized time frames. This requires several fields in the format `time_bucket=func:interval` where `func` must be one of _min_, _max_, _avg_ or _median_ and `interval` is a Postgres interperable interval string like _12 hours_.
