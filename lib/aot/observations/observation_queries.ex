@@ -1,5 +1,5 @@
 defmodule Aot.Observations.ObservationQueries do
-  @moduledoc ""
+  @moduledoc false
 
   import Ecto.Query
   import Geo.PostGIS, only: [st_contains: 2, st_dwithin_in_meters: 3]
@@ -8,23 +8,45 @@ defmodule Aot.Observations.ObservationQueries do
   alias Aot.Observations.Observation
   alias Ecto.Queryable
 
-  # bases
+  # base
 
-  @doc ""
+  @doc false
   @spec list() :: Queryable.t()
   def list, do: from(o in Observation)
 
   # filter compose
 
-  @doc ""
+  @doc false
   @spec for_node(Queryable.t(), binary()) :: Queryable.t()
   def for_node(query, vsn), do: from o in query, where: o.node_vsn == ^vsn
 
-  @doc ""
+  @doc false
+  @spec for_nodes(Queryable.t(), list(binary())) :: Queryable.t()
+  # def for_nodes(query, vsns), do: from o in query, where: o.node_vsn in ^vsns
+  def for_nodes(query, vsns) do
+    cleaned_vsns =
+      vsns
+      |> Enum.map(fn eq_vsn -> String.split(eq_vsn, ":") |> List.last() end)
+
+    from o in query, where: o.node_vsn in ^cleaned_vsns
+  end
+
+  @doc false
   @spec for_sensor(Queryable.t(), binary()) :: Queryable.t()
   def for_sensor(query, path), do: from o in query, where: o.sensor_path == ^path
 
-  @doc ""
+  @doc false
+  @spec for_sensors(Queryable.t(), list(binary())) :: Queryable.t()
+  # def for_sensors(query, paths), do: from o in query, where: o.sensor_path in ^paths
+  def for_sensors(query, paths) do
+    cleaned_paths =
+      paths
+      |> Enum.map(fn eq_path -> String.split(eq_path, ":") |> List.last() end)
+
+    from o in query, where: o.sensor_path in ^cleaned_paths
+  end
+
+  @doc false
   @spec for_project(Queryable.t(), binary()) :: Queryable.t()
   def for_project(query, slug) do
     from o in query,
@@ -33,15 +55,15 @@ defmodule Aot.Observations.ObservationQueries do
       where: pn.project_slug == ^slug
   end
 
-  @doc ""
+  @doc false
   @spec located_within(Queryable.t(), Geo.Polygon.t()) :: Queryable.t()
   def located_within(query, geom), do: from o in query, where: st_contains(^geom, o.location)
 
-  @doc ""
+  @doc false
   @spec located_dwithin(Queryable.t(), pos_integer(), Geo.Point.t()) :: Queryable.t()
   def located_dwithin(query, distance, geom), do: from o in query, where: st_dwithin_in_meters(o.location, ^geom, ^distance)
 
-  @doc ""
+  @doc false
   @spec timestamp(Queryable.t(), binary(), binary()) :: Queryable.t()
   @spec timestamp(Queryable.t(), binary(), binary(), binary()) :: Queryable.t()
   def timestamp(query, "lt", timestamp), do: from o in query, where: o.timestamp < type(^timestamp, :naive_datetime)

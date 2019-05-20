@@ -10,7 +10,9 @@ defmodule Aot.Observations do
   def list_observations(opts \\ []) do
     opts = Keyword.merge([
       for_node: :empty,
+      for_nodes: :empty,
       for_sensor: :empty,
+      for_sensors: :empty,
       for_project: :empty,
       located_within: :empty,
       located_dwithin: :empty,
@@ -24,7 +26,9 @@ defmodule Aot.Observations do
 
     ObservationQueries.list()
     |> filter_compose(opts[:for_node], ObservationQueries, :for_node)
+    |> filter_compose(opts[:for_nodes], ObservationQueries, :for_nodes)
     |> filter_compose(opts[:for_sensor], ObservationQueries, :for_sensor)
+    |> filter_compose(opts[:for_sensors], ObservationQueries, :for_sensors)
     |> filter_compose(opts[:for_project], ObservationQueries, :for_project)
     |> filter_compose(opts[:located_within], ObservationQueries, :located_within)
     |> filter_compose(opts[:located_dwithin], ObservationQueries, :located_dwithin)

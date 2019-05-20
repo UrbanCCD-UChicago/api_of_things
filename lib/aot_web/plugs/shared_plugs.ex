@@ -1,23 +1,25 @@
 defmodule AotWeb.SharedPlugs do
-  @moduledoc ""
+  @moduledoc false
 
   import AotWeb.ControllerUtils
   import Plug.Conn, only: [assign: 3]
   alias Plug.Conn
 
-  @doc ""
-  def for_node(%Conn{params: %{"node" => vsn}} = conn, _), do: assign(conn, :for_node, vsn)
+  @doc false
+  def for_node(%Conn{params: %{"node" => vsn}} = conn, _) when is_binary(vsn), do: assign(conn, :for_node, vsn)
+  def for_node(%Conn{params: %{"node" => vsns}} = conn, _) when is_list(vsns), do: assign(conn, :for_nodes, vsns)
   def for_node(conn, _), do: conn
 
-  @doc ""
-  def for_sensor(%Conn{params: %{"sensor" => path}} = conn, _), do: assign(conn, :for_sensor, path)
+  @doc false
+  def for_sensor(%Conn{params: %{"sensor" => path}} = conn, _) when is_binary(path), do: assign(conn, :for_sensor, path)
+  def for_sensor(%Conn{params: %{"sensor" => paths}} = conn, _) when is_list(paths), do: assign(conn, :for_sensors, paths)
   def for_sensor(conn, _), do: conn
 
-  @doc ""
+  @doc false
   def for_project(%Conn{params: %{"project" => slug}} = conn, _), do: assign(conn, :for_project, slug)
   def for_project(conn, _), do: conn
 
-  @doc ""
+  @doc false
   def format(%Conn{params: %{"format" => "geojson"}} = conn, _), do: assign(conn, :format, :geojson)
   def format(%Conn{params: %{"format" => "json"}} = conn, _), do: assign(conn, :format, :json)
   def format(%Conn{params: %{"format" => _}} = conn, _), do: halt_with(conn, 422)
@@ -30,7 +32,7 @@ defmodule AotWeb.SharedPlugs do
   defp decode_geojson(%{"type" => _, "coordinates" => _} = geom), do: Geo.JSON.decode(geom)
   defp decode_geojson(_), do: {:error, nil}
 
-  @doc ""
+  @doc false
   def located_within(%Conn{params: %{"located_within" => geojson_string}} = conn, _) do
     Jason.decode!(geojson_string)
     |> decode_geojson()
@@ -42,7 +44,7 @@ defmodule AotWeb.SharedPlugs do
   defp do_located_within({:ok, geom}, conn), do: assign(conn, :located_within, geom)
   defp do_located_within({:error, _}, conn), do: halt_with(conn, 400)
 
-  @doc ""
+  @doc false
   def located_dwithin(%Conn{params: %{"located_dwithin" => dgeom}} = conn, _) do
     {distance, geom} =
       String.split(dgeom, ":", parts: 2)

@@ -11,6 +11,10 @@ defmodule Aot.QueryUtils do
   @doc ""
   @spec filter_compose(Queryable.t(), :empty | list(any()) | any(), module(), atom()) :: Queryable.t()
   def filter_compose(query, :empty, _, _), do: query
+  # we need a special case for observations and metrics queries that rely on list values
+  def filter_compose(query, args, module, :for_nodes), do: apply(module, :for_nodes, [query] ++ [args])
+  def filter_compose(query, args, module, :for_sensors), do: apply(module, :for_sensors, [query] ++ [args])
+  # regular cases
   def filter_compose(query, args, module, fun) when is_list(args), do: apply(module, fun, [query] ++ args)
   def filter_compose(query, args, module, fun) when not is_list(args), do: apply(module, fun, [query] ++ [args])
 
