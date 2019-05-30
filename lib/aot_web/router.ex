@@ -11,7 +11,7 @@ defmodule AotWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
-    plug Hammer.Plug, rate_limit: {"api", 300_000, 500}, by: :ip
+    plug Hammer.Plug, rate_limit: {"api", 60_000, 1_000}, by: :ip  # 1k req per minute by ip
   end
 
   scope "/", AotWeb do

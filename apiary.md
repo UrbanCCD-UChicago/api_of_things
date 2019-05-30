@@ -79,6 +79,8 @@ Sensors record their measurements, and those are collected as one of two differe
 
 Each entity type has its own endpoint in the API.
 
+**NOTE:** The API has a rate limit of 1,000 requests per minute per IP address.
+
 ## Project [/projects/{slug}]
 
 Get a single project.
