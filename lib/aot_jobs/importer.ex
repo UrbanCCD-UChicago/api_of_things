@@ -78,7 +78,7 @@ defmodule AotJobs.Importer do
       |> Enum.reduce({Ecto.Multi.new(), MapSet.new()}, fn [node_id, _, vsn, address, lat, lon, description, _, _], {multi, seen_vsns} ->
         case MapSet.member?(seen_vsns, vsn) do
           true ->
-            Logger.warn("Duplicate VSN #{vsn} in #{project.name} nodes.csv")
+            Logger.debug("Duplicate VSN #{vsn} in #{project.name} nodes.csv")
             {multi, seen_vsns}
 
           false ->
@@ -124,7 +124,7 @@ defmodule AotJobs.Importer do
         path = "#{subsystem}.#{sensor}.#{parameter}"
         case MapSet.member?(seen_sensors, path) do
           true ->
-            Logger.warn("Duplicate sensor #{path} in #{project.name} sensors.csv")
+            Logger.debug("Duplicate sensor #{path} in #{project.name} sensors.csv")
             {multi, seen_sensors}
 
           false ->
@@ -183,70 +183,83 @@ defmodule AotJobs.Importer do
       {multi, _} = Enum.reduce(rows, {Ecto.Multi.new(), MapSet.new()}, fn [timestamp, node_id, subsystem, sensor, param, _, value], {multi, seen_rows} ->
         path = "#{subsystem}.#{sensor}.#{param}"
         sensor = Map.get(sensors, path)
-        if is_nil(sensor), do: Logger.warn("Unknown sensor #{path} in #{project.name} data.csv")
+        if is_nil(sensor) do
+          Logger.debug("Unknown sensor #{path} in #{project.name} data.csv")
+          {multi, seen_rows}
 
-        node = Map.get(nodes, node_id)
-        if is_nil(node), do: Logger.warn("Unknown node #{node_id} in #{project.name} data.csv")
-
-        timestamp = case timestamp do
-          "" -> nil
-          _ -> Timex.parse!(timestamp, "%Y/%m/%d %H:%M:%S", :strftime)
-        end
-
-        row_id = "#{node.vsn}/#{path}/#{timestamp}"
-
-        value = case value do
-          "" ->
-            nil
-
-          _ ->
-            case Regex.match?(~r/^[0-9\.\-]+$/, value) do
-              true ->
-                value
-
-              false ->
-                Logger.warn("Non-float value #{value} for row #{row_id} in #{project.name} data.csv")
-                nil
-            end
-        end
-
-        case MapSet.member?(seen_rows, row_id) do
-          true ->
-            Logger.warn("Dupliecate row #{row_id} in #{project.name} data.csv")
+        else
+          node = Map.get(nodes, node_id)
+          if is_nil(node) do
+            Logger.debug("Unknown node #{node_id} in #{project.name} data.csv")
             {multi, seen_rows}
 
-          false ->
-            seen_rows = MapSet.put(seen_rows, row_id)
-            multi =
-              unless is_nil(node) or is_nil(sensor) or is_nil(timestamp) or is_nil(value) do
-                case subsystem == "ep" or subsystem == "nc" or subsystem == "wagman" do
-                  true ->
-                    case ndtcmp(timestamp, latest_metric) == :gt do
-                      false ->
-                        multi
+          else
+            timestamp = case timestamp do
+              "" -> nil
+              _ -> Timex.parse!(timestamp, "%Y/%m/%d %H:%M:%S", :strftime)
+            end
+            if is_nil(timestamp) do
+              Logger.debug("Empty timestamp")
+              {multi, seen_rows}
 
-                      true ->
-                        name = "insert metric #{row_id}"
-                        Ecto.Multi.insert(multi, name, Metric.changeset(%Metric{}, %{
-                          node_vsn: node.vsn, sensor_path: path, timestamp: timestamp, value: value, location: node.location, uom: sensor.uom}))
-                    end
+            else
+              row_id = "#{node.vsn}/#{path}/#{timestamp}"
 
-                  false ->
-                    case ndtcmp(timestamp, latest_observation) == :gt do
-                      false ->
-                        multi
+              value = case value do
+                "" ->
+                  nil
 
-                      true ->
-                        name = "insert observation #{row_id}"
-                        Ecto.Multi.insert(multi, name, Observation.changeset(%Observation{}, %{
-                          node_vsn: node.vsn, sensor_path: path, timestamp: timestamp, value: value, location: node.location, uom: sensor.uom}))
-                    end
-                end
-              else
-                multi
+                _ ->
+                  case Regex.match?(~r/^[0-9\.\-]+$/, value) do
+                    true ->
+                      value
+
+                    false ->
+                      Logger.debug("Non-float value #{value} for row #{row_id} in #{project.name} data.csv")
+                      nil
+                  end
               end
 
-            {multi, seen_rows}
+              case MapSet.member?(seen_rows, row_id) do
+                true ->
+                  Logger.debug("Dupliecate row #{row_id} in #{project.name} data.csv")
+                  {multi, seen_rows}
+
+                false ->
+                  seen_rows = MapSet.put(seen_rows, row_id)
+                  multi =
+                    unless is_nil(node) or is_nil(sensor) or is_nil(timestamp) or is_nil(value) do
+                      case subsystem == "ep" or subsystem == "nc" or subsystem == "wagman" do
+                        true ->
+                          case ndtcmp(timestamp, latest_metric) == :gt do
+                            false ->
+                              multi
+
+                            true ->
+                              name = "insert metric #{row_id}"
+                              Ecto.Multi.insert(multi, name, Metric.changeset(%Metric{}, %{
+                                node_vsn: node.vsn, sensor_path: path, timestamp: timestamp, value: value, location: node.location, uom: sensor.uom}))
+                          end
+
+                        false ->
+                          case ndtcmp(timestamp, latest_observation) == :gt do
+                            false ->
+                              multi
+
+                            true ->
+                              name = "insert observation #{row_id}"
+                              Ecto.Multi.insert(multi, name, Observation.changeset(%Observation{}, %{
+                                node_vsn: node.vsn, sensor_path: path, timestamp: timestamp, value: value, location: node.location, uom: sensor.uom}))
+                          end
+                      end
+                    else
+                      multi
+                    end
+
+                  {multi, seen_rows}
+              end
+            end
+          end
         end
       end)
 
