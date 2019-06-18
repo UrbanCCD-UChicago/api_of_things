@@ -47,7 +47,7 @@
 
 <section class="row">
     <p>
-        The <strong>Latest Observations</strong> websocket is available at <code>/socket/websocket</code>.
+        The <strong>Latest Observations</strong> websocket is available at <code>https://api-of-things.plenar.io/socket/websocket</code>.
         The socket then can subscribe to node topics following the pattern <code>nodes:${vsn}</code> -- latest
         observations are tracked <em>per node</em>.
     </p>
